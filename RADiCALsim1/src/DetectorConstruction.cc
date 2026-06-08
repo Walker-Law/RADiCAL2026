@@ -200,17 +200,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTyvekSlice = DoDrills(solidTyvekBase);
     auto logicTyvekSlice = new G4LogicalVolume(solidTyvekSlice, tyvek, "Tyvek_Slice");
 
-    // Visualisation
-    auto lysoVis = new G4VisAttributes(G4Colour(0.0, 0.6, 0.9, 0.12));
-    lysoVis->SetForceSolid(true);
+    // Visualisation — wireframe outlines so every tile edge is visible
+    auto lysoVis = new G4VisAttributes(G4Colour(0.0, 0.6, 0.9, 1.0));   // blue
+    lysoVis->SetForceWireframe(true);
+    lysoVis->SetForceAuxEdgeVisible(true);
     logicLYSO->SetVisAttributes(lysoVis);
 
-    auto wVis = new G4VisAttributes(G4Colour(0.4, 0.4, 0.4, 0.06));
-    wVis->SetForceSolid(true);
+    auto wVis = new G4VisAttributes(G4Colour(0.7, 0.3, 0.3, 1.0));      // red (absorber)
+    wVis->SetForceWireframe(true);
+    wVis->SetForceAuxEdgeVisible(true);
     logicW->SetVisAttributes(wVis);
 
-    auto tyvekSliceVis = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.05));
-    tyvekSliceVis->SetForceSolid(true);
+    auto tyvekSliceVis = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9, 0.6)); // white
+    tyvekSliceVis->SetForceWireframe(true);
+    tyvekSliceVis->SetForceAuxEdgeVisible(true);
     logicTyvekSlice->SetVisAttributes(tyvekSliceVis);
 
     // =========================================================================
