@@ -106,11 +106,30 @@ void EventAction::EndOfEventAction(const G4Event*) {
     }
 
     // =========================================================================
-    // 5. X-Y LATERAL SHOWER PROFILE
+    // 5. X-Y LATERAL SHOWER PROFILE — integrated + 6 depth slices
     // =========================================================================
+    // Mapping: layer index → slice H2 id
+    //   Slice 0 → H2[7]  layers  0– 4  (z ≈ −57 to −41 mm)
+    //   Slice 1 → H2[8]  layers  5– 9  (z ≈ −41 to −21 mm)
+    //   Slice 2 → H2[9]  layers 10–14  (z ≈ −21 to  −1 mm)  ← shower max
+    //   Slice 3 → H2[10] layers 15–19  (z ≈  −1 to +19 mm)
+    //   Slice 4 → H2[11] layers 20–24  (z ≈ +19 to +39 mm)
+    //   Slice 5 → H2[12] layers 25–28  (z ≈ +39 to +57 mm)
+    auto depthSliceH2 = [](G4int layer) -> G4int {
+        if (layer <=  4) return 7;
+        if (layer <=  9) return 8;
+        if (layer <= 14) return 9;
+        if (layer <= 19) return 10;
+        if (layer <= 24) return 11;
+        return 12;
+    };
+
     for (const auto& hit : fLYSOHits) {
-        // H2[2]: X-Y map weighted by edep (shows transverse shower extent)
+        // H2[2]: integrated X-Y map (all layers)
         am->FillH2(2, hit.x / mm, hit.y / mm, hit.edep / MeV);
+        // H2[7-12]: depth-sliced X-Y map
+        G4int sliceId = depthSliceH2((G4int)hit.layer);
+        am->FillH2(sliceId, hit.x / mm, hit.y / mm, hit.edep / MeV);
     }
 
     // =========================================================================
