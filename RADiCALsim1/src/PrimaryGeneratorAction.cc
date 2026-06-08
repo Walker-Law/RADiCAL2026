@@ -16,12 +16,10 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fGun; }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* ev) {
     // Gaussian beam profile σ = 2.9 mm (consistent with firstsim)
-    // Beam offset 25 mm downward (−y) from module axis
-    G4double sigma  = 2.9 * mm;
-    G4double yOffset = -25.0 * mm;
+    G4double sigma = 2.9 * mm;
     fGun->SetParticlePosition(G4ThreeVector(
-        G4RandGauss::shoot(0.,       sigma),
-        G4RandGauss::shoot(yOffset,  sigma),
+        G4RandGauss::shoot(0., sigma),
+        G4RandGauss::shoot(0., sigma),
         -100.0 * mm));   // upstream of module front face
     fGun->GeneratePrimaryVertex(ev);
 }
