@@ -267,11 +267,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     new G4PVPlacement(nullptr, capXY[0], logicECapTube, "ECapTube_Phys", logicCalo, false, 0);
     new G4PVPlacement(nullptr, capXY[0], logicECapBore, "ECapBore_Phys", logicCalo, false, 0);
 
+    // EJ309 bore kept solid (key active volume); quartz tube as outline
     auto eCapVis = new G4VisAttributes(G4Colour(0.0, 0.9, 0.0, 0.9));
     eCapVis->SetForceSolid(true);
+    eCapVis->SetForceAuxEdgeVisible(true);
     logicECapBore->SetVisAttributes(eCapVis);
-    auto eCapTubeVis = new G4VisAttributes(G4Colour(0.8, 0.8, 1.0, 0.3));
-    eCapTubeVis->SetForceSolid(true);
+    auto eCapTubeVis = new G4VisAttributes(G4Colour(0.8, 0.8, 1.0, 0.8));
+    eCapTubeVis->SetForceWireframe(true);
+    eCapTubeVis->SetForceAuxEdgeVisible(true);
     logicECapTube->SetVisAttributes(eCapTubeVis);
 
     // --- Corner timing capillaries (shared logical volumes) ---
