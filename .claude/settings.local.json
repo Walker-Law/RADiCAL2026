@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(brew install *)",
+      "Bash(pdftoppm --version)",
+      "Bash(pdftoppm -r 72 /Users/macro-2/Downloads/2303.05580v3.pdf /tmp/radical_page -f 1 -l 3)",
+      "Read(//private/tmp/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(pip3 install *)",
+      "Bash(make -j4)",
+      "Bash(./radical)",
+      "Bash(export G4ENSDFSTATEDATA=$DATADIR/G4ENSDFSTATE3.0)",
+      "Bash(export G4LEDATA=$DATADIR/G4EMLOW8.8)",
+      "Bash(export G4LEVELGAMMADATA=$DATADIR/PhotonEvaporation6.1.2)",
+      "Bash(export G4RADIOACTIVEDATA=$DATADIR/RadioactiveDecay6.1.2)",
+      "Bash(export G4PARTICLEXSDATA=$DATADIR/G4PARTICLEXS4.2)",
+      "Bash(./radical --batch)",
+      "Bash(export G4NEUTRONHPDATA=$DATADIR/G4NDL4.7.1)",
+      "Bash(export G4ABLADATA=$DATADIR/G4ABLA3.3)",
+      "Bash(echo '/run/initialize *)",
+      "Bash(cd /Users/macro-2/Research/radical/build)",
+      "Bash(./radical /tmp/geom_test.mac)"
+    ]
+  }
+}
