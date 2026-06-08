@@ -41,6 +41,9 @@ private:
 
     struct CornerHit { G4double edep, z, t, corner; };
     std::vector<CornerHit> fCornerHits;
+
+    struct LYSOHit { G4double x, y, layer, edep; };
+    std::vector<LYSOHit> fLYSOHits;
 };
 
 #endif
