@@ -14,8 +14,11 @@ public:
     void BeginOfEventAction(const G4Event*) override;
     void EndOfEventAction(const G4Event*) override;
 
-    void AddEdepLYSO(G4int layer, G4double edep) {
-        if (layer >= 0 && layer < 29) fEdepLYSO[layer] += edep;
+    void AddEdepLYSO(G4int layer, G4double edep, G4double x, G4double y) {
+        if (layer >= 0 && layer < 29) {
+            fEdepLYSO[layer] += edep;
+            fLYSOHits.push_back({x, y, (G4double)layer, edep});
+        }
     }
     void AddEdepW(G4int layer, G4double edep) {
         if (layer >= 0 && layer < 28) fEdepW[layer] += edep;
