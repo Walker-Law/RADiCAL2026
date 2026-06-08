@@ -19,6 +19,7 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     fEdepCenter = 0.;
     fEdepWLS.fill(0.);
     fCornerHits.clear();
+    fLYSOHits.clear();
 }
 
 void EventAction::EndOfEventAction(const G4Event*) {
