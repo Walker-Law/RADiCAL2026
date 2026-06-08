@@ -33,9 +33,9 @@ RunAction::RunAction() {
                  "Central capillary (EJ309) yield;E (MeV);Events",
                  200, 0., 5000.);
 
-    // H1[5]: Corner DSB1 WLS fibre energy (all 4 corners combined)
+    // H1[5]: Corner LuAG:Ce WLS fibre energy (all 4 corners combined)
     am->CreateH1("CornerWLSEnergy",
-                 "Corner WLS fibre (DSB1) yield per corner;E (MeV);Hits",
+                 "Corner WLS fibre (LuAG:Ce) yield per corner;E (MeV);Hits",
                  200, 0., 500.);
 
     // H1[6]: Differential arrival time ΔT = t_back − t_front
@@ -69,7 +69,7 @@ RunAction::RunAction() {
 
     // H1[11]: Per-corner WLS energy — bar chart (x = corner index 0-3)
     am->CreateH1("CornerWLSPerCorner",
-                 "DSB1 WLS energy per corner;Corner index;#sum E (MeV)",
+                 "LuAG:Ce WLS energy per corner;Corner index;#sum E (MeV)",
                  4, 0., 4.);
 
     // ── H1: TIMING ───────────────────────────────────────────────────────────
