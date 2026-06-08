@@ -16,8 +16,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
     const G4String& name = logVol->GetName();
 
     if (name == "LYSO") {
-        G4int copy = touchable->GetCopyNumber();
-        fEventAction->AddEdepLYSO(copy, edep);
+        G4int    copy = touchable->GetCopyNumber();
+        G4double x    = step->GetPreStepPoint()->GetPosition().x();
+        G4double y    = step->GetPreStepPoint()->GetPosition().y();
+        fEventAction->AddEdepLYSO(copy, edep, x, y);
     }
     else if (name == "W_Absorber") {
         G4int copy = touchable->GetCopyNumber();
