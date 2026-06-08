@@ -129,6 +129,43 @@ RunAction::RunAction() {
                  "Shower max depth vs energy;E_{LYSO} (GeV);Max layer index",
                  75, 0., 150.,
                  29, 0., 29.);
+
+    // ── H2[7-12]: Lateral shower profiles at 6 longitudinal depth slices ──────
+    // Slice 0: LYSO layers  0– 4  (z ≈ −57 to −41 mm)  — entrance / early shower
+    am->CreateH2("LateralProfile_Slice0",
+                 "Lateral profile layers 0-4 (z #approx -57 to -41 mm);x (mm);y (mm)",
+                 70, -7., 7.,
+                 70, -7., 7.);
+
+    // Slice 1: LYSO layers  5– 9  (z ≈ −41 to −21 mm)  — shower development
+    am->CreateH2("LateralProfile_Slice1",
+                 "Lateral profile layers 5-9 (z #approx -41 to -21 mm);x (mm);y (mm)",
+                 70, -7., 7.,
+                 70, -7., 7.);
+
+    // Slice 2: LYSO layers 10–14  (z ≈ −21 to  −1 mm)  — shower maximum region
+    am->CreateH2("LateralProfile_Slice2",
+                 "Lateral profile layers 10-14 (z #approx -21 to -1 mm);x (mm);y (mm)",
+                 70, -7., 7.,
+                 70, -7., 7.);
+
+    // Slice 3: LYSO layers 15–19  (z ≈  −1 to +19 mm)  — post-maximum
+    am->CreateH2("LateralProfile_Slice3",
+                 "Lateral profile layers 15-19 (z #approx -1 to +19 mm);x (mm);y (mm)",
+                 70, -7., 7.,
+                 70, -7., 7.);
+
+    // Slice 4: LYSO layers 20–24  (z ≈ +19 to +39 mm)  — shower tail
+    am->CreateH2("LateralProfile_Slice4",
+                 "Lateral profile layers 20-24 (z #approx +19 to +39 mm);x (mm);y (mm)",
+                 70, -7., 7.,
+                 70, -7., 7.);
+
+    // Slice 5: LYSO layers 25–28  (z ≈ +39 to +57 mm)  — deep tail
+    am->CreateH2("LateralProfile_Slice5",
+                 "Lateral profile layers 25-28 (z #approx +39 to +57 mm);x (mm);y (mm)",
+                 70, -7., 7.,
+                 70, -7., 7.);
 }
 
 RunAction::~RunAction() {}
