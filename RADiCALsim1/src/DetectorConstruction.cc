@@ -294,14 +294,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTBack = new G4Tubs("TCapBack", 0, tCap_outR, backLen/2, 0., 360.*deg);
     auto logicTBack = new G4LogicalVolume(solidTBack, quartz, "Cap_Corner_Back");
 
-    auto tFrontBackVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.35));
-    tFrontBackVis->SetForceSolid(true);
+    // Quartz timing rods/tube as outlines
+    auto tFrontBackVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));
+    tFrontBackVis->SetForceWireframe(true);
+    tFrontBackVis->SetForceAuxEdgeVisible(true);
     logicTFront->SetVisAttributes(tFrontBackVis);
     logicTBack->SetVisAttributes(tFrontBackVis);
     logicTMidTube->SetVisAttributes(tFrontBackVis);
 
+    // LuAG:Ce WLS fiber kept solid (key timing active volume)
     auto wlsVis = new G4VisAttributes(G4Colour(1.0, 0.6, 0.0, 0.95));
     wlsVis->SetForceSolid(true);
+    wlsVis->SetForceAuxEdgeVisible(true);
     logicTMidWLS->SetVisAttributes(wlsVis);
 
     for (G4int c = 1; c <= 4; c++) {
