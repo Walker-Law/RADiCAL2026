@@ -1,0 +1,24 @@
+# Geant4 source, build, and install (enormous — not for version control)
+geant4/
+geant4-build/
+geant4-install/
+
+# RADiCAL directory has its own embedded git repo
+RADiCAL/
+
+# Compiled build directories and artifacts
+**/build/
+*.o
+*.a
+
+# ROOT output data files (large binary)
+*.root
+
+# macOS metadata
+.DS_Store
+
+# CMake cache files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile

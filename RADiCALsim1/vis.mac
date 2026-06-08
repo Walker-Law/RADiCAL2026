@@ -1,0 +1,7 @@
+/vis/open OGL 800x600
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 70 20
+/vis/viewer/zoom 1.4
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate 5
+/vis/viewer/set/background 0.05 0.05 0.12
