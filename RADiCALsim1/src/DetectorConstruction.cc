@@ -280,7 +280,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     // Middle WLS section: DSB1 polymer fiber (scoring volume for timing)
     auto solidTMidWLS = new G4Tubs("TCapMidWLS", 0, wlsFiberR, wlsLen/2, 0., 360.*deg);
-    auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, dsb1, "Cap_Corner_WLS");
+    auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, luag, "Cap_Corner_WLS");
 
     // Back rod: solid quartz cylinder
     auto solidTBack = new G4Tubs("TCapBack", 0, tCap_outR, backLen/2, 0., 360.*deg);
