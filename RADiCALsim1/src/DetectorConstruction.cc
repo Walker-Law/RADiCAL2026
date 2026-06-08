@@ -3,7 +3,7 @@
 //
 // Stack: 29 LYSO tiles (1.5 mm) + 28 W tiles (2.5 mm), LYSO-W-LYSO-... pattern
 // Each tile separated by 0.01 mm Tyvek sheet (56 sheets total)
-// Capillaries: energy (EJ309 liquid) in center hole, timing (DSB1 WLS) in 4 corners
+// Capillaries: energy (EJ309 liquid) in center hole, timing (LuAG:Ce WLS) in 4 corners
 // Housing: milled Delrin shell
 
 #include "DetectorConstruction.hh"
