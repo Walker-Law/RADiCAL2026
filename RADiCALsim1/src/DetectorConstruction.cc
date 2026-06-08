@@ -152,8 +152,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto logicDelrin      = new G4LogicalVolume(solidDelrin, delrin, "Delrin");
     new G4PVPlacement(nullptr, {}, logicDelrin, "Delrin_Phys", logicWorld, false, 0);
 
-    auto delrinVis = new G4VisAttributes(G4Colour(0.82, 0.71, 0.55, 0.25));
-    delrinVis->SetForceSolid(true);
+    // Housing as faint wireframe so the interior is fully visible from outside
+    auto delrinVis = new G4VisAttributes(G4Colour(0.82, 0.71, 0.55, 0.4));
+    delrinVis->SetForceWireframe(true);
+    delrinVis->SetForceAuxEdgeVisible(true);
     logicDelrin->SetVisAttributes(delrinVis);
 
     // =========================================================================
