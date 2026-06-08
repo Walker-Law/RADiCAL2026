@@ -39,6 +39,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     G4Element* O  = nist->FindOrBuildElement("O");
     G4Element* C  = nist->FindOrBuildElement("C");
     G4Element* H  = nist->FindOrBuildElement("H");
+    G4Element* Al = nist->FindOrBuildElement("Al");
+    G4Element* Ce = nist->FindOrBuildElement("Ce");
 
     // LYSO:Ce — Lu1.8Y0.2SiO5:Ce, density 7.1 g/cm3
     // mass fractions from firstsim (Lu 71%, Y 4%, Si 6%, O 19%)
