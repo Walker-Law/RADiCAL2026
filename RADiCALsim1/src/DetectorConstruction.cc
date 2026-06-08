@@ -66,11 +66,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     ej309->AddElement(C, 91.2*perCent);
     ej309->AddElement(H,  8.8*perCent);
 
-    // DSB1 WLS polymer fiber — PMMA-like host, density 1.18 g/cm3, [C5H8O2]n
-    G4Material* dsb1 = new G4Material("DSB1_WLS", 1.18*g/cm3, 3);
-    dsb1->AddElement(C, 60.0*perCent);
-    dsb1->AddElement(H,  8.0*perCent);
-    dsb1->AddElement(O, 32.0*perCent);
+    // LuAG:Ce — Lu3Al5O12:Ce wavelength shifter, density 6.73 g/cm3
+    G4Material* luag = new G4Material("LuAG_Ce", 6.73*g/cm3, 4);
+    luag->AddElement(Lu, 61.5*perCent);
+    luag->AddElement(Al, 15.8*perCent);
+    luag->AddElement(O,  22.6*perCent);
+    luag->AddElement(Ce,  0.1*perCent);
 
     // =========================================================================
     // 2. KEY DIMENSIONS
