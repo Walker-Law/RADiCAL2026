@@ -3,6 +3,7 @@
 
 #include "G4UserEventAction.hh"
 #include "globals.hh"
+#include "Randomize.hh"
 #include <vector>
 #include <array>
 
