@@ -120,6 +120,12 @@ RunAction::RunAction() {
                  "Beam TOF: Trig1 #rightarrow MCP;#Deltat (ns);Events",
                  100, 0., 2.);
 
+    // H1[20]: Tail-catcher-corrected energy = E_LYSO + f_s*E_PbGlass.
+    // Same fine binning as TotalLYSO so per-energy core fits stay clean.
+    am->CreateH1("ECombined",
+                 "Tail-catcher-corrected energy;E_{LYSO} + f_{s}E_{PbGlass} (GeV);Events",
+                 5000, 0., 25.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
