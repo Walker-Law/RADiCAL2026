@@ -330,5 +330,69 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
                           logicTBack, "TCapBack_Phys", logicCalo, false, c-1);
     }
 
+    // =========================================================================
+    // 9. CERN TEST-BEAM LINE
+    //    Beam travels +z.  Upstream:  Trig1 -> Trig2 -> MCP
+    //    Center:      RADiCAL module (z = 0, built above)
+    //    Downstream:  Pb-glass calorimeter
+    //    NOTE: dimensions/distances are standard test-beam defaults (a photo
+    //    gives no exact metrology) — all gathered here for easy correction.
+    // =========================================================================
+    G4Material* plasticScint = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
+    G4Material* alumina      = nist->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
+    G4Material* pbGlass      = nist->FindOrBuildMaterial("G4_GLASS_LEAD");
+
+    // --- Two coincidence trigger scintillators (define the beam particle) ---
+    static const G4double trigHalfXY = 15.0*mm;   // 30 x 30 mm paddle
+    static const G4double trigHalfZ  = 2.5*mm;    // 5 mm thick
+    static const G4double z_trig1    = -400.0*mm;
+    static const G4double z_trig2    = -350.0*mm;
+    auto solidTrig  = new G4Box("Trig", trigHalfXY, trigHalfXY, trigHalfZ);
+    auto logicTrig1 = new G4LogicalVolume(solidTrig, plasticScint, "Trig1");
+    auto logicTrig2 = new G4LogicalVolume(solidTrig, plasticScint, "Trig2");
+    new G4PVPlacement(nullptr, G4ThreeVector(0,0,z_trig1), logicTrig1, "Trig1_Phys", logicWorld, false, 0);
+    new G4PVPlacement(nullptr, G4ThreeVector(0,0,z_trig2), logicTrig2, "Trig2_Phys", logicWorld, false, 0);
+
+    auto trigVis = new G4VisAttributes(G4Colour(0.2, 0.85, 0.2, 0.5));
+    trigVis->SetForceSolid(true);
+    logicTrig1->SetVisAttributes(trigVis);
+    logicTrig2->SetVisAttributes(trigVis);
+
+    // --- MCP-PMT timing reference (~10 ps): fused-silica Cherenkov window
+    //     (timing/scoring volume) backed by a thin alumina body. Kept low
+    //     material budget so it does not pre-shower the beam (<0.05 X0). ---
+    static const G4double mcpHalfXY   = 13.5*mm;  // 27 x 27 mm active area
+    static const G4double mcpWinHalfZ = 1.5*mm;   // 3 mm fused silica
+    static const G4double mcpBodyHalfZ = 1.5*mm;  // 3 mm alumina body
+    static const G4double z_mcp        = -250.0*mm;
+    auto solidMCPwin = new G4Box("MCPwin", mcpHalfXY, mcpHalfXY, mcpWinHalfZ);
+    auto logicMCPwin = new G4LogicalVolume(solidMCPwin, quartz, "MCP_Radiator");
+    new G4PVPlacement(nullptr, G4ThreeVector(0,0,z_mcp), logicMCPwin, "MCP_Win_Phys", logicWorld, false, 0);
+
+    auto solidMCPbody = new G4Box("MCPbody", mcpHalfXY, mcpHalfXY, mcpBodyHalfZ);
+    auto logicMCPbody = new G4LogicalVolume(solidMCPbody, alumina, "MCP_Body");
+    new G4PVPlacement(nullptr, G4ThreeVector(0,0,z_mcp + mcpWinHalfZ + mcpBodyHalfZ),
+                      logicMCPbody, "MCP_Body_Phys", logicWorld, false, 0);
+
+    auto mcpWinVis = new G4VisAttributes(G4Colour(0.6, 0.9, 1.0, 0.85));
+    mcpWinVis->SetForceSolid(true);
+    logicMCPwin->SetVisAttributes(mcpWinVis);
+    auto mcpBodyVis = new G4VisAttributes(G4Colour(0.35, 0.35, 0.4, 0.6));
+    mcpBodyVis->SetForceSolid(true);
+    logicMCPbody->SetVisAttributes(mcpBodyVis);
+
+    // --- Downstream Pb-glass calorimeter (tail catcher / total-absorption) ---
+    static const G4double pbgHalfXY = 50.0*mm;    // 100 x 100 mm
+    static const G4double pbgHalfZ  = 200.0*mm;   // 400 mm (~30 X0 of lead glass)
+    static const G4double pbgFront  = 120.0*mm;   // front face 120 mm behind module center
+    static const G4double z_pbg     = pbgFront + pbgHalfZ;
+    auto solidPbg = new G4Box("PbGlassBox", pbgHalfXY, pbgHalfXY, pbgHalfZ);
+    auto logicPbg = new G4LogicalVolume(solidPbg, pbGlass, "PbGlass");
+    new G4PVPlacement(nullptr, G4ThreeVector(0,0,z_pbg), logicPbg, "PbGlass_Phys", logicWorld, false, 0);
+
+    auto pbgVis = new G4VisAttributes(G4Colour(0.7, 0.85, 0.95, 0.22));
+    pbgVis->SetForceSolid(true);
+    logicPbg->SetVisAttributes(pbgVis);
+
     return physWorld;
 }
