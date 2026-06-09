@@ -124,6 +124,31 @@ H1[6]). Energy/σ-E and shower profiles work in both modes. GPU accel (Celeritas
 AdePT) doesn't cover optical photons; Opticks does but needs NVIDIA+OptiX (N/A on
 this Mac). Best speed lever: cut LuAG yield ~10× (still ~400 p.e., good timing).
 
+## REAL test-beam data (June 2026 comparison)
+Located `/Users/macro-2/Research/RADiCAL/Data/`: RUN1211 (25 GeV), RUN1259/60/61
+(150 GeV), ~30k events each, 2 GB files. Format: TTree `pulse` with
+`timevalue[4096]` (5 GS/s, 1022 ns window) + `amplitude[36864]` = **9 ch × 4096**.
+- **Pileup**: 2–6 pulses/window — must select in-time pulses (±15 ns around each
+  channel's mode time: MODE[9]={75,75,125,95,396,406,85,115,115} ns).
+- **Channel map (inferred)**: ch0–ch1 = the instrumented timing-capillary
+  upstream/downstream pair (tightest ΔT, matching mode times). ch6/ch8 narrow
+  (~4 ns FWHM) = MCP/trigger-like. ch4–ch5 NOT a capillary pair (8 ns ΔT core).
+- **Saturation**: DRS4 clips at ~830 mV → 74% of capillary pulses saturated at
+  150 GeV (3.8% at 25 GeV). Amplitude analysis only valid at 25 GeV; timing OK
+  (leading edge intact; non-sat subset σ_t=553 ps consistent w/ 502 full).
+- **Measured timing (50% CFD, iterative ±2σ core)**: σ_t(25)=558 ps,
+  σ_t(150)=487–513 ps across the 3 runs (mean 502). Pulse FWHM ≈ 8.3 ns.
+- Analysis snippets in /tmp during session; reference macro: analysis/compare_data.C.
+
+### Sim adjustment made for data comparison
+First-photon ΔT (~95–111 ps) is idealized — data uses 50% CFD on an analog pulse.
+Added **waveform emulation** in EventAction (`pulseCFD()`): sums single-photon
+responses SPR(t)=(1−e^{−t/1.0ns})·e^{−t/3.0ns} over ALL detected photon times
+(stored in fPhTUp/fPhTDown vectors), samples at 0.2 ns (DRS4-like), applies the
+identical 50% CFD. New histograms: **H1[22] DeltaT_CFD** (data-identical
+estimator), **H1[23] PulseFWHM** (validate vs 8.3 ns data). Sim runs for
+comparison: build/datacomp/radical_E{25,150}GeV.root (40 evt optical each).
+
 ## Test-beam analysis config (analysis/plot_testbeam.C)
 Replicates CERN test-beam plots. Run per energy file:
 `root -l -b -q 'analysis/plot_testbeam.C("build/radical_output.root", 120)'`
