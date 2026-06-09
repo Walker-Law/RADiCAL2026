@@ -142,18 +142,15 @@ Located `/Users/macro-2/Research/RADiCAL/Data/`: RUN1211 (25 GeV), RUN1259/60/61
   (For reference, 50% CFD gave 558 / 502 ps.)
 - Analysis snippets in /tmp during session; reference macro: analysis/compare_data.C.
 
-### RESULT of data-vs-sim comparison (June 2026)
-| E (GeV) | DATA σ_t | SIM σ_t (waveform CFD) | SIM first-photon | ratio sim/data |
-|---------|----------|------------------------|------------------|-------|
-| 25  | 558 ps | 485 ps | 100 ps | 0.87 |
-| 150 | 502 ps | 393 ps |  94 ps | 0.78 |
-With the data-identical estimator the sim agrees to ~13–22% (was 5× off with
-first-photon). Sim is slightly optimistic — expected: no DRS4 timing-calibration
-jitter, no amplifier noise, idealized QE, and 74% data saturation at 150 GeV.
-Sim pulse FWHM 17–19 ns vs data 8.3 ns → real readout shapes/integrates less of
-the LuAG 60 ns tail; tuning SPR τ_f shorter would match (each tune costs ~40 min
-optical rerun — not yet done). Energy scaling matches: data 558→502 (0.90) vs
-first-photon sim prediction 0.89.
+### RESULT of data-vs-sim comparison (June 2026) — 5% CFD convention
+(50%-CFD numbers from the first pass: data 558/502, sim 485/393 — superseded
+after user clarified the experiment uses 5% CFD.)
+Data at 5%: σ_t(25)=614 ps, σ_t(150)=476 ps. Sim rerun at 5% pending/see
+compare_data.C output for the current table. Sim remains slightly optimistic —
+expected: no DRS4 timing-calibration jitter, no amplifier noise, idealized QE,
+74% data saturation at 150 GeV. Sim pulse FWHM 17–19 ns vs data 8.3 ns → real
+readout shapes/integrates less of the LuAG 60 ns tail; tuning SPR τ_f shorter
+would match.
 
 ### Sim adjustment made for data comparison
 First-photon ΔT (~95–111 ps) is idealized — data uses 50% CFD on an analog pulse.
