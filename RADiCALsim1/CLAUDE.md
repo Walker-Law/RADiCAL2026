@@ -90,7 +90,8 @@ EJ309 bore=green, LuAG:Ce fibers=orange — so they pop against the wireframe la
 Volume name → EventAction routing (SteppingAction.cc): `LYSO`, `W_Absorber`,
 `Cap_Center_EJ309`, `Cap_Corner_WLS`.
 
-14 TH1D (H1[0–13]) + 13 TH2D (H2[0–12]):
+20 TH1D (H1[0–19]) + 15 TH2D (H2[0–14]) — last entries are the test-beam line
+detectors (see CERN test-beam line section below). Core module histograms:
 - H1: ShowerProfile, TotalLYSO, TotalW, SamplingFraction, CenterCapEnergy,
   CornerWLSEnergy, DeltaT, ShowerMaxLayer, ShowerCOG, ShowerRMS,
   CenterCapFraction, CornerWLSPerCorner, ZResidual, TotalCornerWLS.
