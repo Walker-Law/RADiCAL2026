@@ -37,6 +37,44 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     fEdepPbGlass = 0.;
     fTphUp.fill(kBigTime); fTphDown.fill(kBigTime);
     fNphUp.fill(0);        fNphDown.fill(0);
+    for (auto& v : fPhTUp)   v.clear();
+    for (auto& v : fPhTDown) v.clear();
+}
+
+// ── DRS4-style waveform emulation (mirrors the CERN test-beam analysis) ─────
+// Build the analog pulse as a sum of single-photon responses
+//   SPR(t) = (1 − e^{−t/τ_r}) · e^{−t/τ_f},  τ_r = 1.0 ns, τ_f = 3.0 ns,
+// sample at 5 GS/s (0.2 ns) like the DRS4 digitizer, then apply the identical
+// 50% constant-fraction discriminator with linear interpolation that the
+// test-beam waveform analysis uses. Returns CFD time (ns) or −1; optionally
+// reports pulse FWHM for validation against the measured ~8 ns.
+static G4double pulseCFD(const std::vector<G4double>& tns, G4double* fwhmOut) {
+    if (tns.size() < 5) return -1.;
+    const G4double tauR = 1.0, tauF = 3.0, dt = 0.2;     // ns
+    G4double t0 = *std::min_element(tns.begin(), tns.end());
+    const int NS = 500;                                   // 100 ns window
+    static G4ThreadLocal std::vector<G4double> wf;        // reused buffer
+    wf.assign(NS, 0.);
+    for (G4double tp : tns) {
+        int s0 = (int)((tp - t0) / dt) + 1;
+        for (int s = s0; s < NS; s++) {
+            G4double td = t0 + s * dt - tp;
+            wf[s] += (1. - std::exp(-td / tauR)) * std::exp(-td / tauF);
+        }
+    }
+    int ipk = std::max_element(wf.begin(), wf.end()) - wf.begin();
+    G4double pk = wf[ipk];
+    if (pk <= 0. || ipk < 1) return -1.;
+    if (fwhmOut) {                                        // FWHM for validation
+        int s1 = ipk, s2 = ipk;
+        while (s1 > 0 && wf[s1] > pk / 2) s1--;
+        while (s2 < NS - 1 && wf[s2] > pk / 2) s2++;
+        *fwhmOut = (s2 - s1) * dt;
+    }
+    G4double thr = 0.5 * pk;                              // 50% CFD, leading edge
+    int s = ipk; while (s > 0 && wf[s] > thr) s--;
+    G4double v1 = wf[s], v2 = wf[s + 1];
+    return t0 + (s + (v2 > v1 ? (thr - v1) / (v2 - v1) : 0.)) * dt;
 }
 
 void EventAction::EndOfEventAction(const G4Event*) {
