@@ -62,7 +62,8 @@ machine (under `/Users/macro-2/Research/geant4-install/share/Geant4/data/`):
 Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.01mm)** = `stackZ` 114.06 mm.
 - Pattern: `LYSO(0)|Tyvek|W(0)|Tyvek|LYSO(1)|...|LYSO(28)`. Even tile=LYSO, odd=W.
 - Tiles are 14×14 mm (±7 mm half-width). Shared logical volumes placed by copy number.
-- One LYSO+W period = 4.02 mm. **Center of LYSO layer L = L*4.02 + 0.75 mm from front face.**
+- One LYSO+W period = 4.02 mm. **Center of LYSO layer L = L*4.02 + 0.75 mm from upstream face.**
+- Convention: beam travels +z, so "upstream" = −z end, "downstream" = +z end.
 - Housing: Delrin shell, 18mm outer / 14mm inner cavity, `housingHalfZ`=65mm.
 - World: ±25mm transverse, ±200mm z. **Module only spans ±9mm — beam offsets >~7mm miss it.**
 
