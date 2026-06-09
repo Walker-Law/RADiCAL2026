@@ -104,5 +104,5 @@ void scan_resolution(const char* dir="build/scan") {
 
   printf("\n  Energy res:  %.1f%%/sqrt(E) (+) %.2f%%\n",fabs(fr->GetParameter(0)),fabs(fr->GetParameter(1)));
   printf("  Timing res:  %.1f ps/sqrt(E) (+) %.1f ps\n",fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1)));
-  printf("  Saved 3 curve PNGs to %s/  and  build/scan/resolution_curves.root\n\n",out);
+  printf("  Saved 3 curve PNGs to %s/  and  %s/resolution_curves.root\n\n",out,dir);
 }
