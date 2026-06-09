@@ -14,9 +14,11 @@ RunAction::RunAction() {
                  29, 0., 29.);
 
     // H1[1]: Total energy deposited in LYSO (sampling signal)
+    // Fine binning over the sampled-energy range (≈12% of beam E, so 5→120 GeV
+    // beam lands at ≈0.6→15 GeV sampled). 5 MeV bins resolve the narrow 5 GeV peak.
     am->CreateH1("TotalLYSO",
                  "Total LYSO energy (sampling);E_{LYSO} (GeV);Events",
-                 150, 0., 150.);
+                 5000, 0., 25.);
 
     // H1[2]: Total energy deposited in W (absorber / invisible energy)
     am->CreateH1("TotalW",
