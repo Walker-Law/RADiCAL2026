@@ -34,4 +34,17 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
         G4double t      = step->GetPreStepPoint()->GetGlobalTime();
         fEventAction->RecordCornerWLS(corner, edep, z, t);
     }
+    // ── CERN test-beam line detectors ──────────────────────────────────────
+    else if (name == "Trig1") {
+        fEventAction->RecordTrig(0, edep, step->GetPreStepPoint()->GetGlobalTime());
+    }
+    else if (name == "Trig2") {
+        fEventAction->RecordTrig(1, edep, step->GetPreStepPoint()->GetGlobalTime());
+    }
+    else if (name == "MCP_Radiator") {
+        fEventAction->RecordMCP(edep, step->GetPreStepPoint()->GetGlobalTime());
+    }
+    else if (name == "PbGlass") {
+        fEventAction->AddPbGlassEdep(edep);
+    }
 }
