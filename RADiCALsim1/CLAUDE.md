@@ -70,8 +70,9 @@ Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.01mm)** = `stackZ` 114.06
 ### Capillaries (5 holes drilled via G4SubtractionSolid)
 - **Center (energy):** `centerHoleR`=0.45mm. EJ309 bore (r=0.20mm) + quartz tube.
   `eCap_outR = centerHoleR` so the tube fully fills the hole (no air gap).
-- **4 corners (timing):** `cornerHoleR`=0.65mm. Quartz front rod + quartz tube wall +
-  **LuAG:Ce WLS fiber** (r=0.45mm) at shower max + quartz back rod.
+- **4 corners (timing):** `cornerHoleR`=0.65mm. Quartz upstream rod + quartz tube wall +
+  **LuAG:Ce WLS fiber** (r=0.45mm) at shower max + quartz downstream rod.
+  Photodetectors `PD_Upstream`/`PD_Downstream` (Si, copy#=corner) at the two ends.
 - WLS segmentation auto-centers on shower max: `frontLen = showerMaxDepth - wlsLen/2`.
   Current: `showerMaxDepth`=43.0mm (measured peak ≈ layer 10–11, NOT geometric middle),
   `wlsLen`=6.0mm (covers 40–46mm), `frontLen`=40mm, `backLen`=68.06mm, `z_wls`=−14.03mm.
