@@ -73,9 +73,11 @@ Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.01mm)** = `stackZ` 114.06
 - **4 corners (timing):** `cornerHoleR`=0.65mm. Quartz upstream rod + quartz tube wall +
   **LuAG:Ce WLS fiber** (r=0.45mm) at shower max + quartz downstream rod.
   Photodetectors `PD_Upstream`/`PD_Downstream` (Si, copy#=corner) at the two ends.
-- WLS segmentation auto-centers on shower max: `frontLen = showerMaxDepth - wlsLen/2`.
+- WLS segmentation auto-centers on shower max: `upstreamLen = showerMaxDepth - wlsLen/2`.
   Current: `showerMaxDepth`=43.0mm (measured peak ≈ layer 10–11, NOT geometric middle),
-  `wlsLen`=6.0mm (covers 40–46mm), `frontLen`=40mm, `backLen`=68.06mm, `z_wls`=−14.03mm.
+  `wlsLen`=6.0mm (covers 40–46mm), `upstreamLen`=40mm, `downstreamLen`=68.06mm, `z_wls`=−14.03mm.
+  Volume names: `Cap_Corner_Upstream` / `Cap_Corner_Downstream` (quartz rods),
+  `TCapUpstream_Phys` / `TCapDownstream_Phys` placements.
 
 ### Materials
 LYSO, Tungsten (W), Tyvek, Delrin (POM), fused quartz, EJ309 liquid scintillator,
@@ -135,7 +137,7 @@ Locked conventions (per user, June 2026):
   E_PbGlass — removes halo events that missed the ±7 mm module and showered in the
   Pb-glass (a spurious sharp peak at ~0.18·E_beam). Keeps genuine leakage events.
 - **Energy fit** = iterative Gaussian core, ±2σ, 4 iterations (excludes leakage tail).
-- **Timing** = front−back ΔT (H1[6]); MCP reference cancels. Gaussian core fit → σ_t.
+- **Timing** = downstream−upstream ΔT (H1[6]); MCP reference cancels. Gaussian core fit → σ_t.
   CAVEAT: σ_t here is a GEOMETRIC proxy (spread of energy-deposit z within the 6 mm
   WLS) — no optical-photon/photostatistics/electronics modeled. Trends vs E are
   meaningful; absolute ps value is not the real resolution.
@@ -155,7 +157,7 @@ ROOT objects: `EnergyResolution` + `TimingResolution` (TGraphErrors, fit TF1 sto
 inside each) and a `scan` TTree (E, sigmaE_pct, sigmaT_ps). `run_scan.sh` calls this
 analysis automatically at the end, so the curves .root refreshes on every scan.
 
-Results (1500 evt/point, tail-catcher energy, front−back ΔT):
+Results (1500 evt/point, tail-catcher energy, downstream−upstream ΔT):
 | E (GeV) | σ/E (%) | σ_t (ps) |
 |---------|---------|----------|
 | 5   | 6.42 | 17.2 |
@@ -166,7 +168,7 @@ Results (1500 evt/point, tail-catcher energy, front−back ΔT):
 | 120 | 2.62 | 11.0 |
 Fits: **σ/E = 14.1%/√E ⊕ 2.38%**;  **σ_t = 33.9 ps/√E ⊕ 11.5 ps** (σ_t floor is the
 geometric WLS-spread proxy — no photostatistics; see caveat above). ΔT mean ≈137 ps
-stable across energy (WLS at fixed z), confirming the front−back observable.
+stable across energy (WLS at fixed z), confirming the downstream−upstream observable.
 
 ## Beam (PrimaryGeneratorAction.cc)
 120 GeV e⁻, momentum +z, Gaussian spot σ=2.9mm centered at **(0,0,−500mm)** —
