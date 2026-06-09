@@ -4,7 +4,7 @@
 //
 // Generates (into build/plots/):
 //   energy_resolution_E<NN>.png   — sampled-energy spectrum + iterative core Gaussian fit (sigma/E)
-//   timing_resolution_E<NN>.png   — front-minus-back DeltaT + Gaussian fit (sigma_t)
+//   timing_resolution_E<NN>.png   — downstream-minus-upstream DeltaT + Gaussian fit (sigma_t)
 //   shower_long_E<NN>.png         — longitudinal shower profile
 //   shower_lat_E<NN>.png          — lateral X-Y shower profile
 //
