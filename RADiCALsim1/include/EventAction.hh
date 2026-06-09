@@ -33,6 +33,19 @@ public:
         }
     }
 
+    // ── CERN test-beam line detectors ──────────────────────────────────────
+    void RecordTrig(G4int i, G4double edep, G4double t) {
+        if (i >= 0 && i < 2) {
+            fEdepTrig[i] += edep;
+            if (t < fTimeTrig[i]) fTimeTrig[i] = t;   // earliest hit = arrival time
+        }
+    }
+    void RecordMCP(G4double edep, G4double t) {
+        fEdepMCP += edep;
+        if (t < fTimeMCP) fTimeMCP = t;               // earliest hit = t0 reference
+    }
+    void AddPbGlassEdep(G4double edep) { fEdepPbGlass += edep; }
+
 private:
     std::array<G4double, 29> fEdepLYSO;
     std::array<G4double, 28> fEdepW;
@@ -44,6 +57,13 @@ private:
 
     struct LYSOHit { G4double x, y, layer, edep; };
     std::vector<LYSOHit> fLYSOHits;
+
+    // Beam-line detectors
+    std::array<G4double, 2> fEdepTrig;
+    std::array<G4double, 2> fTimeTrig;
+    G4double                fEdepMCP;
+    G4double                fTimeMCP;
+    G4double                fEdepPbGlass;
 };
 
 #endif
