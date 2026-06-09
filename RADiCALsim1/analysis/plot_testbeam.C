@@ -35,11 +35,17 @@ void plot_testbeam(const char* file="build/radical_output.root", double Ebeam=12
   const char* out = "build/plots";
 
   // ---------- 1. ENERGY RESOLUTION ----------
-  TH1D* hE = (TH1D*)f->Get("TotalLYSO");
+  // Estimator = tail-catcher-corrected energy (E_LYSO + f_s*E_PbGlass).
+  TH1D* hE = (TH1D*)f->Get("ECombined");
+  // Adaptive rebin: target bin width ~ coreSigma/5 so the peak is well sampled
+  // at any beam energy (the native 5 MeV bins wash out the high-E peak).
+  { TF1* pre = coreFit(hE, 2.0, 3); double s = pre->GetParameter(2);
+    double bw = hE->GetBinWidth(1); int rb = TMath::Max(1, (int)std::round((s/5.0)/bw));
+    if (rb>1) hE->Rebin(rb); delete pre; }
   hE->GetXaxis()->SetRangeUser(0, hE->GetMean()+6*hE->GetRMS());
   TCanvas* c1 = new TCanvas("c1","energy",800,600);
   hE->SetLineColor(kBlack); hE->SetLineWidth(2);
-  hE->SetTitle(Form("Energy response, %.0f GeV e^{-};E_{LYSO} sampled (GeV);Events", Ebeam));
+  hE->SetTitle(Form("Energy response (LYSO + Pb-glass), %.0f GeV e^{-};E_{reco} (GeV);Events", Ebeam));
   hE->Draw("hist");
   TF1* gE = coreFit(hE, 2.0, 4, kRed); gE->Draw("same");
   double muE=gE->GetParameter(1), sgE=gE->GetParameter(2), resE=100*sgE/muE;
