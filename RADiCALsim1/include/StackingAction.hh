@@ -9,7 +9,7 @@
 // millions of optical photons, hanging that worker thread. Capping bounds the
 // per-event cost while preserving timing: prompt (Cherenkov/early-scint) photons
 // are created first and survive the cap; only the late scintillation tail — which
-// does not affect the leading-edge front/back ΔT — is discarded.
+// does not affect the leading-edge downstream/upstream ΔT — is discarded.
 class StackingAction : public G4UserStackingAction {
 public:
     StackingAction() = default;
