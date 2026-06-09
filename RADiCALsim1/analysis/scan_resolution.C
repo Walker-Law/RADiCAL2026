@@ -92,7 +92,7 @@ void scan_resolution(const char* dir="build/scan") {
 
   // ---------- persist curves as ROOT objects (refreshed every scan) ----------
   // gr/gt carry their fitted TF1 in their function list, so the fits are saved too.
-  TFile* fo = new TFile("build/scan/resolution_curves.root","RECREATE");
+  TFile* fo = new TFile(Form("%s/resolution_curves.root",dir),"RECREATE");
   gr->Write();
   gt->Write();
   // also store the raw scan points as a tidy TTree for quick inspection
