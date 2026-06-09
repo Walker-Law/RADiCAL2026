@@ -162,19 +162,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     static const G4double wlsFiberR  = 0.450*mm;   // 0.9 mm LuAG:Ce fiber
 
     // Timing capillary segmentation — shower max measured at LYSO layer ~10–11.
-    // Center of LYSO layer L sits at L*4.02 + 0.75 mm from the front face, so
+    // Center of LYSO layer L sits at L*4.02 + 0.75 mm from the upstream face, so
     // the peak (layer ~10.5) is at ~43 mm — NOT the geometric middle (layer 14).
-    // WLS section is centered on shower max (frontLen = showerMaxDepth − wlsLen/2),
+    // WLS section is centered on shower max (upstreamLen = showerMaxDepth − wlsLen/2),
     // so changing wlsLen keeps it bracketing shower max automatically.
+    // (Beam travels +z: "upstream" = −z end, "downstream" = +z end.)
     static const G4double showerMaxDepth = 43.0*mm;  // measured peak, layers ~10–11
     static const G4double wlsLen         = 6.0*mm;   // LuAG:Ce WLS section (40–46 mm)
-    static const G4double frontLen       = showerMaxDepth - wlsLen/2.0;  // 40.0 mm
-    static const G4double backLen        = stackZ - frontLen - wlsLen;   // 68.06 mm
+    static const G4double upstreamLen    = showerMaxDepth - wlsLen/2.0;       // 40.0 mm
+    static const G4double downstreamLen  = stackZ - upstreamLen - wlsLen;     // 68.06 mm
 
     // Z centers of timing cap segments relative to calo center
-    static const G4double z_front = -stackZ/2.0 + frontLen/2.0;
-    static const G4double z_wls   = -stackZ/2.0 + frontLen + wlsLen/2.0;
-    static const G4double z_back  = -stackZ/2.0 + frontLen + wlsLen + backLen/2.0;
+    static const G4double z_upstream   = -stackZ/2.0 + upstreamLen/2.0;
+    static const G4double z_wls        = -stackZ/2.0 + upstreamLen + wlsLen/2.0;
+    static const G4double z_downstream = -stackZ/2.0 + upstreamLen + wlsLen + downstreamLen/2.0;
 
     // Delrin housing — 18 mm × 18 mm outer, 14 mm × 14 mm inner cavity
     static const G4double housingOuterHalf = 9.0*mm;
