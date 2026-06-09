@@ -358,7 +358,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     wlsVis->SetForceAuxEdgeVisible(true);
     logicTMidWLS->SetVisAttributes(wlsVis);
 
-    // --- Photodetectors at the front & back ends of each timing capillary ---
+    // --- Photodetectors at the upstream & downstream ends of each capillary ---
     // Thin Si pads, abutting the quartz rod ends, that detect optical photons
     // (SteppingAction applies the quantum efficiency and records arrival time).
     G4Material* siPD = nist->FindOrBuildMaterial("G4_Si");
@@ -371,20 +371,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     static const G4double pdHalfZ = 0.02*mm;
     auto solidPD = new G4Tubs("PD", 0, tCap_outR, pdHalfZ, 0., 360.*deg);
-    auto logicPDFront = new G4LogicalVolume(solidPD, siPD, "PD_Front");
-    auto logicPDBack  = new G4LogicalVolume(solidPD, siPD, "PD_Back");
+    auto logicPDUpstream   = new G4LogicalVolume(solidPD, siPD, "PD_Upstream");
+    auto logicPDDownstream = new G4LogicalVolume(solidPD, siPD, "PD_Downstream");
     auto pdVis = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0, 0.95));  // yellow
     pdVis->SetForceSolid(true);
-    logicPDFront->SetVisAttributes(pdVis);
-    logicPDBack->SetVisAttributes(pdVis);
-    const G4double zPDFront = -stackZ/2.0 - pdHalfZ;   // abuts front rod end
-    const G4double zPDBack  = +stackZ/2.0 + pdHalfZ;   // abuts back rod end
+    logicPDUpstream->SetVisAttributes(pdVis);
+    logicPDDownstream->SetVisAttributes(pdVis);
+    const G4double zPDUpstream   = -stackZ/2.0 - pdHalfZ;   // abuts upstream rod end
+    const G4double zPDDownstream = +stackZ/2.0 + pdHalfZ;   // abuts downstream rod end
 
     for (G4int c = 1; c <= 4; c++) {
         G4ThreeVector xy = capXY[c];
 
-        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_front),
-                          logicTFront, "TCapFront_Phys", logicCalo, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
+                          logicTUpstream, "TCapUpstream_Phys", logicCalo, false, c-1);
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
                           logicTMidTube, "TCapMidTube_Phys", logicCalo, false, c-1);
@@ -392,14 +392,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
                           logicTMidWLS, "TCapMidWLS_Phys", logicCalo, false, c-1);
 
-        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_back),
-                          logicTBack, "TCapBack_Phys", logicCalo, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
+                          logicTDownstream, "TCapDownstream_Phys", logicCalo, false, c-1);
 
         // photodetectors (copy number = corner index 0..3)
-        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDFront),
-                          logicPDFront, "PDFront_Phys", logicCalo, false, c-1);
-        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDBack),
-                          logicPDBack,  "PDBack_Phys",  logicCalo, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDUpstream),
+                          logicPDUpstream, "PDUpstream_Phys", logicCalo, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDDownstream),
+                          logicPDDownstream, "PDDownstream_Phys", logicCalo, false, c-1);
     }
 
     // =========================================================================
