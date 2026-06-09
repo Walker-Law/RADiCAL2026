@@ -219,5 +219,13 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // forward leakage back cancels the leakage fluctuation, tightening sigma/E.
     static const G4double kSamplingFrac = 0.18;
     G4double eComb = totalLYSO + kSamplingFrac * fEdepPbGlass;
-    if (eComb > 0.) am->FillH1(20, eComb / GeV);               // H1[20]
+
+    // Beam-acceptance cut: reject halo events that missed the ±7 mm module and
+    // showered straight into the Pb-glass (these form a spurious sharp peak).
+    // A real test beam removes these via trigger/tracking. Keep events where the
+    // module-reconstructed energy exceeds the tail-catcher energy (>50% in module);
+    // this preserves genuine forward-leakage events while cutting clean misses.
+    G4double eModuleReco = totalLYSO / kSamplingFrac;
+    bool inAcceptance = (eModuleReco > fEdepPbGlass);
+    if (eComb > 0. && inAcceptance) am->FillH1(20, eComb / GeV);   // H1[20]
 }
