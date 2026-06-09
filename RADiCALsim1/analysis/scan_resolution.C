@@ -62,6 +62,7 @@ void scan_resolution() {
   // ---------- energy resolution curve ----------
   TCanvas* c1=new TCanvas("c1","eres",800,600);
   TGraphErrors* gr=new TGraphErrors(N,E,eRes,zero,eResErr);
+  gr->SetName("EnergyResolution");
   gr->SetTitle("Energy resolution;E_{beam} (GeV);#sigma/E (%)");
   gr->SetMarkerStyle(20); gr->SetMarkerColor(kBlue+1); gr->SetLineColor(kBlue+1);
   gr->SetMarkerSize(1.3);
