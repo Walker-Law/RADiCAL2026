@@ -50,5 +50,5 @@ ls -lh "$OUTDIR"/radical_E*GeV.root
 # Auto-refresh the resolution curves + persisted ROOT objects from the new scan.
 echo "--- building resolution curves ---"
 cd ..
-root -l -b -q analysis/scan_resolution.C
-echo "Resolution curves + build/scan/resolution_curves.root updated."
+root -l -b -q "analysis/scan_resolution.C(\"build/$OUTDIR\")"
+echo "Resolution curves + build/$OUTDIR/resolution_curves.root updated."
