@@ -431,8 +431,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicTrig2->SetVisAttributes(trigVis);
 
     // --- MCP-PMT timing reference (~10 ps): fused-silica Cherenkov window
-    //     (timing/scoring volume) backed by a thin alumina body. Kept low
-    //     material budget so it does not pre-shower the beam (<0.05 X0). ---
+    //     (timing/scoring volume) followed downstream by a thin alumina body.
+    //     Kept low material budget so it does not pre-shower the beam (<0.05 X0). ---
     static const G4double mcpHalfXY   = 13.5*mm;  // 27 x 27 mm active area
     static const G4double mcpWinHalfZ = 1.5*mm;   // 3 mm fused silica
     static const G4double mcpBodyHalfZ = 1.5*mm;  // 3 mm alumina body
