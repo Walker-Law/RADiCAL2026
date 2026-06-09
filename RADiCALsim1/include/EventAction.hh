@@ -77,8 +77,9 @@ private:
     G4double                fEdepPbGlass;
 
     // Optical photon readout: earliest detected photon time + count, per corner
-    std::array<G4double, 4> fTphFront, fTphBack;
-    std::array<G4int, 4>    fNphFront, fNphBack;
+    // (upstream = −z end PD, downstream = +z end PD)
+    std::array<G4double, 4> fTphUp, fTphDown;
+    std::array<G4int, 4>    fNphUp, fNphDown;
 };
 
 #endif
