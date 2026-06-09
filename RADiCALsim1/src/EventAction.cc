@@ -46,9 +46,9 @@ void EventAction::BeginOfEventAction(const G4Event*) {
 // Build the analog pulse as a sum of single-photon responses
 //   SPR(t) = (1 − e^{−t/τ_r}) · e^{−t/τ_f},  τ_r = 1.0 ns, τ_f = 3.0 ns,
 // sample at 5 GS/s (0.2 ns) like the DRS4 digitizer, then apply the identical
-// 50% constant-fraction discriminator with linear interpolation that the
-// test-beam waveform analysis uses. Returns CFD time (ns) or −1; optionally
-// reports pulse FWHM for validation against the measured ~8 ns.
+// 5% constant-fraction discriminator with linear interpolation that the
+// test-beam waveform analysis uses (per user: CFD fraction is 5%, not 50%).
+// Returns CFD time (ns) or −1; optionally reports pulse FWHM for validation.
 static G4double pulseCFD(const std::vector<G4double>& tns, G4double* fwhmOut) {
     if (tns.size() < 5) return -1.;
     const G4double tauR = 1.0, tauF = 3.0, dt = 0.2;     // ns
