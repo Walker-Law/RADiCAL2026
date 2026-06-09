@@ -78,6 +78,7 @@ void scan_resolution() {
   // ---------- timing resolution curve ----------
   TCanvas* c2=new TCanvas("c2","tres",800,600);
   TGraphErrors* gt=new TGraphErrors(N,E,tRes,zero,tResErr);
+  gt->SetName("TimingResolution");
   gt->SetTitle("Timing resolution (front #minus back);E_{beam} (GeV);#sigma_{t} (ps)");
   gt->SetMarkerStyle(21); gt->SetMarkerColor(kGreen+2); gt->SetLineColor(kGreen+2);
   gt->SetMarkerSize(1.3);
