@@ -136,8 +136,10 @@ Located `/Users/macro-2/Research/RADiCAL/Data/`: RUN1211 (25 GeV), RUN1259/60/61
 - **Saturation**: DRS4 clips at ~830 mV → 74% of capillary pulses saturated at
   150 GeV (3.8% at 25 GeV). Amplitude analysis only valid at 25 GeV; timing OK
   (leading edge intact; non-sat subset σ_t=553 ps consistent w/ 502 full).
-- **Measured timing (50% CFD, iterative ±2σ core)**: σ_t(25)=558 ps,
-  σ_t(150)=487–513 ps across the 3 runs (mean 502). Pulse FWHM ≈ 8.3 ns.
+- **CFD convention (per user): 5% of peak**, not 50%.
+- **Measured timing (5% CFD, iterative ±2σ core)**: σ_t(25)=614 ps,
+  σ_t(150)=470–488 ps across the 3 runs (mean 476). Pulse FWHM ≈ 8.3 ns.
+  (For reference, 50% CFD gave 558 / 502 ps.)
 - Analysis snippets in /tmp during session; reference macro: analysis/compare_data.C.
 
 ### RESULT of data-vs-sim comparison (June 2026)
