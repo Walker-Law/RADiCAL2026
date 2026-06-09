@@ -118,13 +118,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     static const G4double tCap_boreR = 0.475*mm;   // 0.95 mm bore
     static const G4double wlsFiberR  = 0.450*mm;   // 0.9 mm LuAG:Ce fiber
 
-    // Timing capillary segmentation — shower max at 57.5 mm from front face.
+    // Timing capillary segmentation — shower max measured at LYSO layer ~10–11.
+    // Center of LYSO layer L sits at L*4.02 + 0.75 mm from the front face, so
+    // the peak (layer ~10.5) is at ~43 mm — NOT the geometric middle (layer 14).
     // WLS section is centered on shower max (frontLen = showerMaxDepth − wlsLen/2),
     // so changing wlsLen keeps it bracketing shower max automatically.
-    static const G4double showerMaxDepth = 57.5*mm;
-    static const G4double wlsLen         = 6.0*mm;   // LuAG:Ce WLS section (54.5–60.5 mm)
-    static const G4double frontLen       = showerMaxDepth - wlsLen/2.0;  // 54.5 mm
-    static const G4double backLen        = stackZ - frontLen - wlsLen;   // 53.56 mm
+    static const G4double showerMaxDepth = 43.0*mm;  // measured peak, layers ~10–11
+    static const G4double wlsLen         = 6.0*mm;   // LuAG:Ce WLS section (40–46 mm)
+    static const G4double frontLen       = showerMaxDepth - wlsLen/2.0;  // 40.0 mm
+    static const G4double backLen        = stackZ - frontLen - wlsLen;   // 68.06 mm
 
     // Z centers of timing cap segments relative to calo center
     static const G4double z_front = -stackZ/2.0 + frontLen/2.0;
