@@ -3,8 +3,9 @@
 //   root -l -b -q analysis/compare_data.C
 //
 // Data reference values (extracted from RUN1211/1259/1260/1261 waveforms,
-// in-time pulse selection, 50% CFD, iterative ±2σ Gaussian core fit):
-//   σ_t(25 GeV)  = 558 ps     σ_t(150 GeV) = 502 ps (3-run mean)
+// in-time pulse selection, 5% CFD [per experiment convention], iterative ±2σ
+// Gaussian core fit):
+//   σ_t(25 GeV)  = 614 ps     σ_t(150 GeV) = 476 ps (3-run mean: 488/470/471)
 //   pulse FWHM  ≈ 8.3 ns     (ch0/ch1 capillary pair)
 // Sim files: build/datacomp/radical_E{25,150}GeV.root
 //   DeltaT_CFD = waveform-emulated (SPR conv. + 5 GS/s + 50% CFD) — the
