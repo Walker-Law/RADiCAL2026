@@ -84,6 +84,38 @@ RunAction::RunAction() {
                  "Total corner WLS energy (4 corners);E_{WLS,total} (MeV);Events",
                  200, 0., 2000.);
 
+    // ── H1: CERN TEST-BEAM LINE ────────────────────────────────────────────
+
+    // H1[14]: Trigger scintillator 1 energy deposit
+    am->CreateH1("Trig1Edep",
+                 "Trigger 1 energy deposit;E (MeV);Events",
+                 100, 0., 10.);
+
+    // H1[15]: Trigger scintillator 2 energy deposit
+    am->CreateH1("Trig2Edep",
+                 "Trigger 2 energy deposit;E (MeV);Events",
+                 100, 0., 10.);
+
+    // H1[16]: MCP fused-silica radiator energy deposit
+    am->CreateH1("MCPEdep",
+                 "MCP radiator energy deposit;E (MeV);Events",
+                 100, 0., 20.);
+
+    // H1[17]: Pb-glass calorimeter energy (tail catcher / leakage)
+    am->CreateH1("PbGlassEnergy",
+                 "Pb-glass calorimeter energy;E (GeV);Events",
+                 200, 0., 20.);
+
+    // H1[18]: RADiCAL WLS arrival time relative to MCP t0 (key timing plot)
+    am->CreateH1("WLS_minus_MCP",
+                 "RADiCAL WLS time #minus MCP t_{0};t_{WLS} - t_{MCP} (ns);Events",
+                 200, 0., 3.);
+
+    // H1[19]: Beam time-of-flight, trigger 1 -> MCP
+    am->CreateH1("TOF_Trig1_MCP",
+                 "Beam TOF: Trig1 #rightarrow MCP;#Deltat (ns);Events",
+                 100, 0., 2.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
