@@ -116,13 +116,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // Timing capillary (corners) — paper: OD=1150 µm, bore=950 µm, fiber=900 µm
     static const G4double tCap_outR  = 0.575*mm;   // 1.15 mm OD
     static const G4double tCap_boreR = 0.475*mm;   // 0.95 mm bore
-    static const G4double wlsFiberR  = 0.450*mm;   // 0.9 mm DSB1 fiber
+    static const G4double wlsFiberR  = 0.450*mm;   // 0.9 mm LuAG:Ce fiber
 
-    // Timing capillary segmentation — shower max at 57.5 mm from front face
+    // Timing capillary segmentation — shower max at 57.5 mm from front face.
+    // WLS section is centered on shower max (frontLen = showerMaxDepth − wlsLen/2),
+    // so changing wlsLen keeps it bracketing shower max automatically.
     static const G4double showerMaxDepth = 57.5*mm;
-    static const G4double wlsLen         = 15.0*mm;  // DSB1 WLS section length
-    static const G4double frontLen       = showerMaxDepth - wlsLen/2.0;  // 50.0 mm
-    static const G4double backLen        = stackZ - frontLen - wlsLen;   // 49.06 mm
+    static const G4double wlsLen         = 6.0*mm;   // LuAG:Ce WLS section (54.5–60.5 mm)
+    static const G4double frontLen       = showerMaxDepth - wlsLen/2.0;  // 54.5 mm
+    static const G4double backLen        = stackZ - frontLen - wlsLen;   // 53.56 mm
 
     // Z centers of timing cap segments relative to calo center
     static const G4double z_front = -stackZ/2.0 + frontLen/2.0;
