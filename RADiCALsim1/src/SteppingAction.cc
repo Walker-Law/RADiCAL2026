@@ -17,9 +17,9 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
         auto postVol = step->GetPostStepPoint()->GetTouchableHandle()->GetVolume();
         if (postVol) {
             const G4String& pn = postVol->GetLogicalVolume()->GetName();
-            if (pn == "PD_Front" || pn == "PD_Back") {
+            if (pn == "PD_Upstream" || pn == "PD_Downstream") {
                 fEventAction->RecordPhoton(postVol->GetCopyNo(),
-                                           pn == "PD_Front",
+                                           pn == "PD_Upstream",
                                            step->GetPostStepPoint()->GetGlobalTime());
                 track->SetTrackStatus(fStopAndKill);
             }
