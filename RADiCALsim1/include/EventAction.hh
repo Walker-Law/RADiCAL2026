@@ -75,6 +75,10 @@ private:
     G4double                fEdepMCP;
     G4double                fTimeMCP;
     G4double                fEdepPbGlass;
+
+    // Optical photon readout: earliest detected photon time + count, per corner
+    std::array<G4double, 4> fTphFront, fTphBack;
+    std::array<G4int, 4>    fNphFront, fNphBack;
 };
 
 #endif
