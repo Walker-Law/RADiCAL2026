@@ -53,8 +53,10 @@ public:
     void RecordPhoton(G4int corner, bool isUpstream, G4double t) {
         if (corner < 0 || corner >= 4) return;
         if (G4UniformRand() > kQE) return;            // apply QE
-        if (isUpstream) { fNphUp[corner]++;   if (t < fTphUp[corner])   fTphUp[corner]   = t; }
-        else            { fNphDown[corner]++; if (t < fTphDown[corner]) fTphDown[corner] = t; }
+        if (isUpstream) { fNphUp[corner]++;   if (t < fTphUp[corner])   fTphUp[corner]   = t;
+                          if (fPhTUp[corner].size()   < kMaxStore) fPhTUp[corner].push_back(t); }
+        else            { fNphDown[corner]++; if (t < fTphDown[corner]) fTphDown[corner] = t;
+                          if (fPhTDown[corner].size() < kMaxStore) fPhTDown[corner].push_back(t); }
     }
 
 private:
