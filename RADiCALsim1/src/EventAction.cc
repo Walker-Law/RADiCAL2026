@@ -188,16 +188,16 @@ void EventAction::EndOfEventAction(const G4Event*) {
 
     // =========================================================================
     // 6b. OPTICAL-PHOTON TIMING (the real measurement)
-    //   Per corner, ΔT = t_back − t_front of the FIRST detected photon at each
-    //   end PD (leading-edge). σ_t now comes from genuine photon statistics +
-    //   propagation, so it follows a/√E ⊕ b. H1[6] = ΔT, H2[5] = ΔT vs E,
-    //   H1[21] = detected photons/event.
+    //   Per corner, ΔT = t_downstream − t_upstream of the FIRST detected photon
+    //   at each end PD (leading-edge). σ_t now comes from genuine photon
+    //   statistics + propagation, so it follows a/√E ⊕ b. H1[6] = ΔT,
+    //   H2[5] = ΔT vs E, H1[21] = detected photons/event.
     // =========================================================================
     G4int nPhotTot = 0;
     for (G4int c = 0; c < 4; c++) {
-        nPhotTot += fNphFront[c] + fNphBack[c];
-        if (fTphFront[c] < kBigTime && fTphBack[c] < kBigTime) {
-            G4double dT = fTphBack[c] - fTphFront[c];   // back − front (positive)
+        nPhotTot += fNphUp[c] + fNphDown[c];
+        if (fTphUp[c] < kBigTime && fTphDown[c] < kBigTime) {
+            G4double dT = fTphDown[c] - fTphUp[c];      // downstream − upstream (positive)
             am->FillH1(6, dT / ns);                     // optical ΔT
             if (totalLYSO > 0.) am->FillH2(5, totalLYSO / GeV, dT / ns);
         }
