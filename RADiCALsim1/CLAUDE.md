@@ -159,12 +159,14 @@ t_WLS−t_MCP =0.81ns (geom 0.79ns), Pb-glass ≈5.3 GeV leakage. All physical.
   (it hardcodes the source path).
 - Multithreaded run writes per-thread `radical_output_tN.root` then merges into
   `radical_output.root`; empty thread files are auto-deleted.
-- **MERGE GOTCHA:** if a stale `./radical` process holds `radical_output.root`
-  open, the master merge silently fails — output ends up with ~1 event
-  (TotalLYSO integral ≈ 1 instead of ~1e4) and the log shows
-  `delete empty file ... has failed` for some threads. BEFORE any batch run:
-  `ps aux | grep /radical | grep -v grep` and `kill -9` any leftovers. Validate
-  after a run with `TotalLYSO->Integral()` (should be ≈ #events), not just GetEntries.
+- **MERGE GOTCHA (important):** the G4 MT master merge intermittently fails,
+  leaving ~1 event in the output (`ECombined`/`TotalLYSO` Integral ≈ 1 instead of
+  ≈ #events; log shows `delete empty file ... has failed`). Two triggers:
+  (1) a stale `./radical` or `root` process holding the file open, and
+  (2) **overwriting an existing `radical_output.root`**. ALWAYS before a run:
+  `ps aux | grep -E '/radical|root' | grep -v grep` + `kill -9` leftovers, AND
+  `rm -f radical_output*.root`. Then VALIDATE via `Integral()` (not GetEntries)
+  and retry if it dropped events. This is baked into the scan workflow.
 - `./radical` with no arg = viewer; with a `.mac` arg = batch. vis.mac has no beamOn.
 - Disk has been tight before — watch free space before large runs.
 
