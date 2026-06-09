@@ -4,6 +4,7 @@
 #include "G4SystemOfUnits.hh"
 #include <numeric>
 #include <cmath>
+#include <algorithm>
 
 // Sentinel for "no hit yet" times (ns); any real hit time is far below this.
 static const G4double kBigTime = 1.0e9;
