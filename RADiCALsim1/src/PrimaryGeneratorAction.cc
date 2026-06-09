@@ -20,6 +20,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* ev) {
     fGun->SetParticlePosition(G4ThreeVector(
         G4RandGauss::shoot(0., sigma),
         G4RandGauss::shoot(0., sigma),
-        -100.0 * mm));   // upstream of module front face
+        -500.0 * mm));   // upstream of the first trigger counter (z = -400 mm)
     fGun->GeneratePrimaryVertex(ev);
 }
