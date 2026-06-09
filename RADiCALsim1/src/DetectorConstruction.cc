@@ -18,6 +18,10 @@
 #include "G4SystemOfUnits.hh"
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
+#include "G4MaterialPropertiesTable.hh"
+#include "G4OpticalSurface.hh"
+#include "G4LogicalSkinSurface.hh"
+#include <vector>
 
 DetectorConstruction::DetectorConstruction() {}
 DetectorConstruction::~DetectorConstruction() {}
