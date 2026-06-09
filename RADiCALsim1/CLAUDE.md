@@ -130,11 +130,26 @@ Locked conventions (per user, June 2026):
   to ~σ/5 per energy. `DeltaT` = 2500 bins 0–0.5 ns (0.2 ps/bin).
 - 120 GeV result: σ/E ≈ 2.6%, μ ≈ 16.9 GeV sampled; σ_t ≈ 10.8 ps, ΔT ≈ 136 ps.
 
-### Energy scan (NOT yet run — config still being finalized)
-Beam energy via env var (MT-safe, one process per energy):
-`RADICAL_BEAM_ENERGY_GEV=50 ./radical run.mac`. Planned points: 5,10,20,50,100,120
-GeV × 2500 evt. Resolution-vs-energy curves (σ/E vs E, σ_t vs E) are built by
-fitting each energy file — needs the scan. Per-energy files: scan/radical_E{N}GeV.root.
+### Energy scan (DONE — June 2026, 1500 evt/point)
+Driver: `./run_scan.sh` — runs 5,10,20,50,100,120 GeV, one process per energy
+(beam energy via env var `RADICAL_BEAM_ENERGY_GEV`, MT-safe), with the merge-safety
+loop (kill procs + rm output + validate ECombined integral + retry). Writes
+`build/scan/radical_E{N}GeV.root`.
+Analysis: `root -l -b -q analysis/scan_resolution.C` → fits every energy file and
+builds `build/plots/{energy,timing}_resolution_curve.png` + shower_long_overlay.png.
+
+Results (1500 evt/point, tail-catcher energy, front−back ΔT):
+| E (GeV) | σ/E (%) | σ_t (ps) |
+|---------|---------|----------|
+| 5   | 6.42 | 17.2 |
+| 10  | 5.40 | 16.1 |
+| 20  | 3.91 | 14.9 |
+| 50  | 3.22 | 13.2 |
+| 100 | 2.78 | 12.0 |
+| 120 | 2.62 | 11.0 |
+Fits: **σ/E = 14.1%/√E ⊕ 2.38%**;  **σ_t = 33.9 ps/√E ⊕ 11.5 ps** (σ_t floor is the
+geometric WLS-spread proxy — no photostatistics; see caveat above). ΔT mean ≈137 ps
+stable across energy (WLS at fixed z), confirming the front−back observable.
 
 ## Beam (PrimaryGeneratorAction.cc)
 120 GeV e⁻, momentum +z, Gaussian spot σ=2.9mm centered at **(0,0,−500mm)** —
