@@ -129,7 +129,7 @@ RunAction::RunAction() {
     // H1[21]: optically-detected photons per event (timing photostatistics).
     am->CreateH1("PhotonsDetected",
                  "Detected optical photons per event;N_{p.e.};Events",
-                 200, 0., 4000.);
+                 300, 0., 60000.);
 
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
