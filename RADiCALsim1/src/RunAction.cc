@@ -131,6 +131,17 @@ RunAction::RunAction() {
                  "Detected optical photons per event;N_{p.e.};Events",
                  300, 0., 60000.);
 
+    // H1[22]: waveform-emulated ΔT (DRS4-style pulse + 50% CFD), the
+    // data-identical timing estimator for direct test-beam comparison.
+    am->CreateH1("DeltaT_CFD",
+                 "Waveform CFD #DeltaT (downstream #minus upstream);#DeltaT (ns);Corners",
+                 800, -4., 4.);
+
+    // H1[23]: emulated pulse FWHM — validate against the measured ~8 ns.
+    am->CreateH1("PulseFWHM",
+                 "Emulated pulse FWHM;FWHM (ns);Pulses",
+                 200, 0., 40.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
