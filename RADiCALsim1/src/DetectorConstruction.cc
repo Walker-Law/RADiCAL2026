@@ -110,7 +110,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     // Energy capillary (center) — OD scaled to fit 0.9 mm hole
     // Paper: OD=1000 µm, bore=400 µm; scaled to fit: OD=0.88 mm, bore=0.352 mm
-    static const G4double eCap_outR = 0.440*mm;
+    static const G4double eCap_outR = centerHoleR;   // fully fill the 0.45 mm drilled hole
     static const G4double eCap_boreR = 0.200*mm;
 
     // Timing capillary (corners) — paper: OD=1150 µm, bore=950 µm, fiber=900 µm
