@@ -456,8 +456,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // --- Downstream Pb-glass calorimeter (tail catcher / total-absorption) ---
     static const G4double pbgHalfXY = 50.0*mm;    // 100 x 100 mm
     static const G4double pbgHalfZ  = 200.0*mm;   // 400 mm (~30 X0 of lead glass)
-    static const G4double pbgFront  = 120.0*mm;   // front face 120 mm behind module center
-    static const G4double z_pbg     = pbgFront + pbgHalfZ;
+    static const G4double pbgUpstreamFace = 120.0*mm;  // upstream face 120 mm downstream of module center
+    static const G4double z_pbg           = pbgUpstreamFace + pbgHalfZ;
     auto solidPbg = new G4Box("PbGlassBox", pbgHalfXY, pbgHalfXY, pbgHalfZ);
     auto logicPbg = new G4LogicalVolume(solidPbg, pbGlass, "PbGlass");
     new G4PVPlacement(nullptr, G4ThreeVector(0,0,z_pbg), logicPbg, "PbGlass_Phys", logicWorld, false, 0);
