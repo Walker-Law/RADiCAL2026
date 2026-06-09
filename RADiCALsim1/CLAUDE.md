@@ -109,9 +109,40 @@ root -l -b build/radical_output.root -e 'gDirectory->ls(); gApplication->Termina
 ```
 
 ## Beam (PrimaryGeneratorAction.cc)
-120 GeV e⁻, momentum +z, Gaussian spot σ=2.9mm centered at (0,0,−100mm).
+120 GeV e⁻, momentum +z, Gaussian spot σ=2.9mm centered at **(0,0,−500mm)** —
+upstream of the first trigger counter so the beam traverses the full test-beam line.
 **Currently centered** (an earlier −25mm offset request was reverted — it missed
 the ±7mm module entirely).
+
+## CERN test-beam line (DetectorConstruction.cc §9)
+Full beamline replicated from a test-beam photo (standard defaults; a photo gives
+no exact metrology — all params are gathered in §9 for easy correction).
+Beam travels +z; RADiCAL module stays centered at z=0. World enlarged to
+±120mm transverse, ±650mm z.
+
+| Element | volume name(s) | z-center | size | material |
+|---------|----------------|----------|------|----------|
+| Trigger scint 1 | `Trig1` | −400mm | 30×30×5mm | plastic scint (vinyltoluene) |
+| Trigger scint 2 | `Trig2` | −350mm | 30×30×5mm | plastic scint |
+| MCP window (timing) | `MCP_Radiator` | −250mm | 27×27×3mm | fused silica (G4_SILICON_DIOXIDE) |
+| MCP body | `MCP_Body` | −247mm | 27×27×3mm | Al₂O₃ (kept thin, <0.05 X0 preshower) |
+| RADiCAL module | (see above) | 0 | — | LYSO/W |
+| Pb-glass calo | `PbGlass` | +320mm | 100×100×400mm | G4_GLASS_LEAD (~30 X0) |
+
+- MCP `MCP_Radiator` records earliest hit time = **t0 timing reference**.
+- Trigger counters record dE + earliest time (coincidence + TOF).
+- Pb-glass is the downstream **tail catcher** (sees ~4% leakage of 120 GeV).
+- Scoring is edep + particle-passage time (NO optical-photon tracking — consistent
+  with how the RADiCAL capillaries work). Adding Cherenkov/optical is a future option.
+
+### New histograms (beamline) — appended to existing set
+- H1[14] Trig1Edep, H1[15] Trig2Edep, H1[16] MCPEdep, H1[17] PbGlassEnergy,
+  **H1[18] WLS_minus_MCP** (RADiCAL WLS time − MCP t0, the key resolution plot),
+  H1[19] TOF_Trig1_MCP.
+- H2[13] LYSOvsPbGlass (tail-catcher correlation), H2[14] MCPtime_vs_WLStime.
+
+Validated (50 evt): Trig dE ≈1 MeV (MIP), TOF Trig1→MCP =0.504ns (geom 0.500ns),
+t_WLS−t_MCP =0.81ns (geom 0.79ns), Pb-glass ≈5.3 GeV leakage. All physical.
 
 ## Git / GitHub workflow
 - **Auto-push hook** in `~/.claude/settings.json` (PostToolUse, Write|Edit matcher):
