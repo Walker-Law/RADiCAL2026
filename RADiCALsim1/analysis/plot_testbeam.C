@@ -61,7 +61,7 @@ void plot_testbeam(const char* file="build/radical_output.root", double Ebeam=12
   hT->GetXaxis()->SetRangeUser(hT->GetMean()-8*hT->GetRMS(), hT->GetMean()+8*hT->GetRMS());
   TCanvas* c2 = new TCanvas("c2","timing",800,600);
   hT->SetLineColor(kBlack); hT->SetLineWidth(2);
-  hT->SetTitle(Form("Timing response (front #minus back), %.0f GeV;#DeltaT (ns);Hits", Ebeam));
+  hT->SetTitle(Form("Timing response (downstream #minus upstream), %.0f GeV;#DeltaT (ns);Hits", Ebeam));
   hT->Draw("hist");
   TF1* gT = coreFit(hT, 2.5, 4, kBlue+1); gT->Draw("same");
   double muT=gT->GetParameter(1), sgT=gT->GetParameter(2);
