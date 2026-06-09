@@ -172,11 +172,11 @@ void EventAction::EndOfEventAction(const G4Event*) {
         G4double zHit = cornerZSum[c] / cornerEdepSum[c];
         G4double tHit = cornerTSum[c] / cornerEdepSum[c];
 
-        G4double distFront = zHit - (-stackHalfZ);
-        G4double distBack  = stackHalfZ - zHit;
-        G4double tArrFront = tHit + distFront / v_quartz;
-        G4double tArrBack  = tHit + distBack  / v_quartz;
-        G4double deltaT    = tArrBack - tArrFront;
+        G4double distUpstream   = zHit - (-stackHalfZ);
+        G4double distDownstream = stackHalfZ - zHit;
+        G4double tArrUpstream   = tHit + distUpstream   / v_quartz;
+        G4double tArrDownstream = tHit + distDownstream / v_quartz;
+        G4double deltaT    = tArrDownstream - tArrUpstream;
         G4double zReco     = -deltaT * v_quartz / 2.0;
         G4double zResid    = zReco - zHit;
 
