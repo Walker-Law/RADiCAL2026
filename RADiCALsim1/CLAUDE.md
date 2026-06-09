@@ -140,6 +140,19 @@ Located `/Users/macro-2/Research/RADiCAL/Data/`: RUN1211 (25 GeV), RUN1259/60/61
   σ_t(150)=487–513 ps across the 3 runs (mean 502). Pulse FWHM ≈ 8.3 ns.
 - Analysis snippets in /tmp during session; reference macro: analysis/compare_data.C.
 
+### RESULT of data-vs-sim comparison (June 2026)
+| E (GeV) | DATA σ_t | SIM σ_t (waveform CFD) | SIM first-photon | ratio sim/data |
+|---------|----------|------------------------|------------------|-------|
+| 25  | 558 ps | 485 ps | 100 ps | 0.87 |
+| 150 | 502 ps | 393 ps |  94 ps | 0.78 |
+With the data-identical estimator the sim agrees to ~13–22% (was 5× off with
+first-photon). Sim is slightly optimistic — expected: no DRS4 timing-calibration
+jitter, no amplifier noise, idealized QE, and 74% data saturation at 150 GeV.
+Sim pulse FWHM 17–19 ns vs data 8.3 ns → real readout shapes/integrates less of
+the LuAG 60 ns tail; tuning SPR τ_f shorter would match (each tune costs ~40 min
+optical rerun — not yet done). Energy scaling matches: data 558→502 (0.90) vs
+first-photon sim prediction 0.89.
+
 ### Sim adjustment made for data comparison
 First-photon ΔT (~95–111 ps) is idealized — data uses 50% CFD on an analog pulse.
 Added **waveform emulation** in EventAction (`pulseCFD()`): sums single-photon
