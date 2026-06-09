@@ -35,7 +35,7 @@ for E in "${ENERGIES[@]}"; do
     rm -f radical_output*.root
     RADICAL_BEAM_ENERGY_GEV=$E ./radical /tmp/scan.mac > "$OUTDIR/log_E${E}.log" 2>&1
     n=$(integral radical_output.root)
-    if [ "${n:-0}" -gt 1000 ] 2>/dev/null; then
+    if [ "${n:-0}" -gt "$THRESH" ] 2>/dev/null; then
       mv -f radical_output.root "$OUT"
       echo "[$(date '+%H:%M:%S')] ${E} GeV OK  (ECombined N=$n)  -> $OUT"
       ok=1; break
