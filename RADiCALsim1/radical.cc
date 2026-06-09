@@ -6,6 +6,7 @@
 #include "FTFP_BERT.hh"
 #include "G4OpticalPhysics.hh"
 #include "G4OpticalParameters.hh"
+#include <cstdlib>
 
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
@@ -14,22 +15,28 @@ int main(int argc, char** argv) {
     auto runManager = G4RunManagerFactory::CreateRunManager();
     runManager->SetUserInitialization(new DetectorConstruction());
 
-    // FTFP_BERT + optical physics (Cherenkov, scintillation, boundary, WLS).
-    // Optical photons are produced/tracked only in materials carrying a
-    // G4MaterialPropertiesTable (here: fused quartz + LuAG:Ce only — see
-    // DetectorConstruction), which keeps the photon count tractable.
+    // FTFP_BERT, optionally + optical physics (Cherenkov, scintillation, WLS).
+    // Optical photon tracking is OFF by default (it is ~100x slower); enable it
+    // with env var  RADICAL_OPTICAL=1 ./radical ...  for the photon-based timing.
+    // When off, the optical material tables / photodetectors simply sit unused.
     auto physics = new FTFP_BERT();
-    physics->RegisterPhysics(new G4OpticalPhysics());
+    bool useOptical = (std::getenv("RADICAL_OPTICAL") != nullptr);
+    if (useOptical) {
+        physics->RegisterPhysics(new G4OpticalPhysics());
+    }
     runManager->SetUserInitialization(physics);
 
-    auto* op = G4OpticalParameters::Instance();
-    op->SetCerenkovMaxPhotonsPerStep(50);
-    op->SetCerenkovMaxBetaChange(10.0);
-    op->SetCerenkovTrackSecondariesFirst(true);
-    op->SetScintTrackSecondariesFirst(true);
+    if (useOptical) {
+        auto* op = G4OpticalParameters::Instance();
+        op->SetCerenkovMaxPhotonsPerStep(50);
+        op->SetCerenkovMaxBetaChange(10.0);
+        op->SetCerenkovTrackSecondariesFirst(true);
+        op->SetScintTrackSecondariesFirst(true);
+    }
 
     runManager->SetUserInitialization(new ActionInitialization());
     runManager->Initialize();
+    G4cout << "[RADiCAL] optical photons: " << (useOptical ? "ON" : "OFF (fast)") << G4endl;
 
     auto visManager = new G4VisExecutive();
     visManager->Initialize();
