@@ -31,7 +31,7 @@ void scan_resolution(const char* dir="build/scan") {
   printf("\n  E(GeV)   mu_E(GeV)  sigma_E   sigma/E(%%)   DeltaT(ps)  sigma_t(ps)\n");
   printf("  -------------------------------------------------------------------\n");
   for(int i=0;i<N;i++){
-    TFile* f=TFile::Open(Form("build/scan/radical_E%.0fGeV.root",E[i]));
+    TFile* f=TFile::Open(Form("%s/radical_E%.0fGeV.root",dir,E[i]));
     // --- energy ---
     TH1D* hE=(TH1D*)f->Get("ECombined");
     { TF1* pre=coreFit(hE,2.0,3); double s=pre->GetParameter(2);
