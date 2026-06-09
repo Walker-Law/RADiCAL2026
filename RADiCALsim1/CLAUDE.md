@@ -109,6 +109,33 @@ Inspect output:
 root -l -b build/radical_output.root -e 'gDirectory->ls(); gApplication->Terminate();'
 ```
 
+## Test-beam analysis config (analysis/plot_testbeam.C)
+Replicates CERN test-beam plots. Run per energy file:
+`root -l -b -q 'analysis/plot_testbeam.C("build/radical_output.root", 120)'`
+→ writes 4 PNGs to build/plots/ (energy res, timing res, long/lat shower).
+
+Locked conventions (per user, June 2026):
+- **Energy estimator** = tail-catcher-corrected `ECombined` = E_LYSO + f_s·E_PbGlass
+  (f_s=0.18). The −0.94 LYSO/PbGlass anti-correlation lets the Pb-glass recover
+  forward leakage → tightens σ/E. Filled in EventAction §7 as H1[20].
+- **Beam-acceptance cut**: ECombined filled only if module-reco E (E_LYSO/f_s) >
+  E_PbGlass — removes halo events that missed the ±7 mm module and showered in the
+  Pb-glass (a spurious sharp peak at ~0.18·E_beam). Keeps genuine leakage events.
+- **Energy fit** = iterative Gaussian core, ±2σ, 4 iterations (excludes leakage tail).
+- **Timing** = front−back ΔT (H1[6]); MCP reference cancels. Gaussian core fit → σ_t.
+  CAVEAT: σ_t here is a GEOMETRIC proxy (spread of energy-deposit z within the 6 mm
+  WLS) — no optical-photon/photostatistics/electronics modeled. Trends vs E are
+  meaningful; absolute ps value is not the real resolution.
+- Energy hist `TotalLYSO`/`ECombined` = 5000 bins 0–25 GeV; macro adaptively rebins
+  to ~σ/5 per energy. `DeltaT` = 2500 bins 0–0.5 ns (0.2 ps/bin).
+- 120 GeV result: σ/E ≈ 2.6%, μ ≈ 16.9 GeV sampled; σ_t ≈ 10.8 ps, ΔT ≈ 136 ps.
+
+### Energy scan (NOT yet run — config still being finalized)
+Beam energy via env var (MT-safe, one process per energy):
+`RADICAL_BEAM_ENERGY_GEV=50 ./radical run.mac`. Planned points: 5,10,20,50,100,120
+GeV × 2500 evt. Resolution-vs-energy curves (σ/E vs E, σ_t vs E) are built by
+fitting each energy file — needs the scan. Per-energy files: scan/radical_E{N}GeV.root.
+
 ## Beam (PrimaryGeneratorAction.cc)
 120 GeV e⁻, momentum +z, Gaussian spot σ=2.9mm centered at **(0,0,−500mm)** —
 upstream of the first trigger counter so the beam traverses the full test-beam line.
