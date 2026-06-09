@@ -18,8 +18,8 @@ EventAction::EventAction() {
     fEdepMCP = 0.;
     fTimeMCP = kBigTime;
     fEdepPbGlass = 0.;
-    fTphFront.fill(kBigTime); fTphBack.fill(kBigTime);
-    fNphFront.fill(0);        fNphBack.fill(0);
+    fTphUp.fill(kBigTime); fTphDown.fill(kBigTime);
+    fNphUp.fill(0);        fNphDown.fill(0);
 }
 EventAction::~EventAction() {}
 
@@ -35,8 +35,8 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     fEdepMCP = 0.;
     fTimeMCP = kBigTime;
     fEdepPbGlass = 0.;
-    fTphFront.fill(kBigTime); fTphBack.fill(kBigTime);
-    fNphFront.fill(0);        fNphBack.fill(0);
+    fTphUp.fill(kBigTime); fTphDown.fill(kBigTime);
+    fNphUp.fill(0);        fNphDown.fill(0);
 }
 
 void EventAction::EndOfEventAction(const G4Event*) {
