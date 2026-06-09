@@ -109,6 +109,17 @@ Inspect output:
 root -l -b build/radical_output.root -e 'gDirectory->ls(); gApplication->Terminate();'
 ```
 
+## Optical photons (timing) — toggle via env var
+`RADICAL_OPTICAL=1 ./radical ...` enables Cherenkov + LuAG:Ce scintillation +
+light-guiding + front/back photodetectors (20% QE) → real photon-based front−back
+ΔT timing (H1[6] DeltaT, H1[21] PhotonsDetected). **OFF by default** (gated in
+radical.cc) because it is ~190× slower (~34 s/event @120 GeV vs ~0.18 s; >4000
+p.e./event). When OFF, the optical material tables/PDs sit inert and **DeltaT is
+empty** (timing is optical-only now — the old geometric ΔT proxy was removed from
+H1[6]). Energy/σ-E and shower profiles work in both modes. GPU accel (Celeritas/
+AdePT) doesn't cover optical photons; Opticks does but needs NVIDIA+OptiX (N/A on
+this Mac). Best speed lever: cut LuAG yield ~10× (still ~400 p.e., good timing).
+
 ## Test-beam analysis config (analysis/plot_testbeam.C)
 Replicates CERN test-beam plots. Run per energy file:
 `root -l -b -q 'analysis/plot_testbeam.C("build/radical_output.root", 120)'`
