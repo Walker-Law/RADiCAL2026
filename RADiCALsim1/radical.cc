@@ -4,6 +4,8 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 #include "FTFP_BERT.hh"
+#include "G4OpticalPhysics.hh"
+#include "G4OpticalParameters.hh"
 
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
@@ -11,7 +13,21 @@
 int main(int argc, char** argv) {
     auto runManager = G4RunManagerFactory::CreateRunManager();
     runManager->SetUserInitialization(new DetectorConstruction());
-    runManager->SetUserInitialization(new FTFP_BERT());
+
+    // FTFP_BERT + optical physics (Cherenkov, scintillation, boundary, WLS).
+    // Optical photons are produced/tracked only in materials carrying a
+    // G4MaterialPropertiesTable (here: fused quartz + LuAG:Ce only — see
+    // DetectorConstruction), which keeps the photon count tractable.
+    auto physics = new FTFP_BERT();
+    physics->RegisterPhysics(new G4OpticalPhysics());
+    runManager->SetUserInitialization(physics);
+
+    auto* op = G4OpticalParameters::Instance();
+    op->SetCerenkovMaxPhotonsPerStep(50);
+    op->SetCerenkovMaxBetaChange(10.0);
+    op->SetCerenkovTrackSecondariesFirst(true);
+    op->SetScintTrackSecondariesFirst(true);
+
     runManager->SetUserInitialization(new ActionInitialization());
     runManager->Initialize();
 
