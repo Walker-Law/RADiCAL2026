@@ -50,11 +50,11 @@ public:
     // ── Optical-photon timing readout ───────────────────────────────────────
     // Quantum efficiency of the end photodetectors (bialkali/SiPM-like).
     static constexpr G4double kQE = 0.20;
-    void RecordPhoton(G4int corner, bool isFront, G4double t) {
+    void RecordPhoton(G4int corner, bool isUpstream, G4double t) {
         if (corner < 0 || corner >= 4) return;
         if (G4UniformRand() > kQE) return;            // apply QE
-        if (isFront) { fNphFront[corner]++; if (t < fTphFront[corner]) fTphFront[corner] = t; }
-        else         { fNphBack[corner]++;  if (t < fTphBack[corner])  fTphBack[corner]  = t; }
+        if (isUpstream) { fNphUp[corner]++;   if (t < fTphUp[corner])   fTphUp[corner]   = t; }
+        else            { fNphDown[corner]++; if (t < fTphDown[corner]) fTphDown[corner] = t; }
     }
 
 private:
