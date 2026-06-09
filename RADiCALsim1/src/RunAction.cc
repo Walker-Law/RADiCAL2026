@@ -198,6 +198,20 @@ RunAction::RunAction() {
                  "Lateral profile layers 25-28 (z #approx +39 to +57 mm);x (mm);y (mm)",
                  70, -7., 7.,
                  70, -7., 7.);
+
+    // ── H2: CERN TEST-BEAM LINE ────────────────────────────────────────────
+
+    // H2[13]: tail-catcher correlation — RADiCAL sampled E vs Pb-glass leakage E
+    am->CreateH2("LYSOvsPbGlass",
+                 "Tail catcher;E_{LYSO} (GeV);E_{PbGlass} (GeV)",
+                 75, 0., 30.,
+                 100, 0., 20.);
+
+    // H2[14]: MCP t0 vs RADiCAL WLS arrival time
+    am->CreateH2("MCPtime_vs_WLStime",
+                 "Timing correlation;t_{MCP} (ns);t_{WLS} (ns)",
+                 100, 0., 2.,
+                 100, 0., 3.);
 }
 
 RunAction::~RunAction() {}
