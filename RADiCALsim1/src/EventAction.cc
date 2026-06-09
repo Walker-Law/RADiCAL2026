@@ -5,11 +5,19 @@
 #include <numeric>
 #include <cmath>
 
+// Sentinel for "no hit yet" times (ns); any real hit time is far below this.
+static const G4double kBigTime = 1.0e9;
+
 EventAction::EventAction() {
     fEdepLYSO.fill(0.);
     fEdepW.fill(0.);
     fEdepCenter = 0.;
     fEdepWLS.fill(0.);
+    fEdepTrig.fill(0.);
+    fTimeTrig.fill(kBigTime);
+    fEdepMCP = 0.;
+    fTimeMCP = kBigTime;
+    fEdepPbGlass = 0.;
 }
 EventAction::~EventAction() {}
 
@@ -20,6 +28,11 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     fEdepWLS.fill(0.);
     fCornerHits.clear();
     fLYSOHits.clear();
+    fEdepTrig.fill(0.);
+    fTimeTrig.fill(kBigTime);
+    fEdepMCP = 0.;
+    fTimeMCP = kBigTime;
+    fEdepPbGlass = 0.;
 }
 
 void EventAction::EndOfEventAction(const G4Event*) {
