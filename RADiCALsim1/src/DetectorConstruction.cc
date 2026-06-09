@@ -303,8 +303,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // 8. CAPILLARIES
     //
     //  CENTER (energy): quartz tube + EJ309 liquid bore, full stack length
-    //  CORNERS (timing): quartz front/back rods + quartz tube mid-section
-    //                    + DSB1 polymer WLS fiber at shower max
+    //  CORNERS (timing): quartz upstream/downstream rods + quartz tube mid-section
+    //                    + LuAG:Ce WLS fiber at shower max
     // =========================================================================
 
     // --- Center energy capillary ---
