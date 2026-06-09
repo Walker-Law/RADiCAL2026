@@ -41,11 +41,11 @@ RunAction::RunAction() {
                  200, 0., 500.);
 
     // H1[6]: Differential arrival time ΔT = t_back − t_front
-    // Front−back ΔT (MCP reference cancels). Peak ≈137 ps, width ≈10 ps —
-    // needs sub-ps bins. 2500 bins over 0–0.5 ns = 0.2 ps/bin.
+    // Optical front−back ΔT (first detected photon at each end PD; MCP cancels).
+    // Range allows occasional negative ΔT (photon-stat fluctuations). 0.2 ps/bin.
     am->CreateH1("DeltaT",
-                 "Timing capillary #DeltaT (front #minus back);#DeltaT (ns);Hits",
-                 2500, 0., 0.5);
+                 "Optical timing #DeltaT (front #minus back);#DeltaT (ns);Corners",
+                 4000, -0.2, 0.6);
 
     // ── H1: SHOWER SHAPE ─────────────────────────────────────────────────────
 
