@@ -1,13 +1,32 @@
 #include "SteppingAction.hh"
 #include "EventAction.hh"
 #include "G4Step.hh"
+#include "G4Track.hh"
 #include "G4LogicalVolume.hh"
+#include "G4OpticalPhoton.hh"
 #include "G4SystemOfUnits.hh"
 
 SteppingAction::SteppingAction(EventAction* ea) : fEventAction(ea) {}
 SteppingAction::~SteppingAction() {}
 
 void SteppingAction::UserSteppingAction(const G4Step* step) {
+    G4Track* track = step->GetTrack();
+
+    // ── Optical photons: detect at the end photodetectors, then kill ────────
+    if (track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()) {
+        auto postVol = step->GetPostStepPoint()->GetTouchableHandle()->GetVolume();
+        if (postVol) {
+            const G4String& pn = postVol->GetLogicalVolume()->GetName();
+            if (pn == "PD_Front" || pn == "PD_Back") {
+                fEventAction->RecordPhoton(postVol->GetCopyNumber(),
+                                           pn == "PD_Front",
+                                           step->GetPostStepPoint()->GetGlobalTime());
+                track->SetTrackStatus(fStopAndKill);
+            }
+        }
+        return;   // optical photons deposit no sampling energy
+    }
+
     G4double edep = step->GetTotalEnergyDeposit();
     if (edep <= 0.) return;
 
