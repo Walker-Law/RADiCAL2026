@@ -72,7 +72,7 @@ static G4double pulseCFD(const std::vector<G4double>& tns, G4double* fwhmOut) {
         while (s2 < NS - 1 && wf[s2] > pk / 2) s2++;
         *fwhmOut = (s2 - s1) * dt;
     }
-    G4double thr = 0.5 * pk;                              // 50% CFD, leading edge
+    G4double thr = 0.05 * pk;                             // 5% CFD, leading edge
     int s = ipk; while (s > 0 && wf[s] > thr) s--;
     G4double v1 = wf[s], v2 = wf[s + 1];
     return t0 + (s + (v2 > v1 ? (thr - v1) / (v2 - v1) : 0.)) * dt;
