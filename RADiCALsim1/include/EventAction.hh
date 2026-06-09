@@ -47,6 +47,16 @@ public:
     }
     void AddPbGlassEdep(G4double edep) { fEdepPbGlass += edep; }
 
+    // ── Optical-photon timing readout ───────────────────────────────────────
+    // Quantum efficiency of the end photodetectors (bialkali/SiPM-like).
+    static constexpr G4double kQE = 0.20;
+    void RecordPhoton(G4int corner, bool isFront, G4double t) {
+        if (corner < 0 || corner >= 4) return;
+        if (G4UniformRand() > kQE) return;            // apply QE
+        if (isFront) { fNphFront[corner]++; if (t < fTphFront[corner]) fTphFront[corner] = t; }
+        else         { fNphBack[corner]++;  if (t < fTphBack[corner])  fTphBack[corner]  = t; }
+    }
+
 private:
     std::array<G4double, 29> fEdepLYSO;
     std::array<G4double, 28> fEdepW;
