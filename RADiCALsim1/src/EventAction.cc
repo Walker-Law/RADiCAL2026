@@ -212,4 +212,12 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // Tail-catcher correlation: RADiCAL sampled energy vs Pb-glass leakage energy
     if (totalLYSO > 0.)
         am->FillH2(13, totalLYSO / GeV, fEdepPbGlass / GeV);    // H2[13]
+
+    // Tail-catcher-corrected energy estimator (H1[20]):
+    //   E_comb = E_LYSO + f_s * E_PbGlass,  f_s = LYSO sampling fraction.
+    // The −0.94 LYSO/PbGlass anti-correlation means adding the (sampling-scaled)
+    // forward leakage back cancels the leakage fluctuation, tightening sigma/E.
+    static const G4double kSamplingFrac = 0.18;
+    G4double eComb = totalLYSO + kSamplingFrac * fEdepPbGlass;
+    if (eComb > 0.) am->FillH1(20, eComb / GeV);               // H1[20]
 }
