@@ -243,6 +243,23 @@ void EventAction::EndOfEventAction(const G4Event*) {
     if (nPhotTot > 0) am->FillH1(21, nPhotTot);         // photons detected / event
 
     // =========================================================================
+    // 6c. WAVEFORM-EMULATED TIMING (data-identical estimator)
+    //   Pulse built from ALL detected photon times, digitized DRS4-style, then
+    //   50% CFD — the same estimator as the CERN test-beam waveform analysis.
+    //   H1[22] = ΔT_CFD (downstream − upstream), H1[23] = pulse FWHM check.
+    // =========================================================================
+    for (G4int c = 0; c < 4; c++) {
+        G4double fwUp = -1., fwDn = -1.;
+        G4double tUp = pulseCFD(fPhTUp[c],   &fwUp);
+        G4double tDn = pulseCFD(fPhTDown[c], &fwDn);
+        if (tUp > 0. && tDn > 0.) {
+            am->FillH1(22, (tDn - tUp) / 1.0);   // already in ns
+            if (fwUp > 0.) am->FillH1(23, fwUp);
+            if (fwDn > 0.) am->FillH1(23, fwDn);
+        }
+    }
+
+    // =========================================================================
     // 7. CERN TEST-BEAM LINE OBSERVABLES
     //    Trigger counters, MCP timing reference (t0), Pb-glass tail catcher.
     // =========================================================================
