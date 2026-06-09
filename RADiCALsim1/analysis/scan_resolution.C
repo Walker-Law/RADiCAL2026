@@ -90,7 +90,19 @@ void scan_resolution() {
               fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
   c2->SaveAs(Form("%s/timing_resolution_curve.png",out));
 
+  // ---------- persist curves as ROOT objects (refreshed every scan) ----------
+  // gr/gt carry their fitted TF1 in their function list, so the fits are saved too.
+  TFile* fo = new TFile("build/scan/resolution_curves.root","RECREATE");
+  gr->Write();
+  gt->Write();
+  // also store the raw scan points as a tidy TTree for quick inspection
+  TTree* tr = new TTree("scan","resolution scan points");
+  double bE,bSE,bST; tr->Branch("E",&bE); tr->Branch("sigmaE_pct",&bSE); tr->Branch("sigmaT_ps",&bST);
+  for(int i=0;i<N;i++){ bE=E[i]; bSE=eRes[i]; bST=tRes[i]; tr->Fill(); }
+  tr->Write();
+  fo->Close();
+
   printf("\n  Energy res:  %.1f%%/sqrt(E) (+) %.2f%%\n",fabs(fr->GetParameter(0)),fabs(fr->GetParameter(1)));
   printf("  Timing res:  %.1f ps/sqrt(E) (+) %.1f ps\n",fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1)));
-  printf("  Saved 3 curve PNGs to %s/\n\n",out);
+  printf("  Saved 3 curve PNGs to %s/  and  build/scan/resolution_curves.root\n\n",out);
 }
