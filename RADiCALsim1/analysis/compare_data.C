@@ -22,7 +22,7 @@ TF1* coreFit(TH1* h, double nsig=2.0, int iters=4) {
 void compare_data() {
   gStyle->SetOptStat(0);
   const int N=2; double E[N]={25,150};
-  double dataSig[N]={558,502};                 // ps, measured from the runs
+  double dataSig[N]={614,476};                 // ps, measured (5% CFD)
   double dataFWHM=8.3;                          // ns
   printf("\n E(GeV) | DATA sigma_t | SIM CFD sigma_t | SIM first-photon | SIM FWHM\n");
   printf(" -----------------------------------------------------------------------\n");
