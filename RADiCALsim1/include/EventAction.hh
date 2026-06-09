@@ -82,6 +82,11 @@ private:
     // (upstream = −z end PD, downstream = +z end PD)
     std::array<G4double, 4> fTphUp, fTphDown;
     std::array<G4int, 4>    fNphUp, fNphDown;
+
+    // Full arrival-time lists for waveform emulation (DRS4-style CFD timing,
+    // mirroring the CERN test-beam analysis). Capped to bound memory.
+    static constexpr size_t kMaxStore = 60000;
+    std::array<std::vector<G4double>, 4> fPhTUp, fPhTDown;
 };
 
 #endif
