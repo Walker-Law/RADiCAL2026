@@ -137,6 +137,10 @@ loop (kill procs + rm output + validate ECombined integral + retry). Writes
 `build/scan/radical_E{N}GeV.root`.
 Analysis: `root -l -b -q analysis/scan_resolution.C` → fits every energy file and
 builds `build/plots/{energy,timing}_resolution_curve.png` + shower_long_overlay.png.
+It ALSO writes `build/scan/resolution_curves.root` holding the resolution curves as
+ROOT objects: `EnergyResolution` + `TimingResolution` (TGraphErrors, fit TF1 stored
+inside each) and a `scan` TTree (E, sigmaE_pct, sigmaT_ps). `run_scan.sh` calls this
+analysis automatically at the end, so the curves .root refreshes on every scan.
 
 Results (1500 evt/point, tail-catcher energy, front−back ΔT):
 | E (GeV) | σ/E (%) | σ_t (ps) |
