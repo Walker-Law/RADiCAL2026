@@ -40,11 +40,11 @@ RunAction::RunAction() {
                  "Corner WLS fibre (LuAG:Ce) yield per corner;E (MeV);Hits",
                  200, 0., 500.);
 
-    // H1[6]: Differential arrival time ΔT = t_back − t_front
-    // Optical front−back ΔT (first detected photon at each end PD; MCP cancels).
+    // H1[6]: Differential arrival time ΔT = t_downstream − t_upstream
+    // (first detected photon at each end PD; MCP reference cancels).
     // Range allows occasional negative ΔT (photon-stat fluctuations). 0.2 ps/bin.
     am->CreateH1("DeltaT",
-                 "Optical timing #DeltaT (front #minus back);#DeltaT (ns);Corners",
+                 "Optical timing #DeltaT (downstream #minus upstream);#DeltaT (ns);Corners",
                  4000, -0.2, 0.6);
 
     // ── H1: SHOWER SHAPE ─────────────────────────────────────────────────────
