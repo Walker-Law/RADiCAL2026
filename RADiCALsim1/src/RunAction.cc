@@ -126,6 +126,11 @@ RunAction::RunAction() {
                  "Tail-catcher-corrected energy;E_{LYSO} + f_{s}E_{PbGlass} (GeV);Events",
                  5000, 0., 25.);
 
+    // H1[21]: optically-detected photons per event (timing photostatistics).
+    am->CreateH1("PhotonsDetected",
+                 "Detected optical photons per event;N_{p.e.};Events",
+                 200, 0., 4000.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
