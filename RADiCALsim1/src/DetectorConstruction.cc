@@ -142,7 +142,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // =========================================================================
     // 3. WORLD
     // =========================================================================
-    auto solidWorld = new G4Box("World", 25.0*mm, 25.0*mm, 200.0*mm);
+    // World enlarged to host the full CERN test-beam line (trigger + MCP
+    // upstream, Pb-glass downstream). RADiCAL module stays centered at z=0.
+    auto solidWorld = new G4Box("World", 120.0*mm, 120.0*mm, 650.0*mm);
     auto logicWorld = new G4LogicalVolume(solidWorld, air, "World");
     auto physWorld  = new G4PVPlacement(nullptr, {}, logicWorld, "World", nullptr, false, 0);
     logicWorld->SetVisAttributes(G4VisAttributes::GetInvisible());
