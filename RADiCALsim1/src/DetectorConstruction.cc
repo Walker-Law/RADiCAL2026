@@ -78,6 +78,45 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     luag->AddElement(Ce,  0.1*perCent);
 
     // =========================================================================
+    // 1b. OPTICAL PROPERTIES  (only quartz, LuAG:Ce, and air get tables, so
+    //     optical photons are produced/propagated only in the timing capillary
+    //     system + surrounding air — keeps photon counts tractable.)
+    //
+    //   Photon energy grid: ~350–800 nm (1.55–3.54 eV).
+    // =========================================================================
+    std::vector<G4double> phE = {1.55*eV, 2.07*eV, 2.48*eV, 2.76*eV, 3.10*eV, 3.54*eV};
+
+    // --- Fused quartz: Cherenkov radiator + light guide ---
+    std::vector<G4double> qRI  = {1.455, 1.457, 1.460, 1.462, 1.466, 1.472};
+    std::vector<G4double> qABS = {10.*m, 10.*m, 10.*m, 10.*m, 8.*m, 5.*m};
+    auto qMPT = new G4MaterialPropertiesTable();
+    qMPT->AddProperty("RINDEX",    phE, qRI);
+    qMPT->AddProperty("ABSLENGTH", phE, qABS);
+    quartz->SetMaterialPropertiesTable(qMPT);
+
+    // --- Air: RINDEX=1.0 so optical boundaries work (no Cherenkov: beta*n<1). ---
+    std::vector<G4double> aRI = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    auto aMPT = new G4MaterialPropertiesTable();
+    aMPT->AddProperty("RINDEX", phE, aRI);
+    air->SetMaterialPropertiesTable(aMPT);
+
+    // --- LuAG:Ce: scintillator. Emission peaks green ~520–540 nm (~2.3–2.4 eV),
+    //     light yield ~22000 ph/MeV, decay ~60 ns (literature). ---
+    std::vector<G4double> lRI  = {1.84, 1.84, 1.84, 1.84, 1.84, 1.84};
+    std::vector<G4double> lABS = {1.*m, 1.*m, 1.*m, 1.*m, 1.*m, 1.*m};
+    // emission spectrum (relative), peaked ~2.3–2.4 eV
+    std::vector<G4double> lEM  = {0.05, 0.35, 1.00, 0.60, 0.10, 0.02};
+    auto lMPT = new G4MaterialPropertiesTable();
+    lMPT->AddProperty("RINDEX",                 phE, lRI);
+    lMPT->AddProperty("ABSLENGTH",              phE, lABS);
+    lMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, lEM);
+    lMPT->AddConstProperty("SCINTILLATIONYIELD",        22000./MeV);
+    lMPT->AddConstProperty("RESOLUTIONSCALE",           1.0);
+    lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 60.*ns);
+    lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
+    luag->SetMaterialPropertiesTable(lMPT);
+
+    // =========================================================================
     // 2. KEY DIMENSIONS
     // =========================================================================
 
