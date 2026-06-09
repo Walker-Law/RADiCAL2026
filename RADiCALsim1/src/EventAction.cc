@@ -180,14 +180,29 @@ void EventAction::EndOfEventAction(const G4Event*) {
         G4double zReco     = -deltaT * v_quartz / 2.0;
         G4double zResid    = zReco - zHit;
 
-        am->FillH1(6,  deltaT / ns);                    // DeltaT
+        // Geometric z-reconstruction diagnostics (kept from the deposition model)
         am->FillH1(12, zResid / mm);                    // Z residual
-        am->FillH2(0,  deltaT / ns, zHit / mm);         // DeltaT vs true z
+        am->FillH2(0,  deltaT / ns, zHit / mm);         // DeltaT vs true z (geometric)
         am->FillH2(1,  zReco  / mm, zHit / mm);         // z_reco vs z_true
-        // H2[5]: DeltaT vs total LYSO (timing resolution vs energy)
-        if (totalLYSO > 0.)
-            am->FillH2(5, totalLYSO / GeV, deltaT / ns);
     }
+
+    // =========================================================================
+    // 6b. OPTICAL-PHOTON TIMING (the real measurement)
+    //   Per corner, ΔT = t_back − t_front of the FIRST detected photon at each
+    //   end PD (leading-edge). σ_t now comes from genuine photon statistics +
+    //   propagation, so it follows a/√E ⊕ b. H1[6] = ΔT, H2[5] = ΔT vs E,
+    //   H1[21] = detected photons/event.
+    // =========================================================================
+    G4int nPhotTot = 0;
+    for (G4int c = 0; c < 4; c++) {
+        nPhotTot += fNphFront[c] + fNphBack[c];
+        if (fTphFront[c] < kBigTime && fTphBack[c] < kBigTime) {
+            G4double dT = fTphBack[c] - fTphFront[c];   // back − front (positive)
+            am->FillH1(6, dT / ns);                     // optical ΔT
+            if (totalLYSO > 0.) am->FillH2(5, totalLYSO / GeV, dT / ns);
+        }
+    }
+    if (nPhotTot > 0) am->FillH1(21, nPhotTot);         // photons detected / event
 
     // =========================================================================
     // 7. CERN TEST-BEAM LINE OBSERVABLES
