@@ -328,29 +328,29 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicECapTube->SetVisAttributes(eCapTubeVis);
 
     // --- Corner timing capillaries (shared logical volumes) ---
-    // Front rod: solid quartz cylinder (fills bore + wall region)
-    auto solidTFront = new G4Tubs("TCapFront", 0, tCap_outR, frontLen/2, 0., 360.*deg);
-    auto logicTFront = new G4LogicalVolume(solidTFront, quartz, "Cap_Corner_Front");
+    // Upstream rod: solid quartz cylinder (fills bore + wall region)
+    auto solidTUpstream = new G4Tubs("TCapUpstream", 0, tCap_outR, upstreamLen/2, 0., 360.*deg);
+    auto logicTUpstream = new G4LogicalVolume(solidTUpstream, quartz, "Cap_Corner_Upstream");
 
     // Middle WLS section: quartz tube wall
     auto solidTMidTube = new G4Tubs("TCapMidTube", wlsFiberR, tCap_outR, wlsLen/2, 0., 360.*deg);
     auto logicTMidTube = new G4LogicalVolume(solidTMidTube, quartz, "Cap_Corner_MidTube");
 
-    // Middle WLS section: DSB1 polymer fiber (scoring volume for timing)
+    // Middle WLS section: LuAG:Ce fiber (scoring volume for timing)
     auto solidTMidWLS = new G4Tubs("TCapMidWLS", 0, wlsFiberR, wlsLen/2, 0., 360.*deg);
     auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, luag, "Cap_Corner_WLS");
 
-    // Back rod: solid quartz cylinder
-    auto solidTBack = new G4Tubs("TCapBack", 0, tCap_outR, backLen/2, 0., 360.*deg);
-    auto logicTBack = new G4LogicalVolume(solidTBack, quartz, "Cap_Corner_Back");
+    // Downstream rod: solid quartz cylinder
+    auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, downstreamLen/2, 0., 360.*deg);
+    auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
 
     // Quartz timing rods/tube as outlines
-    auto tFrontBackVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));
-    tFrontBackVis->SetForceWireframe(true);
-    tFrontBackVis->SetForceAuxEdgeVisible(true);
-    logicTFront->SetVisAttributes(tFrontBackVis);
-    logicTBack->SetVisAttributes(tFrontBackVis);
-    logicTMidTube->SetVisAttributes(tFrontBackVis);
+    auto tRodVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));
+    tRodVis->SetForceWireframe(true);
+    tRodVis->SetForceAuxEdgeVisible(true);
+    logicTUpstream->SetVisAttributes(tRodVis);
+    logicTDownstream->SetVisAttributes(tRodVis);
+    logicTMidTube->SetVisAttributes(tRodVis);
 
     // LuAG:Ce WLS fiber kept solid (key timing active volume)
     auto wlsVis = new G4VisAttributes(G4Colour(1.0, 0.6, 0.0, 0.95));
