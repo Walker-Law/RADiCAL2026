@@ -159,6 +159,12 @@ t_WLS−t_MCP =0.81ns (geom 0.79ns), Pb-glass ≈5.3 GeV leakage. All physical.
   (it hardcodes the source path).
 - Multithreaded run writes per-thread `radical_output_tN.root` then merges into
   `radical_output.root`; empty thread files are auto-deleted.
+- **MERGE GOTCHA:** if a stale `./radical` process holds `radical_output.root`
+  open, the master merge silently fails — output ends up with ~1 event
+  (TotalLYSO integral ≈ 1 instead of ~1e4) and the log shows
+  `delete empty file ... has failed` for some threads. BEFORE any batch run:
+  `ps aux | grep /radical | grep -v grep` and `kill -9` any leftovers. Validate
+  after a run with `TotalLYSO->Integral()` (should be ≈ #events), not just GetEntries.
 - `./radical` with no arg = viewer; with a `.mac` arg = batch. vis.mac has no beamOn.
 - Disk has been tight before — watch free space before large runs.
 
