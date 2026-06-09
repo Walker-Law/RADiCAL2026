@@ -40,3 +40,9 @@ for E in "${ENERGIES[@]}"; do
 done
 echo "SCAN COMPLETE $(date '+%H:%M:%S')"
 ls -lh "$OUTDIR"/radical_E*GeV.root
+
+# Auto-refresh the resolution curves + persisted ROOT objects from the new scan.
+echo "--- building resolution curves ---"
+cd ..
+root -l -b -q analysis/scan_resolution.C
+echo "Resolution curves + build/scan/resolution_curves.root updated."
