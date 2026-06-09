@@ -113,8 +113,8 @@ root -l -b build/radical_output.root -e 'gDirectory->ls(); gApplication->Termina
 
 ## Optical photons (timing) — toggle via env var
 `RADICAL_OPTICAL=1 ./radical ...` enables Cherenkov + LuAG:Ce scintillation +
-light-guiding + front/back photodetectors (20% QE) → real photon-based front−back
-ΔT timing (H1[6] DeltaT, H1[21] PhotonsDetected). **OFF by default** (gated in
+light-guiding + upstream/downstream photodetectors (20% QE) → real photon-based
+downstream−upstream ΔT timing (H1[6] DeltaT, H1[21] PhotonsDetected). **OFF by default** (gated in
 radical.cc) because it is ~190× slower (~34 s/event @120 GeV vs ~0.18 s; >4000
 p.e./event). When OFF, the optical material tables/PDs sit inert and **DeltaT is
 empty** (timing is optical-only now — the old geometric ΔT proxy was removed from
