@@ -184,4 +184,32 @@ void EventAction::EndOfEventAction(const G4Event*) {
         if (totalLYSO > 0.)
             am->FillH2(5, totalLYSO / GeV, deltaT / ns);
     }
+
+    // =========================================================================
+    // 7. CERN TEST-BEAM LINE OBSERVABLES
+    //    Trigger counters, MCP timing reference (t0), Pb-glass tail catcher.
+    // =========================================================================
+    if (fEdepTrig[0] > 0.) am->FillH1(14, fEdepTrig[0] / MeV);  // trigger 1 dE
+    if (fEdepTrig[1] > 0.) am->FillH1(15, fEdepTrig[1] / MeV);  // trigger 2 dE
+    if (fEdepMCP    > 0.) am->FillH1(16, fEdepMCP     / MeV);  // MCP radiator dE
+    if (fEdepPbGlass > 0.) am->FillH1(17, fEdepPbGlass / GeV);  // Pb-glass energy
+
+    // Beam time-of-flight: trigger 1 -> MCP (both seen by the primary)
+    if (fTimeTrig[0] < kBigTime && fTimeMCP < kBigTime)
+        am->FillH1(19, (fTimeMCP - fTimeTrig[0]) / ns);
+
+    // Energy-weighted mean WLS arrival time across all 4 corners
+    G4double wlsESum = 0., wlsTSum = 0.;
+    for (const auto& hit : fCornerHits) { wlsESum += hit.edep; wlsTSum += hit.edep * hit.t; }
+    G4double wlsMeanT = (wlsESum > 0.) ? wlsTSum / wlsESum : kBigTime;
+
+    // RADiCAL timing relative to the MCP reference (t0): the key resolution plot
+    if (wlsESum > 0. && fTimeMCP < kBigTime) {
+        am->FillH1(18, (wlsMeanT - fTimeMCP) / ns);             // H1[18]
+        am->FillH2(14, fTimeMCP / ns, wlsMeanT / ns);           // H2[14]
+    }
+
+    // Tail-catcher correlation: RADiCAL sampled energy vs Pb-glass leakage energy
+    if (totalLYSO > 0.)
+        am->FillH2(13, totalLYSO / GeV, fEdepPbGlass / GeV);    // H2[13]
 }
