@@ -112,7 +112,6 @@ void plot_timing_vs_LY() {
         "build/optical_timing/optical_E50GeV.root",
         "build/optical_timing/optical_E125GeV.root"
     };
-    double Ebeam_MeV[NS] = {20000., 50000., 125000.};
     double LY_sim[NS], sig_sim[NS], sig_sim_err[NS];
     int    nSim = 0;
     bool   simOk[NS] = {false, false, false};
