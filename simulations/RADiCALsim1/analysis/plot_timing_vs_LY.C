@@ -35,41 +35,47 @@
 #include "TSystem.h"
 
 // ── Helper: extract LY [npe/MeV] and σ_t [ns] from an optical ROOT file ──────
-// LY  = mean(PhotonsDetected) / (8 fiber-ends × E_beam_MeV)
+// LY  = mean(PhotonsDetected) / (2 × mean(TotalCornerWLS_MeV))
+//       = npe per SiPM end per MeV deposited in WLS material
+//       (PhotonsDetected = all 8 ends, TotalCornerWLS = all 4 corners → factor of 2)
 // σ_t = RMS of DeltaT histogram (optical downstream−upstream 1st-photon ΔT)
-bool extractOptPoint(const char* fname, double E_beam_MeV,
-                     double& LY, double& sig_t, double& sig_t_err) {
+//       This includes geometric shower-depth spread and photon statistics.
+//       Expect points to lie ABOVE the pure-photostatistics theory curve.
+bool extractOptPoint(const char* fname, double& LY, double& sig_t, double& sig_t_err) {
     TFile* f = TFile::Open(fname);
     if (!f || f->IsZombie()) { Printf("ERROR: cannot open %s", fname); return false; }
 
-    TH1D* hPh = (TH1D*)f->Get("PhotonsDetected");
-    TH1D* hDT = (TH1D*)f->Get("DeltaT");
-    if (!hPh || !hDT) {
+    TH1D* hPh  = (TH1D*)f->Get("PhotonsDetected");
+    TH1D* hDT  = (TH1D*)f->Get("DeltaT");
+    TH1D* hWLS = (TH1D*)f->Get("TotalCornerWLS");
+    if (!hPh || !hDT || !hWLS) {
         Printf("ERROR: missing histograms in %s", fname);
         f->Close(); return false;
     }
 
-    double nEv  = hPh->GetEntries();
-    double mean_phot = hPh->GetMean();   // total photons (all 8 ends) per event
-    double nDT  = hDT->GetEntries();
-    double rms  = hDT->GetRMS();         // ns — 1σ spread of ΔT across corners×events
+    double nEv       = hPh->GetEntries();
+    double meanPhot  = hPh->GetMean();    // total photons (all 8 ends) per event
+    double meanWLS   = hWLS->GetMean();   // total WLS energy all 4 corners (MeV/event)
+    double nDT       = hDT->GetEntries();
+    double rms       = hDT->GetRMS();     // ns — 1σ spread including geometric component
 
     f->Close();
 
-    if (nEv < 1 || nDT < 2 || rms < 1e-6) {
-        Printf("WARNING: too few entries in %s (nEv=%.0f nDT=%.0f rms=%.4f)",
-               fname, nEv, nDT, rms);
+    if (nEv < 1 || nDT < 2 || meanWLS < 1e-6 || rms < 1e-6) {
+        Printf("WARNING: insufficient data in %s (nEv=%.0f nDT=%.0f meanWLS=%.3f)",
+               fname, nEv, nDT, meanWLS);
         return false;
     }
 
-    // PhotonsDetected sums both ends of all 4 corners → divide by 8 for per-SiPM
-    LY    = mean_phot / 8.0 / E_beam_MeV;
+    // LY: detected photons per SiPM-end per MeV of WLS energy deposited
+    // PhotonsDetected / 8 ends / (TotalCornerWLS / 4 corners) = PhotonsDetected / (2 * TotalCornerWLS)
+    LY    = meanPhot / (2.0 * meanWLS);
     sig_t = rms;
     // Uncertainty on σ from a sample: δσ ≈ σ/√(2N)
     sig_t_err = rms / TMath::Sqrt(2. * nDT);
 
-    Printf("  %-35s  LY=%7.1f npe/MeV   σ_t=%6.3f ± %.3f ns  (nEv=%.0f nDT=%.0f)",
-           fname, LY, sig_t, sig_t_err, nEv, nDT);
+    Printf("  %-40s  LY=%6.0f npe/MeV (WLS)   σ_t=%5.1f ± %.1f ps  (nEv=%.0f nDT=%.0f)",
+           fname, LY, sig_t*1000., sig_t_err*1000., nEv, nDT);
     return true;
 }
 
