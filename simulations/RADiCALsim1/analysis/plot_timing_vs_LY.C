@@ -200,26 +200,26 @@ void plot_timing_vs_LY() {
                  Form("DSB1 (paper) ~%.0f npe/MeV", LY_dsb1));
 
     // Label each Geant4 sim point by beam energy
+    // Manual offsets to avoid overlap (all three points at ~100 ps, different LY)
     const char* simLabels[NS] = {"20 GeV", "50 GeV", "125 GeV"};
+    // Vertical stagger: 20 GeV up, 50 GeV middle, 125 GeV down
+    double yMult[NS] = {1.55, 1.0, 0.68};
+    double xMult[NS] = {1.3,  1.3, 1.3};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
-        // Place label to the right of point; shift left if near right edge
-        double xL = LY_sim[i] * 1.35;
-        double yL = sig_sim[i] * 1.3;
-        if (xL > 4000.) { xL = LY_sim[i] * 0.55; yL = sig_sim[i] * 0.72; }
         TLatex lb;
         lb.SetTextSize(0.030);
         lb.SetTextColor(kRed+1);
-        lb.DrawLatex(xL, yL, simLabels[i]);
+        lb.DrawLatex(LY_sim[i] * xMult[i], sig_sim[i] * yMult[i], simLabels[i]);
     }
 
-    // Note: sim points above curve = geometric shower-depth spread adds to σ_t
+    // Note inside plot area (NDC y=0.17 keeps it above x-axis title)
     TLatex note;
     note.SetNDC();
-    note.SetTextSize(0.030);
+    note.SetTextSize(0.028);
     note.SetTextColor(kGray+2);
-    note.DrawLatex(0.17, 0.08,
-        "Note: sim #sigma_{t} includes shower-depth geometry; theory = photon stats only");
+    note.DrawLatex(0.17, 0.17,
+        "#star above curve: sim #sigma_{t} includes geometric shower-depth spread");
 
     // ── Legend ────────────────────────────────────────────────────────────────
     double legX1 = 0.18, legY1 = 0.14, legX2 = 0.62, legY2 = 0.38;
