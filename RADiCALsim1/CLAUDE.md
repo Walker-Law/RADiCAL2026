@@ -308,9 +308,36 @@ t_WLS−t_MCP =0.81ns (geom 0.79ns), Pb-glass ≈5.3 GeV leakage. All physical.
 - `./radical` with no arg = viewer; with a `.mac` arg = batch. vis.mac has no beamOn.
 - Disk has been tight before — watch free space before large runs.
 
+## Analysis scripts
+
+| Script | Command | Output |
+|--------|---------|--------|
+| `analysis/plot_testbeam.C` | `root -l -b -q 'analysis/plot_testbeam.C("build/radical_output.root",120)'` | 4 PNGs in build/plots/ |
+| `analysis/scan_resolution.C` | `root -l -b -q analysis/scan_resolution.C` | build/scan/resolution_curves.root + PNGs |
+| `analysis/compare_data.C` | `root -l -b -q analysis/compare_data.C` | prints σ_t table (sim vs data) |
+| `analysis/compare_graphs.C` | `root -l -b -q analysis/compare_graphs.C` | build/plots/datacomp/sigma_vs_E.png |
+| `analysis/fix_titles.C` | one-time patch | replaces "front/back" → "upstream/downstream" in ROOT files |
+
+Plots already produced (build/plots/datacomp/):
+- `sigma_vs_E.png` — σ_t vs E_beam: DATA (black), SIM 5% CFD (red), SIM first-photon (blue)
+- `data_deltaT_25GeV.png` / `data_deltaT_150GeV.png` — measured ΔT distributions
+- `data_waveform_example.png` — raw DRS4 single-event waveform (ch0 blue, ch1 red)
+
+## Open questions / future work
+1. **DRS4 inter-cell calibration**: applying per-cell timing correction to raw data
+   should move σ_t from ~500 ps toward the sim's ~70–145 ps prediction.
+2. **Tune SPR τ_f**: sim emulated pulse FWHM ~17–19 ns vs data ~8.3 ns — adjust τ_F
+   from 3ns toward ~1.5ns; τ_R from 1ns stays, or tune both to match data FWHM first.
+3. **Add DRS4 noise floor** to sim emulation (~0.5–2 mV RMS, but much smaller than
+   the inter-cell calibration effect).
+4. **Optical yield reduction** (×10) to speed up scans while keeping photostatistics regime.
+
 ## Session history (high level)
 Built full geometry → GitHub upload + auto-push hook → enriched histograms
 (shower shape, timing, capillary, lateral) → DSB1 swapped to LuAG:Ce →
 6 depth-sliced lateral profiles → vis switched to wireframe for inspection →
 WLS shortened to 6mm → energy cap fills its hole → **WLS retargeted to measured
-shower max (43mm / layer ~10.5)** after histogram showed peak is not at center.
+shower max (43mm / layer ~10.5)** after histogram showed peak is not at center →
+energy scan (5–120 GeV, 1500 evt/point) → CERN test-beam data comparison (4 runs,
+5% CFD convention) → waveform emulation (H1[22] DeltaT_CFD) → sim/data gap
+identified as DRS4 calibration artifact → graphs generated.
