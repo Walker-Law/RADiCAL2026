@@ -199,20 +199,27 @@ void plot_timing_vs_LY() {
     la.DrawLatex(40., sig_dsb1 * 1.6,
                  Form("DSB1 (paper) ~%.0f npe/MeV", LY_dsb1));
 
-    // Label each Geant4 sim point by energy
+    // Label each Geant4 sim point by beam energy
     const char* simLabels[NS] = {"20 GeV", "50 GeV", "125 GeV"};
-    int iValid = 0;
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
-        double xLabel = LY_sim[i] * 1.4;
-        double yLabel = sig_sim[i] * 1.35;
-        if (xLabel > 6000.) xLabel = LY_sim[i] * 0.12;
+        // Place label to the right of point; shift left if near right edge
+        double xL = LY_sim[i] * 1.35;
+        double yL = sig_sim[i] * 1.3;
+        if (xL > 4000.) { xL = LY_sim[i] * 0.55; yL = sig_sim[i] * 0.72; }
         TLatex lb;
-        lb.SetTextSize(0.032);
+        lb.SetTextSize(0.030);
         lb.SetTextColor(kRed+1);
-        lb.DrawLatex(xLabel, yLabel, simLabels[i]);
-        iValid++;
+        lb.DrawLatex(xL, yL, simLabels[i]);
     }
+
+    // Note: sim points above curve = geometric shower-depth spread adds to σ_t
+    TLatex note;
+    note.SetNDC();
+    note.SetTextSize(0.030);
+    note.SetTextColor(kGray+2);
+    note.DrawLatex(0.17, 0.08,
+        "Note: sim #sigma_{t} includes shower-depth geometry; theory = photon stats only");
 
     // ── Legend ────────────────────────────────────────────────────────────────
     double legX1 = 0.18, legY1 = 0.14, legX2 = 0.62, legY2 = 0.38;
