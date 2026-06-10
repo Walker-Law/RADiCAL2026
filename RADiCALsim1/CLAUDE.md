@@ -94,16 +94,48 @@ EJ309 bore=green, LuAG:Ce fibers=orange — so they pop against the wireframe la
 Volume name → EventAction routing (SteppingAction.cc): `LYSO`, `W_Absorber`,
 `Cap_Center_EJ309`, `Cap_Corner_WLS`.
 
-20 TH1D (H1[0–19]) + 15 TH2D (H2[0–14]) — last entries are the test-beam line
-detectors (see CERN test-beam line section below). Core module histograms:
-- H1: ShowerProfile, TotalLYSO, TotalW, SamplingFraction, CenterCapEnergy,
-  CornerWLSEnergy, DeltaT, ShowerMaxLayer, ShowerCOG, ShowerRMS,
-  CenterCapFraction, CornerWLSPerCorner, ZResidual, TotalCornerWLS.
-- H2[0–6]: DeltaT_vs_TrueZ, ZReco_vs_ZTrue, LateralProfile (integrated XY),
-  CenterCapVsLYSO, CornerWLSVsLYSO, DeltaTVsLYSO, ShowerMaxVsLYSO.
-- **H2[7–12]: LateralProfile_Slice0..5** — XY maps at 6 depth slices
-  (LYSO layers 0–4, 5–9, 10–14, 15–19, 20–24, 25–28). Routed in EventAction via
-  `depthSliceH2(layer)` lambda. Each 70×70 bins over ±7mm.
+**24 TH1D (H1[0–23]) + 15 TH2D (H2[0–14])** — last entries are the test-beam line
+detectors (see CERN test-beam line section below). Full histogram inventory:
+
+| ID | Name | Description |
+|----|------|-------------|
+| H1[0] | ShowerProfile | Energy/layer (longitudinal) |
+| H1[1] | TotalLYSO | Sampled LYSO energy (GeV), 5000 bins 0–25 |
+| H1[2] | TotalW | W absorber energy |
+| H1[3] | SamplingFraction | E_LYSO/(E_LYSO+E_W) |
+| H1[4] | CenterCapEnergy | EJ309 liquid scintillator yield (MeV) |
+| H1[5] | CornerWLSEnergy | LuAG:Ce WLS per corner (MeV) |
+| H1[6] | DeltaT | First-photon ΔT downstream−upstream (ns), 4000 bins −0.2→0.6 |
+| H1[7] | ShowerMaxLayer | Layer of shower maximum |
+| H1[8] | ShowerCOG | Energy-weighted longitudinal COG (layers) |
+| H1[9] | ShowerRMS | Longitudinal shower RMS width (layers) |
+| H1[10] | CenterCapFraction | E_EJ309/E_LYSO |
+| H1[11] | CornerWLSPerCorner | WLS energy bar chart (x=corner index 0–3) |
+| H1[12] | ZResidual | z_reco−z_true residual (mm) |
+| H1[13] | TotalCornerWLS | Sum of all 4 corner WLS energies (MeV) |
+| H1[14] | Trig1Edep | Trigger scint 1 dE |
+| H1[15] | Trig2Edep | Trigger scint 2 dE |
+| H1[16] | MCPEdep | MCP radiator dE |
+| H1[17] | PbGlassEnergy | Pb-glass tail-catcher energy (GeV) |
+| H1[18] | WLS_minus_MCP | RADiCAL WLS time − MCP t0 (ns) |
+| H1[19] | TOF_Trig1_MCP | Trig1→MCP TOF (ns) |
+| H1[20] | ECombined | Tail-catcher-corrected E = E_LYSO + 0.18·E_PbGlass (GeV) |
+| H1[21] | PhotonsDetected | Detected optical photons/event (N_p.e.) |
+| H1[22] | DeltaT_CFD | **Waveform 5% CFD ΔT** (data-identical estimator), 800 bins −4→4 ns |
+| H1[23] | PulseFWHM | Emulated pulse FWHM (ns); validate vs data ~8.3 ns |
+
+| ID | Name | Description |
+|----|------|-------------|
+| H2[0] | DeltaT_vs_TrueZ | Timing calibration matrix |
+| H2[1] | ZReco_vs_ZTrue | Position reco diagonal |
+| H2[2] | LateralProfile | Integrated XY energy map (70×70, ±7mm) |
+| H2[3] | CenterCapVsLYSO | EJ309 vs LYSO linearity |
+| H2[4] | CornerWLSVsLYSO | WLS vs LYSO correlation |
+| H2[5] | DeltaTVsLYSO | ΔT vs sampled energy |
+| H2[6] | ShowerMaxVsLYSO | Shower depth vs energy |
+| H2[7–12] | LateralProfile_Slice0..5 | XY maps at 6 depth slices (layers 0–4, 5–9, 10–14, 15–19, 20–24, 25–28); routed in EventAction via `depthSliceH2(layer)` lambda |
+| H2[13] | LYSOvsPbGlass | Tail-catcher correlation |
+| H2[14] | MCPtime_vs_WLStime | MCP t0 vs WLS arrival timing correlation |
 
 Timing recon uses the ACTUAL recorded WLS hit z-positions (not a hardcoded
 constant), so moving the WLS section flows through automatically.
