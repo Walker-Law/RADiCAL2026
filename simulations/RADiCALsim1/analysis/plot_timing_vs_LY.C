@@ -4,72 +4,159 @@
 // The paper (Perez-Lara et al. NIM A 1068 (2024) 169737, Fig. 8) shows a pure
 // photostatistics curve: σ_t ∝ 1/√(LY) for the downstream SiPM readout only.
 //
-// Approach: analytical 1/√LY curve, normalised to reproduce the paper's values
-// at the known anchor point (LY=100 npe/MeV → σ_t ≈ 50 ps from paper Fig. 8).
-// Our LuAG:Ce simulation point is overlaid for comparison.
+// This macro overlays:
+//   (1) The theoretical 1/√LY curve (calibrated to paper anchor at LY=100→52 ps)
+//   (2) Paper Fig. 8 simulation points (DSB1, digitized from figure)
+//   (3) Actual Geant4 sim points extracted from optical runs at 20/50/125 GeV
+//       -- LY from H1[21] PhotonsDetected / 8 ends / E_beam_MeV
+//       -- σ_t  from H1[6]  DeltaT RMS (spread across events, downstream−upstream)
+//   (4) DSB1 estimated operating point
 //
 // Note on LuAG:Ce vs DSB1:
 //   - Paper used DSB1 WLS (organic plastic).  Our sim uses LuAG:Ce (ceramic).
-//   - Both are valid WLS options acknowledged in the paper (Figs. 5-6 caption).
-//   - They follow the SAME photostatistics curve; only their operating LY differs.
-//   - DSB1 in the paper's FTBF studies: estimated ~10–50 npe/MeV.
-//   - LuAG:Ce (our sim): 22000 ph/MeV yield × 20% QE = ~4400 npe/MeV in the fiber.
-//     (Actual detected photons per event in the WLS fiber ≈ 4400 × E_WLS_MeV)
+//   - Both follow the SAME photostatistics curve; only their operating LY differs.
+//   - DSB1 in the paper's FTBF studies: estimated ~25 npe/MeV.
+//   - LuAG:Ce (our sim): 22000 ph/MeV yield × 20% QE × 1/8-ends ~ few hundred npe/MeV.
 //
 // Usage: root -l -b -q analysis/plot_timing_vs_LY.C
+//   Run from the RADiCALsim1/ directory, or from build/ with adjusted paths.
 // Output: build/plots/timing_vs_LY.png
+
+#include "TFile.h"
+#include "TH1D.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "TMath.h"
+#include "TLegend.h"
+#include "TLatex.h"
+#include "TArrow.h"
+#include "TSystem.h"
+
+// ── Helper: extract LY [npe/MeV] and σ_t [ns] from an optical ROOT file ──────
+// LY  = mean(PhotonsDetected) / (8 fiber-ends × E_beam_MeV)
+// σ_t = RMS of DeltaT histogram (optical downstream−upstream 1st-photon ΔT)
+bool extractOptPoint(const char* fname, double E_beam_MeV,
+                     double& LY, double& sig_t, double& sig_t_err) {
+    TFile* f = TFile::Open(fname);
+    if (!f || f->IsZombie()) { Printf("ERROR: cannot open %s", fname); return false; }
+
+    TH1D* hPh = (TH1D*)f->Get("PhotonsDetected");
+    TH1D* hDT = (TH1D*)f->Get("DeltaT");
+    if (!hPh || !hDT) {
+        Printf("ERROR: missing histograms in %s", fname);
+        f->Close(); return false;
+    }
+
+    double nEv  = hPh->GetEntries();
+    double mean_phot = hPh->GetMean();   // total photons (all 8 ends) per event
+    double nDT  = hDT->GetEntries();
+    double rms  = hDT->GetRMS();         // ns — 1σ spread of ΔT across corners×events
+
+    f->Close();
+
+    if (nEv < 1 || nDT < 2 || rms < 1e-6) {
+        Printf("WARNING: too few entries in %s (nEv=%.0f nDT=%.0f rms=%.4f)",
+               fname, nEv, nDT, rms);
+        return false;
+    }
+
+    // PhotonsDetected sums both ends of all 4 corners → divide by 8 for per-SiPM
+    LY    = mean_phot / 8.0 / E_beam_MeV;
+    sig_t = rms;
+    // Uncertainty on σ from a sample: δσ ≈ σ/√(2N)
+    sig_t_err = rms / TMath::Sqrt(2. * nDT);
+
+    Printf("  %-35s  LY=%7.1f npe/MeV   σ_t=%6.3f ± %.3f ns  (nEv=%.0f nDT=%.0f)",
+           fname, LY, sig_t, sig_t_err, nEv, nDT);
+    return true;
+}
 
 void plot_timing_vs_LY() {
     gStyle->SetOptStat(0);
     gStyle->SetOptTitle(0);
-    gStyle->SetPadLeftMargin(0.14);
-    gStyle->SetPadBottomMargin(0.13);
-    gStyle->SetPadRightMargin(0.05);
-    gStyle->SetPadTopMargin(0.06);
+    gStyle->SetPadLeftMargin(0.15);
+    gStyle->SetPadBottomMargin(0.14);
+    gStyle->SetPadRightMargin(0.06);
+    gStyle->SetPadTopMargin(0.07);
 
-    // ── Paper Fig. 8 data points (read from figure) ──────────────────────
-    // These are the simulated points from the paper (DSB1, downstream only, 50 GeV)
+    // ── Paper Fig. 8 data points (digitized from figure) ─────────────────────
     const int Np = 7;
     double LY_paper[Np]  = {1.,    3.,    10.,   30.,   100.,  300.,  1000.};
     double sig_paper[Np] = {0.50,  0.30,  0.16,  0.093, 0.052, 0.030, 0.016};
 
-    // ── Theoretical photostatistics curve (normalisation from paper) ──────
-    // σ_t = A / √LY.  At LY=100: σ_t=0.052 ns → A = 0.052 * √100 = 0.52 ns·√(npe/MeV)
-    double A_theory = sig_paper[4] * TMath::Sqrt(LY_paper[4]);   // = 0.52 ns
+    // ── Theoretical photostatistics curve ─────────────────────────────────────
+    // σ_t = A/√LY.  Anchor: LY=100 → σ_t=0.052 ns  (from paper Fig. 8)
+    double A_theory = sig_paper[4] * TMath::Sqrt(LY_paper[4]);  // 0.52
 
-    const int Ncurve = 200;
-    double LY_c[Ncurve], sig_c[Ncurve];
-    for (int i = 0; i < Ncurve; i++) {
-        LY_c[i]  = TMath::Power(10., -0.3 + i * 3.8 / (Ncurve - 1));  // 0.5 → 2000
+    const int Nc = 300;
+    double LY_c[Nc], sig_c[Nc];
+    for (int i = 0; i < Nc; i++) {
+        LY_c[i]  = TMath::Power(10., 0. + i * 4.0 / (Nc - 1));  // 1 → 10000 npe/MeV
         sig_c[i] = A_theory / TMath::Sqrt(LY_c[i]);
     }
-    auto gCurve = new TGraph(Ncurve, LY_c, sig_c);
+    auto gCurve = new TGraph(Nc, LY_c, sig_c);
 
-    // ── Our LuAG:Ce operating point ───────────────────────────────────────
-    // LY = 22000 ph/MeV × 0.20 QE = 4400 npe/MeV (at the WLS fiber)
-    double LY_luag = 4400.;
-    double sig_luag = A_theory / TMath::Sqrt(LY_luag);   // = 0.52/66.3 ≈ 7.8 ps
+    // ── Actual Geant4 sim points from optical runs ────────────────────────────
+    Printf("\nExtracting actual sim points from optical runs:");
+    const int NS = 3;
+    const char* optFiles[NS] = {
+        "build/optical_timing/optical_E20GeV.root",
+        "build/optical_timing/optical_E50GeV.root",
+        "build/optical_timing/optical_E125GeV.root"
+    };
+    double Ebeam_MeV[NS] = {20000., 50000., 125000.};
+    double LY_sim[NS], sig_sim[NS], sig_sim_err[NS];
+    int    nSim = 0;
+    bool   simOk[NS] = {false, false, false};
 
-    // DSB1 operating point from paper (estimated)
-    double LY_dsb1 = 25.;   // ~25 npe/MeV as estimated from paper context
+    for (int i = 0; i < NS; i++) {
+        simOk[i] = extractOptPoint(optFiles[i], Ebeam_MeV[i],
+                                   LY_sim[i], sig_sim[i], sig_sim_err[i]);
+        if (simOk[i]) nSim++;
+    }
+
+    // Collect valid sim points
+    std::vector<double> vLY, vSig, vErrLY, vErrSig;
+    for (int i = 0; i < NS; i++) {
+        if (simOk[i]) {
+            vLY.push_back(LY_sim[i]);
+            vSig.push_back(sig_sim[i]);
+            vErrLY.push_back(0.);                  // no x-error shown
+            vErrSig.push_back(sig_sim_err[i]);
+        }
+    }
+    auto gSim = (vLY.size() > 0) ?
+        new TGraphErrors(vLY.size(), vLY.data(), vSig.data(),
+                         vErrLY.data(), vErrSig.data()) : nullptr;
+
+    // ── DSB1 paper estimate ───────────────────────────────────────────────────
+    double LY_dsb1 = 25.;
     double sig_dsb1 = A_theory / TMath::Sqrt(LY_dsb1);
 
-    // ── Canvas ────────────────────────────────────────────────────────────
-    auto c = new TCanvas("cLY", "Timing vs LY", 700, 600);
+    // ── Canvas ────────────────────────────────────────────────────────────────
+    auto c = new TCanvas("cLY", "Timing vs LY", 760, 620);
     c->SetLogx();
     c->SetLogy();
     c->SetGrid(1, 1);
 
-    // Frame
-    auto frame = c->DrawFrame(0.8, 0.008, 2000., 1.0);
+    // Frame: x from 1 to 10000, y from 5 ps to 1 ns
+    auto frame = c->DrawFrame(1.0, 0.005, 10000., 1.2);
     frame->GetXaxis()->SetTitle("LY (npe/MeV)");
     frame->GetYaxis()->SetTitle("time resolution (ns)");
-    frame->GetXaxis()->SetTitleSize(0.050);
-    frame->GetYaxis()->SetTitleSize(0.050);
-    frame->GetXaxis()->SetLabelSize(0.043);
-    frame->GetYaxis()->SetLabelSize(0.043);
-    frame->GetXaxis()->SetMoreLogLabels();
-    frame->GetYaxis()->SetMoreLogLabels();
+    frame->GetXaxis()->SetTitleSize(0.052);
+    frame->GetYaxis()->SetTitleSize(0.052);
+    frame->GetXaxis()->SetLabelSize(0.044);
+    frame->GetYaxis()->SetLabelSize(0.044);
+    frame->GetXaxis()->SetTitleOffset(1.05);
+    frame->GetYaxis()->SetTitleOffset(1.25);
+    // Clean log axis labeling: major powers only, no cluttered sub-ticks
+    frame->GetXaxis()->SetNdivisions(510);
+    frame->GetYaxis()->SetNdivisions(505);
+    frame->GetXaxis()->SetMoreLogLabels(kFALSE);
+    frame->GetYaxis()->SetMoreLogLabels(kFALSE);
+    frame->GetXaxis()->SetNoExponent(kFALSE);
 
     // Theoretical curve
     gCurve->SetLineColor(kBlack);
@@ -79,68 +166,80 @@ void plot_timing_vs_LY() {
     // Paper data points
     auto gPaper = new TGraph(Np, LY_paper, sig_paper);
     gPaper->SetMarkerStyle(20);
-    gPaper->SetMarkerSize(1.2);
+    gPaper->SetMarkerSize(1.3);
     gPaper->SetMarkerColor(kBlack);
     gPaper->Draw("P same");
 
-    // Our LuAG:Ce point
-    auto gLuAG = new TGraph(1, &LY_luag, &sig_luag);
-    gLuAG->SetMarkerStyle(29);   // filled star
-    gLuAG->SetMarkerSize(2.0);
-    gLuAG->SetMarkerColor(kRed+1);
-    gLuAG->SetLineColor(kRed+1);
-    gLuAG->Draw("P same");
+    // Actual Geant4 sim points (with error bars on σ_t)
+    if (gSim && vLY.size() > 0) {
+        gSim->SetMarkerStyle(29);      // filled star
+        gSim->SetMarkerSize(2.2);
+        gSim->SetMarkerColor(kRed+1);
+        gSim->SetLineColor(kRed+1);
+        gSim->SetLineWidth(2);
+        gSim->Draw("P same");
+    }
 
     // DSB1 operating point
     auto gDSB1 = new TGraph(1, &LY_dsb1, &sig_dsb1);
-    gDSB1->SetMarkerStyle(22);   // filled triangle
+    gDSB1->SetMarkerStyle(22);
     gDSB1->SetMarkerSize(1.8);
     gDSB1->SetMarkerColor(kBlue);
     gDSB1->Draw("P same");
 
-    // Annotation: LuAG:Ce arrow
-    auto arr = new TArrow(LY_luag*0.3, sig_luag*1.5, LY_luag*0.85, sig_luag*1.05,
-                          0.012, ">");
-    arr->SetLineColor(kRed+1);
-    arr->SetLineWidth(2);
-    arr->Draw();
+    // ── Annotations (placed inside axes) ─────────────────────────────────────
     TLatex la;
-    la.SetTextSize(0.033);
-    la.SetTextColor(kRed+1);
-    la.DrawLatex(LY_luag*0.012, sig_luag*1.7,
-                 Form("LuAG:Ce (our sim)  %.0f npe/MeV  #sigma_{t}#approx%.0f ps",
-                      LY_luag, sig_luag*1000.));
+    la.SetTextSize(0.036);
+    la.SetTextColor(kBlue);
+    la.DrawLatex(40., sig_dsb1 * 1.6,
+                 Form("DSB1 (paper) ~%.0f npe/MeV", LY_dsb1));
 
-    // Annotation: DSB1
-    TLatex lb;
-    lb.SetTextSize(0.033);
-    lb.SetTextColor(kBlue);
-    lb.DrawLatex(LY_dsb1*1.3, sig_dsb1*1.35,
-                 Form("DSB1 (paper)  ~%.0f npe/MeV", LY_dsb1));
+    // Label each Geant4 sim point by energy
+    const char* simLabels[NS] = {"20 GeV", "50 GeV", "125 GeV"};
+    int iValid = 0;
+    for (int i = 0; i < NS; i++) {
+        if (!simOk[i]) continue;
+        double xLabel = LY_sim[i] * 1.4;
+        double yLabel = sig_sim[i] * 1.35;
+        if (xLabel > 6000.) xLabel = LY_sim[i] * 0.12;
+        TLatex lb;
+        lb.SetTextSize(0.032);
+        lb.SetTextColor(kRed+1);
+        lb.DrawLatex(xLabel, yLabel, simLabels[i]);
+        iValid++;
+    }
 
-    // Legend
-    auto legend = new TLegend(0.52, 0.70, 0.93, 0.92);
+    // ── Legend ────────────────────────────────────────────────────────────────
+    double legX1 = 0.18, legY1 = 0.14, legX2 = 0.62, legY2 = 0.38;
+    auto legend = new TLegend(legX1, legY1, legX2, legY2);
     legend->SetBorderSize(1);
     legend->SetFillColor(0);
     legend->SetTextSize(0.036);
     legend->AddEntry(gPaper,  "Paper Fig. 8 (Geant4, DSB1, 50 GeV)", "p");
-    legend->AddEntry(gCurve,  "#sigma_{t} = 0.52 / #sqrt{LY}  (ps fit)", "l");
-    legend->AddEntry(gLuAG,   Form("LuAG:Ce sim point (%.0f npe/MeV)", LY_luag), "p");
+    legend->AddEntry(gCurve,  "#sigma_{t} = 0.52 / #sqrt{LY}  (ns)", "l");
+    if (gSim && vLY.size() > 0)
+        legend->AddEntry(gSim, "This sim (LuAG:Ce, optical)", "p");
+    legend->AddEntry(gDSB1,   Form("DSB1 estimate ~%.0f npe/MeV", LY_dsb1), "p");
     legend->Draw();
 
     // Title
     TLatex title;
     title.SetNDC();
     title.SetTextFont(42);
-    title.SetTextSize(0.044);
-    title.DrawLatex(0.18, 0.955, "Timing resolution vs detected light yield");
+    title.SetTextSize(0.046);
+    title.DrawLatex(0.17, 0.960, "Timing resolution vs detected light yield");
 
     gSystem->mkdir("build/plots", kTRUE);
     c->SaveAs("build/plots/timing_vs_LY.png");
     Printf("\nSaved: build/plots/timing_vs_LY.png");
-    Printf("LuAG:Ce operating point:  LY = %.0f npe/MeV,  sigma_t = %.1f ps",
-           LY_luag, sig_luag * 1000.);
-    Printf("DSB1 (paper estimate):    LY = %.0f npe/MeV,  sigma_t = %.1f ps",
-           LY_dsb1, sig_dsb1 * 1000.);
-    Printf("Theory curve: sigma_t = %.2f / sqrt(LY) [ns]", A_theory);
+
+    // Summary table
+    Printf("\n%-10s  %-16s  %-10s  %-12s", "E (GeV)", "LY (npe/MeV)", "σ_t (ps)", "Theory σ_t (ps)");
+    for (int i = 0; i < NS; i++) {
+        if (!simOk[i]) continue;
+        double theory = A_theory / TMath::Sqrt(LY_sim[i]) * 1000.;
+        Printf("%-10.0f  %-16.1f  %-10.1f  %-12.1f",
+               Ebeam_MeV[i]/1000., LY_sim[i], sig_sim[i]*1000., theory);
+    }
+    Printf("DSB1:  LY=%.0f npe/MeV  σ_t=%.1f ps", LY_dsb1, sig_dsb1*1000.);
 }
