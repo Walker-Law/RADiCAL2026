@@ -194,9 +194,9 @@ void plot_timing_vs_LY() {
 
     // ── Annotations (placed inside axes) ─────────────────────────────────────
     TLatex la;
-    la.SetTextSize(0.036);
+    la.SetTextSize(0.034);
     la.SetTextColor(kBlue);
-    la.DrawLatex(40., sig_dsb1 * 1.6,
+    la.DrawLatex(3.5, sig_dsb1 * 0.60,
                  Form("DSB1 (paper) ~%.0f npe/MeV", LY_dsb1));
 
     // Label each Geant4 sim point by beam energy
