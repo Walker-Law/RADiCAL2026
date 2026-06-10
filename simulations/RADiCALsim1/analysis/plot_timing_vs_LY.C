@@ -202,9 +202,9 @@ void plot_timing_vs_LY() {
     // Label each Geant4 sim point by beam energy.
     // All three points cluster at ~100 ps; stagger x and y to avoid overlap.
     const char* simLabels[NS] = {"20 GeV", "50 GeV", "125 GeV"};
-    // [i]: {x multiplier relative to point, y multiplier relative to point}
-    double xOff[NS] = {1.35, 1.35, 0.08};   // 125 GeV: left of point
-    double yOff[NS] = {1.60, 0.62, 1.55};   // 20 up, 50 below, 125 above
+    // Vertical/horizontal stagger to avoid overlap (log x-scale, clustered y)
+    double xOff[NS] = {1.35, 1.35, 1.35};
+    double yOff[NS] = {1.60, 0.62, 1.65};   // 20 up-right, 50 below-right, 125 above-right
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         TLatex lb;
