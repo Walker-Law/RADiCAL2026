@@ -191,14 +191,15 @@ the 5% crossing. The sim says the light itself supports ~70–145 ps.
 Graphs: build/plots/datacomp/ (sigma_vs_E.png, data_deltaT_{25,150}GeV.png,
 data_waveform_example.png) via analysis/compare_graphs.C + /tmp/dataplots.C.
 
-### Sim adjustment made for data comparison
-First-photon ΔT (~95–111 ps) is idealized — data uses 50% CFD on an analog pulse.
-Added **waveform emulation** in EventAction (`pulseCFD()`): sums single-photon
-responses SPR(t)=(1−e^{−t/1.0ns})·e^{−t/3.0ns} over ALL detected photon times
-(stored in fPhTUp/fPhTDown vectors), samples at 0.2 ns (DRS4-like), applies the
-identical 50% CFD. New histograms: **H1[22] DeltaT_CFD** (data-identical
-estimator), **H1[23] PulseFWHM** (validate vs 8.3 ns data). Sim runs for
-comparison: build/datacomp/radical_E{25,150}GeV.root (40 evt optical each).
+### Waveform emulation added for data comparison
+First-photon ΔT (~95–111 ps) is idealized. Added **waveform emulation** in
+EventAction (`pulseCFD()`): sums single-photon responses
+SPR(t)=(1−e^{−t/1.0ns})·e^{−t/3.0ns} over ALL detected photon arrival times
+(stored in fPhTUp/fPhTDown vectors up to kMaxStore=60000), samples at 0.2 ns
+(DRS4-like 5 GS/s), applies **5% CFD** (user-confirmed convention — `thr = 0.05 * pk`).
+H1[22] DeltaT_CFD = data-identical estimator. H1[23] PulseFWHM = FWHM to
+validate against data ~8.3 ns. Comparison sim runs (40 evt optical, `build/datacomp/`):
+`./build/datacomp_run.sh` (handles merge-safety + retry).
 
 ## Test-beam analysis config (analysis/plot_testbeam.C)
 Replicates CERN test-beam plots. Run per energy file:
