@@ -118,7 +118,7 @@ void plot_timing_vs_LY() {
     bool   simOk[NS] = {false, false, false};
 
     for (int i = 0; i < NS; i++) {
-        simOk[i] = extractOptPoint(optFiles[i], Ebeam_MeV[i],
+        simOk[i] = extractOptPoint(optFiles[i],
                                    LY_sim[i], sig_sim[i], sig_sim_err[i]);
         if (simOk[i]) nSim++;
     }
