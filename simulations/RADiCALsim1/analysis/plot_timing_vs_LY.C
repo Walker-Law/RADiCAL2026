@@ -246,12 +246,15 @@ void plot_timing_vs_LY() {
     Printf("\nSaved: build/plots/timing_vs_LY.png");
 
     // Summary table
-    Printf("\n%-10s  %-16s  %-10s  %-12s", "E (GeV)", "LY (npe/MeV)", "σ_t (ps)", "Theory σ_t (ps)");
+    Printf("\n%-10s  %-16s  %-12s  %-14s  %-12s",
+           "File", "LY (npe/MeV)", "σ_t sim (ps)", "Theory σ_t (ps)", "Geom excess");
+    const char* eLabels[NS] = {"20 GeV","50 GeV","125 GeV"};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         double theory = A_theory / TMath::Sqrt(LY_sim[i]) * 1000.;
-        Printf("%-10.0f  %-16.1f  %-10.1f  %-12.1f",
-               Ebeam_MeV[i]/1000., LY_sim[i], sig_sim[i]*1000., theory);
+        double excess = TMath::Sqrt(TMath::Max(0., sig_sim[i]*sig_sim[i]*1e6 - theory*theory));
+        Printf("%-10s  %-16.0f  %-12.1f  %-14.1f  %-12.1f ps (geom)",
+               eLabels[i], LY_sim[i], sig_sim[i]*1000., theory, excess);
     }
-    Printf("DSB1:  LY=%.0f npe/MeV  σ_t=%.1f ps", LY_dsb1, sig_dsb1*1000.);
+    Printf("DSB1:  LY=%.0f npe/MeV  σ_t=%.1f ps (theory)", LY_dsb1, sig_dsb1*1000.);
 }
