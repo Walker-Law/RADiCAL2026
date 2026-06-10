@@ -162,14 +162,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     static const G4double tCap_boreR = 0.475*mm;   // 0.95 mm bore
     static const G4double wlsFiberR  = 0.450*mm;   // 0.9 mm LuAG:Ce fiber
 
-    // Timing capillary segmentation — shower max measured at LYSO layer ~10–11.
-    // Center of LYSO layer L sits at L*4.02 + 0.75 mm from the upstream face, so
-    // the peak (layer ~10.5) is at ~43 mm — NOT the geometric middle (layer 14).
-    // WLS section is centered on shower max (upstreamLen = showerMaxDepth − wlsLen/2),
-    // so changing wlsLen keeps it bracketing shower max automatically.
+    // Timing capillary segmentation.
+    // With corrected Tyvek (0.2032 mm), one LYSO+W period = 1.5+2.5+2*0.2032 = 4.4064 mm.
+    // Center of LYSO layer L from upstream face = L*4.4064 + 0.75 mm.
+    // Paper: WLS was optimized for 20–30 GeV FTBF studies, shower max at layers 8–10.
+    // → WLS centered on layer 9: z = 9*4.4064 + 0.75 ≈ 40.4 mm from upstream face.
+    // Paper specifies WLS filament length = 15 mm (DSB1/LuAG:Ce fiber, 900 µm diam).
     // (Beam travels +z: "upstream" = −z end, "downstream" = +z end.)
-    static const G4double showerMaxDepth = 43.0*mm;  // measured peak, layers ~10–11
-    static const G4double wlsLen         = 6.0*mm;   // LuAG:Ce WLS section (40–46 mm)
+    static const G4double showerMaxDepth = 40.4*mm;  // layer 9 centre, paper Fig. 7 position
+    static const G4double wlsLen         = 15.0*mm;  // per paper: 15 mm WLS filament length
     static const G4double upstreamLen    = showerMaxDepth - wlsLen/2.0;       // 40.0 mm
     static const G4double downstreamLen  = stackZ - upstreamLen - wlsLen;     // 68.06 mm
 
