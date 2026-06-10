@@ -222,7 +222,7 @@ void plot_timing_vs_LY() {
         "#star above curve: sim #sigma_{t} includes geometric shower-depth spread");
 
     // ── Legend ────────────────────────────────────────────────────────────────
-    double legX1 = 0.18, legY1 = 0.14, legX2 = 0.62, legY2 = 0.38;
+    double legX1 = 0.42, legY1 = 0.14, legX2 = 0.92, legY2 = 0.38;
     auto legend = new TLegend(legX1, legY1, legX2, legY2);
     legend->SetBorderSize(1);
     legend->SetFillColor(0);
