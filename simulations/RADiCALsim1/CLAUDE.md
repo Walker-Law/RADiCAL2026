@@ -59,25 +59,34 @@ machine (under `/Users/macro-2/Research/geant4-install/share/Geant4/data/`):
 
 ## Geometry (DetectorConstruction.cc)
 
-Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.01mm)** = `stackZ` 114.06 mm.
+Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.2032mm)** = `stackZ` **124.88 mm**.
 - Pattern: `LYSO(0)|Tyvek|W(0)|Tyvek|LYSO(1)|...|LYSO(28)`. Even tile=LYSO, odd=W.
 - Tiles are 14×14 mm (±7 mm half-width). Shared logical volumes placed by copy number.
-- One LYSO+W period = 4.02 mm. **Center of LYSO layer L = L*4.02 + 0.75 mm from upstream face.**
+- One LYSO+W period = **4.4064 mm** (with 0.2032mm Tyvek). **Center of LYSO layer L = L×4.4064 + 0.75 mm from upstream face.**
 - Convention: beam travels +z, so "upstream" = −z end, "downstream" = +z end.
 - Housing: Delrin shell, 18mm outer / 14mm inner cavity, `housingHalfZ`=65mm.
-- World: ±25mm transverse, ±200mm z. **Module only spans ±9mm — beam offsets >~7mm miss it.**
+- World: ±120mm transverse, ±650mm z (CERN test-beam line).
+
+### Geometry corrections applied (June 2026, vs paper NIM A 1068 (2024) 169737)
+| Parameter | Old (wrong) | Corrected | Source |
+|-----------|-------------|-----------|--------|
+| Tyvek thickness | 0.01 mm | **0.2032 mm** (0.008") | Paper §2 |
+| WLS length | 6 mm | **15 mm** | Paper §2, capillary spec |
+| Corner capOff | 4.5 mm | **3.5 mm** | Paper Fig. 2 cross-section |
+| showerMaxDepth | 43.0 mm | **40.4 mm** (layer 9, 20–30 GeV opt.) | Paper Fig. 7 |
+| stackZ | 114.06 mm | **124.88 mm** | Tyvek fix |
+| WLS period coverage | layers ~10–11 | **layers ~7.3–10.7** | WLS pos fix |
 
 ### Capillaries (5 holes drilled via G4SubtractionSolid)
 - **Center (energy):** `centerHoleR`=0.45mm. EJ309 bore (r=0.20mm) + quartz tube.
   `eCap_outR = centerHoleR` so the tube fully fills the hole (no air gap).
-- **4 corners (timing):** `cornerHoleR`=0.65mm. Quartz upstream rod + quartz tube wall +
-  **LuAG:Ce WLS fiber** (r=0.45mm) at shower max + quartz downstream rod.
+- **4 corners (timing):** `cornerHoleR`=0.65mm. Capillary OD=1.15mm (0.575mm r), bore=0.475mm.
+  **LuAG:Ce WLS fiber** (r=0.45mm, **15mm length**) at shower max + quartz upstream/downstream rods.
+  Corner positions: ±3.5mm from tile center (= 3.5mm from each edge in 14mm tile).
   Photodetectors `PD_Upstream`/`PD_Downstream` (Si, copy#=corner) at the two ends.
-- WLS segmentation auto-centers on shower max: `upstreamLen = showerMaxDepth - wlsLen/2`.
-  Current: `showerMaxDepth`=43.0mm (measured peak ≈ layer 10–11, NOT geometric middle),
-  `wlsLen`=6.0mm (covers 40–46mm), `upstreamLen`=40mm, `downstreamLen`=68.06mm, `z_wls`=−14.03mm.
-  Volume names: `Cap_Corner_Upstream` / `Cap_Corner_Downstream` (quartz rods),
-  `TCapUpstream_Phys` / `TCapDownstream_Phys` placements.
+- WLS segmentation: `upstreamLen = showerMaxDepth - wlsLen/2 = 40.4 - 7.5 = 32.9 mm`.
+  `downstreamLen = 124.88 - 32.9 - 15.0 = 76.98 mm`. WLS covers 32.9–47.9 mm (layers 7.3–10.7).
+  Volume names: `Cap_Corner_Upstream` / `Cap_Corner_Downstream` (quartz rods).
 
 ### Materials
 LYSO, Tungsten (W), Tyvek, Delrin (POM), fused quartz, EJ309 liquid scintillator,
