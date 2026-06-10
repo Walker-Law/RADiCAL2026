@@ -143,14 +143,21 @@ Located `/Users/macro-2/Research/RADiCAL/Data/`: RUN1211 (25 GeV), RUN1259/60/61
 - Analysis snippets in /tmp during session; reference macro: analysis/compare_data.C.
 
 ### RESULT of data-vs-sim comparison (June 2026) — 5% CFD convention
-(50%-CFD numbers from the first pass: data 558/502, sim 485/393 — superseded
-after user clarified the experiment uses 5% CFD.)
-Data at 5%: σ_t(25)=614 ps, σ_t(150)=476 ps. Sim rerun at 5% pending/see
-compare_data.C output for the current table. Sim remains slightly optimistic —
-expected: no DRS4 timing-calibration jitter, no amplifier noise, idealized QE,
-74% data saturation at 150 GeV. Sim pulse FWHM 17–19 ns vs data 8.3 ns → real
-readout shapes/integrates less of the LuAG 60 ns tail; tuning SPR τ_f shorter
-would match.
+| E (GeV) | DATA σ_t | SIM 5% CFD | SIM first-photon |
+|---------|----------|------------|------------------|
+| 25  | 614 ps | 145 ps | 100 ps |
+| 150 | 476 ps |  68 ps |  94 ps |
+(50%-CFD first pass for reference: data 558/502, sim 485/393 ps.)
+
+**KEY FINDING:** data σ_t is nearly THRESHOLD-INDEPENDENT (5%: 614/476 vs 50%:
+558/502) while the noiseless sim collapses to its photostatistics floor at 5%.
+⇒ The real detector's ~500 ps is NOT photostatistics-limited; it is dominated by
+a pulse-wide systematic that shifts whole waveforms event-to-event — most likely
+uncalibrated DRS4 inter-cell timing (raw `timevalue` used, no cell-by-cell
+calibration; typically several-hundred-ps RMS), plus amplifier rise time/noise on
+the 5% crossing. The sim says the light itself supports ~70–145 ps.
+Graphs: build/plots/datacomp/ (sigma_vs_E.png, data_deltaT_{25,150}GeV.png,
+data_waveform_example.png) via analysis/compare_graphs.C + /tmp/dataplots.C.
 
 ### Sim adjustment made for data comparison
 First-photon ΔT (~95–111 ps) is idealized — data uses 50% CFD on an analog pulse.
