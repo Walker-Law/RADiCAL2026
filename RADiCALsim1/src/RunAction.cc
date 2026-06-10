@@ -131,7 +131,7 @@ RunAction::RunAction() {
                  "Detected optical photons per event;N_{p.e.};Events",
                  300, 0., 60000.);
 
-    // H1[22]: waveform-emulated ΔT (DRS4-style pulse + 50% CFD), the
+    // H1[22]: waveform-emulated ΔT (DRS4-style pulse + 5% CFD), the
     // data-identical timing estimator for direct test-beam comparison.
     am->CreateH1("DeltaT_CFD",
                  "Waveform CFD #DeltaT (downstream #minus upstream);#DeltaT (ns);Corners",
