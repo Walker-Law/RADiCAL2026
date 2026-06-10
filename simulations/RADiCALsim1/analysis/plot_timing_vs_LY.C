@@ -219,7 +219,7 @@ void plot_timing_vs_LY() {
     note.SetTextSize(0.028);
     note.SetTextColor(kGray+2);
     note.DrawLatex(0.17, 0.88,
-        "#star above curve: sim #sigma_{t} includes geometric shower-depth spread");
+        "Sim points above curve: #sigma_{t} includes geometric shower-depth spread");
 
     // ── Legend ────────────────────────────────────────────────────────────────
     double legX1 = 0.42, legY1 = 0.14, legX2 = 0.92, legY2 = 0.38;
