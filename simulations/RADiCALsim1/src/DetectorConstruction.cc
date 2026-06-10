@@ -127,7 +127,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // Layer thicknesses
     static const G4double lysoThick      = 1.5*mm;
     static const G4double wThick         = 2.5*mm;
-    static const G4double tyvekSliceThick = 0.01*mm;  // inter-layer Tyvek
+    static const G4double tyvekSliceThick = 0.2032*mm; // 0.008" per paper (Tyvek DuPont spec)
 
     // Stack: 29 LYSO + 28 W + 56 Tyvek slices
     static const G4int nLYSO  = 29;
@@ -135,14 +135,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     static const G4int nTiles = nLYSO + nW;   // 57
     static const G4int nInter = nTiles - 1;   // 56 inter-layer sheets
     static const G4double stackZ = nLYSO*lysoThick + nW*wThick + nInter*tyvekSliceThick;
-    // = 43.5 + 70.0 + 0.56 = 114.06 mm
+    // = 43.5 + 70.0 + 56*0.2032 = 124.88 mm  (paper: module ~135 mm incl. end cards)
 
-    // Capillary hole radii in tiles (paper dimensions)
+    // Capillary hole radii in tiles (paper Fig. 2 dimensions)
     static const G4double centerHoleR = 0.45*mm;  // 0.9 mm diameter
     static const G4double cornerHoleR = 0.65*mm;  // 1.3 mm diameter
 
-    // Corner capillary positions (±4.5 mm from center)
-    static const G4double capOff = 4.5*mm;
+    // Corner capillary positions: 3.5 mm from tile center (= 3.5 mm from each edge
+    // in a 14 mm tile), per paper Fig. 2 cross-section dimensions.
+    static const G4double capOff = 3.5*mm;
     const G4ThreeVector capXY[5] = {
         {0,       0,      0},
         {+capOff, +capOff, 0},
