@@ -7,8 +7,8 @@
 // This macro overlays:
 //   (1) The theoretical 1/√LY curve (calibrated to paper anchor at LY=100→52 ps)
 //   (2) Paper Fig. 8 simulation points (DSB1, digitized from figure)
-//   (3) Actual Geant4 sim points extracted from optical runs at 20/50/125 GeV
-//       -- LY from H1[21] PhotonsDetected / 8 ends / E_beam_MeV
+//   (3) Actual Geant4 sim points extracted from optical runs at 5/10/20/50/100/120 GeV
+//       -- LY from H1[21] PhotonsDetected / (2 × TotalCornerWLS_MeV)
 //       -- σ_t  from H1[6]  DeltaT RMS (spread across events, downstream−upstream)
 //   (4) DSB1 estimated operating point
 //
