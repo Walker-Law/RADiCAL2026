@@ -66,10 +66,12 @@ void plot_lateral_profile() {
         TH2D* h2 = (TH2D*)f->Get("LateralProfile");
         if (!h2) { f->Close(); continue; }
 
-        // Build radial profile by iterating over H2 bins
+        // Build radial profile by iterating over H2 bins.
+        // SetDirectory(nullptr): detach from TFile so f->Close() won't delete it.
         TH1D* hRad = new TH1D(Form("hRad_%d", i),
                                Form("%.0f GeV", E[i]),
                                nRbins, 0., rMax);
+        hRad->SetDirectory(nullptr);
 
         double totalW = 0, wR = 0, wR2 = 0;
         double sumInner5 = 0, sumInner7 = 0;
