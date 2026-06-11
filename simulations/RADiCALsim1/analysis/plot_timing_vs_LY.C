@@ -236,7 +236,7 @@ void plot_timing_vs_LY() {
     legend->AddEntry(gPaper,  "Paper Fig. 8 (Geant4, DSB1, 50 GeV)", "p");
     legend->AddEntry(gCurve,  "#sigma_{t} = 0.52 / #sqrt{LY}  (ns)", "l");
     if (gSim && vLY.size() > 0)
-        legend->AddEntry(gSim, "This sim: LuAG:Ce optical (25 ev/E)", "p");
+        legend->AddEntry(gSim, "This sim: LuAG:Ce optical (25 ev/E, 6 energies)", "p");
     legend->AddEntry(gDSB1,   Form("DSB1 est. ~%.0f npe/MeV (paper)", LY_dsb1), "p");
     legend->Draw();
 
