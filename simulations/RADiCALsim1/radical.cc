@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     // with env var  RADICAL_OPTICAL=1 ./radical ...  for the photon-based timing.
     // When off, the optical material tables / photodetectors simply sit unused.
     auto physics = new FTFP_BERT();
-    bool useOptical = (std::getenv("RADICAL_OPTICAL") != nullptr);
+    bool useOptical = true;
     if (useOptical) {
         physics->RegisterPhysics(new G4OpticalPhysics());
     }
