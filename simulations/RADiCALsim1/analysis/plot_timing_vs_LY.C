@@ -254,7 +254,7 @@ void plot_timing_vs_LY() {
     // Summary table
     Printf("\n%-10s  %-16s  %-12s  %-14s  %-12s",
            "File", "LY (npe/MeV)", "σ_t sim (ps)", "Theory σ_t (ps)", "Geom excess");
-    const char* eLabels[NS] = {"20 GeV","50 GeV","125 GeV"};
+    const char* eLabels[NS] = {"5 GeV","10 GeV","20 GeV","50 GeV","100 GeV","120 GeV"};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         double theory = A_theory / TMath::Sqrt(LY_sim[i]) * 1000.;
