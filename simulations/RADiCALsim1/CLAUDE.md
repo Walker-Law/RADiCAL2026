@@ -69,13 +69,13 @@ Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.2032mm)** = `stackZ` **12
 - Housing: Delrin shell, 18mm outer / 14mm inner cavity, `housingHalfZ`=65mm.
 - World: ±120mm transverse, ±650mm z (CERN test-beam line).
 
-### Geometry corrections applied (June 2026, vs paper NIM A 1068 (2024) 169737)
+### Geometry corrections applied (June 2026, vs arXiv:2401.01747 / NIM A 1068 (2024) 169737)
 | Parameter | Old (wrong) | Corrected | Source |
 |-----------|-------------|-----------|--------|
-| Tyvek thickness | 0.01 mm | **0.2032 mm** (0.008") | Paper §2 |
-| WLS length | 6 mm | **15 mm** | Paper §2, capillary spec |
-| Corner capOff | 4.5 mm | **3.5 mm** | Paper Fig. 2 cross-section |
-| showerMaxDepth | 43.0 mm | **40.4 mm** (layer 9, 20–30 GeV opt.) | Paper Fig. 7 |
+| Tyvek thickness | 0.01 mm | **0.2032 mm** (0.008") | arXiv:2401.01747 §2 |
+| WLS length | 6 mm | **15 mm** | arXiv:2401.01747 §2 |
+| Corner capOff | 4.5 mm | **3.5 mm** | arXiv:2401.01747 Fig. 2 |
+| showerMaxDepth | 43.0 mm | **40.4 mm** (layer 9, 20–30 GeV opt.) | arXiv:2401.01747 Fig. 7 |
 | stackZ | 114.06 mm | **124.88 mm** | Tyvek fix |
 | WLS period coverage | layers ~10–11 | **layers ~7.3–10.7** | WLS pos fix |
 
