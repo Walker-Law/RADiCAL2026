@@ -1,28 +1,38 @@
 #!/bin/bash
-# run_optical_scan_1000.sh — 1000-event optical scan at 6 energies, all in parallel.
+# run_optical_scan_1000.sh — 1000-event optical scan at 6 energies, parallel.
+# Each energy runs in its own tmpdir to avoid radical_output.root collisions.
 # Run from RADiCALsim1/build/ after sourcing setup_env_cluster.sh.
-#   source ../setup_env_cluster.sh
-#   bash ../run_optical_scan_1000.sh
 
-mkdir -p optical_scan_1000
+OUTDIR="optical_scan_1000"
+mkdir -p "$OUTDIR"
+BINARY="$(pwd)/radical"
+MAC="$(pwd)/../opt1000.mac"
 
-for E in 5 10 20 50 100 120; do
-    OUTFILE="optical_scan_1000/optical_E${E}GeV.root"
+run_one() {
+    E=$1
+    OUTFILE="$(pwd)/$OUTDIR/optical_E${E}GeV.root"
     if [ -f "$OUTFILE" ]; then
         echo "SKIP E=${E} GeV (already exists)"
-        continue
+        return
     fi
-    echo "START E=${E} GeV — $(date)"
-    RADICAL_BEAM_ENERGY_GEV=${E} nohup ./radical ../opt1000.mac \
-        > optical_scan_1000/log_E${E}GeV.txt 2>&1 &
-done
+    TMPDIR=$(mktemp -d)
+    cp "$MAC" "$TMPDIR/opt1000.mac"
+    cd "$TMPDIR"
+    echo "START E=${E} GeV in $TMPDIR — $(date)"
+    RADICAL_BEAM_ENERGY_GEV=${E} "$BINARY" opt1000.mac > "$OUTFILE.log" 2>&1
+    mv radical_output.root "$OUTFILE"
+    cd - > /dev/null
+    rm -rf "$TMPDIR"
+    echo "DONE  E=${E} GeV -> $OUTFILE — $(date)"
+}
 
-echo "All jobs launched. Waiting..."
-wait
+export -f run_one
+export OUTDIR BINARY MAC
 
 for E in 5 10 20 50 100 120; do
-    mv -f radical_output_E${E}GeV.root optical_scan_1000/optical_E${E}GeV.root 2>/dev/null || true
+    run_one $E &
 done
 
-echo "Done — $(date)"
-ls -lh optical_scan_1000/
+wait
+echo "All done — $(date)"
+ls -lh "$OUTDIR"/
