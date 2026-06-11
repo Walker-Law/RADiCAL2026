@@ -1,6 +1,6 @@
 # RADiCAL2026
 
-Research repository for the **RADiCAL** (Radiation-hard Innovative Calorimeter) project.
+Research repository for the **RADiCAL** project.
 Based on [arXiv:2303.05580v3](https://arxiv.org/abs/2303.05580).
 
 ## Repository layout
