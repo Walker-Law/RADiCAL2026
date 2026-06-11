@@ -70,11 +70,13 @@ bool extractOptPoint(const char* fname, double& LY, double& sig_t, double& sig_t
     // LY: detected photons per SiPM-end per MeV of WLS energy deposited
     // PhotonsDetected / 8 ends / (TotalCornerWLS / 4 corners) = PhotonsDetected / (2 * TotalCornerWLS)
     LY    = meanPhot / (2.0 * meanWLS);
-    sig_t = rms;
-    // Uncertainty on σ from a sample: δσ ≈ σ/√(2N)
-    sig_t_err = rms / TMath::Sqrt(2. * nDT);
+    // (DW−UP)/2 corner trick: ΔT = t_down − t_up = (L−2z)/v_g
+    // A shower-depth spread σ_z maps to σ(ΔT) = 2σ_z/v_g = 2·σ_t.
+    // Physical timing resolution = σ(ΔT)/2.
+    sig_t     = rms / 2.0;
+    sig_t_err = (rms / 2.0) / TMath::Sqrt(2. * nDT);
 
-    Printf("  %-40s  LY=%6.0f npe/MeV (WLS)   σ_t=%5.1f ± %.1f ps  (nEv=%.0f nDT=%.0f)",
+    Printf("  %-40s  LY=%6.0f npe/MeV   σ_t=σ(ΔT)/2=%5.1f ± %.1f ps  (nEv=%.0f nDT=%.0f)",
            fname, LY, sig_t*1000., sig_t_err*1000., nEv, nDT);
     return true;
 }
