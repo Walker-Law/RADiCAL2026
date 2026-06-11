@@ -228,9 +228,13 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // =========================================================================
     // 6b. OPTICAL-PHOTON TIMING (the real measurement)
     //   Per corner, ΔT = t_downstream − t_upstream of the FIRST detected photon
-    //   at each end PD (leading-edge). σ_t now comes from genuine photon
-    //   statistics + propagation, so it follows a/√E ⊕ b. H1[6] = ΔT,
-    //   H2[5] = ΔT vs E, H1[21] = detected photons/event.
+    //   at each end PD (leading-edge). H1[6] = ΔT (raw difference, NOT ÷2).
+    //
+    //   (DW−UP)/2 corner trick (jwwetzel.github.io/RADiCAL/going_radical.html):
+    //   ΔT = (L − 2z)/v_g, so σ(ΔT) = 2·σ_z/v_g = 2·σ_t.
+    //   Physical timing resolution: σ_t = RMS(H1[6]) / 2.
+    //   The /2 also cancels MCP jitter, DRS4 timebase error, and beam-arrival
+    //   jitter — all common-mode in the DW−UP subtraction.
     // =========================================================================
     G4int nPhotTot = 0;
     for (G4int c = 0; c < 4; c++) {
