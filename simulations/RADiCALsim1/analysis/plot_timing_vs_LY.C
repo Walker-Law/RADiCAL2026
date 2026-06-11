@@ -207,10 +207,15 @@ void plot_timing_vs_LY() {
     // LY order (high→low): 5(811), 10(757), 20(642), 50(314), 100(182), 120(169)
     // 100/120 GeV are nearly coincident in both LY and σ_t — split vertically.
     const char* simLabels[NS] = {"5 GeV", "10 GeV", "20 GeV", "50 GeV", "100 GeV", "120 GeV"};
-    double xOff[NS] = {1.30,  0.10,  1.30,  1.30,  1.30,  0.10};
-    //                 5→right 10←left 20→right 50→right 100→right 120←left
-    double yOff[NS] = {1.55,  0.60,  0.60,  1.55,  1.55,  0.58};
-    //                 5↑    10↓    20↓    50↑    100↑   120↓
+    // Placement strategy (log x, log y):
+    //   5 GeV (LY=811, 158ps):  right+above          — well separated
+    //  10 GeV (LY=757, 116ps):  right+below          — separate from 5 in y
+    //  20 GeV (LY=642, 110ps):  far-left+below       — avoids 10 GeV label
+    //  50 GeV (LY=314, 110ps):  right+above          — room between 20 and 100
+    // 100 GeV (LY=182, 106ps):  right+high-above     — step above 50 GeV label
+    // 120 GeV (LY=169,  99ps):  far-left+below       — near-coincident with 100, push left+down
+    double xOff[NS] = {1.30,  1.30,  0.08,  1.30,  1.30,  0.08};
+    double yOff[NS] = {1.60,  0.52,  0.55,  1.65,  2.10,  0.50};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         TLatex lb;
