@@ -43,7 +43,8 @@ void scan_resolution(const char* dir="build/scan") {
     // --- timing ---
     TH1D* hT=(TH1D*)f->Get("DeltaT");
     TF1* gT=coreFit(hT,2.5,4);
-    double muT=gT->GetParameter(1)*1000, sgT=gT->GetParameter(2)*1000, sgTerr=gT->GetParError(2)*1000;
+    // (DW−UP)/2 corner trick: σ_t = σ(ΔT)/2 (dividing by 2 gives physical timing resolution)
+    double muT=gT->GetParameter(1)*1000, sgT=gT->GetParameter(2)*500, sgTerr=gT->GetParError(2)*500;
     tRes[i]=sgT; tResErr[i]=sgTerr;
     printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f\n",
            E[i],muE,sgE,eRes[i],muT,sgT);
