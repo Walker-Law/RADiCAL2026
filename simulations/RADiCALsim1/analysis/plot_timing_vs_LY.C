@@ -106,11 +106,14 @@ void plot_timing_vs_LY() {
 
     // ── Actual Geant4 sim points from optical runs ────────────────────────────
     Printf("\nExtracting actual sim points from optical runs:");
-    const int NS = 3;
+    const int NS = 6;
     const char* optFiles[NS] = {
-        "build/optical_timing/optical_E20GeV.root",
-        "build/optical_timing/optical_E50GeV.root",
-        "build/optical_timing/optical_E125GeV.root"
+        "build/optical_scan/optical_E5GeV.root",
+        "build/optical_scan/optical_E10GeV.root",
+        "build/optical_scan/optical_E20GeV.root",
+        "build/optical_scan/optical_E50GeV.root",
+        "build/optical_scan/optical_E100GeV.root",
+        "build/optical_scan/optical_E120GeV.root"
     };
     double LY_sim[NS], sig_sim[NS], sig_sim_err[NS];
     int    nSim = 0;
