@@ -1,6 +1,6 @@
 # RADiCAL2026 — Geant4 Simulation
 
-Full Geant4 (v11.4.0) simulation of the **RADiCAL** (Radiation-hard Innovative Calorimeter) shashlik module, based on [arXiv:2303.05580v3](https://arxiv.org/abs/2303.05580). Includes a complete CERN test-beam line and direct comparison to measured DRS4 waveform data.
+Full Geant4 (v11.4.0) simulation of the **RADiCAL** (Radiation-hard Innovative Calorimeter) shashlik module, based on [[1]](https://arxiv.org/abs/2303.05580) and [[2]](https://arxiv.org/abs/2401.01747). Includes a complete CERN test-beam line and direct comparison to measured DRS4 waveform data.
 
 ## Detector
 
