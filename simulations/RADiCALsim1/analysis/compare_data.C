@@ -2,14 +2,22 @@
 //
 //   root -l -b -q analysis/compare_data.C
 //
+// (DW−UP)/2 corner trick: ΔT = t_down − t_up = (L−2z)/v_g, so the physical
+// timing resolution is σ_t = σ(ΔT)/2. All sim values below are reported as
+// σ(ΔT)/2. Data values are σ(ΔT) from raw DRS4 waveforms (uncorrected for
+// DRS4 inter-cell timing jitter); divide by 2 to compare with sim on the same
+// footing, but the residual data/sim gap is dominated by uncorrected DRS4 jitter.
+//
 // Data reference values (extracted from RUN1211/1259/1260/1261 waveforms,
 // in-time pulse selection, 5% CFD [per experiment convention], iterative ±2σ
 // Gaussian core fit):
-//   σ_t(25 GeV)  = 614 ps     σ_t(150 GeV) = 476 ps (3-run mean: 488/470/471)
+//   σ(ΔT)(25 GeV)  = 614 ps → σ_t = 307 ps  (data, DRS4-uncorrected)
+//   σ(ΔT)(150 GeV) = 476 ps → σ_t = 238 ps  (data, DRS4-uncorrected; 3-run mean: 488/470/471)
 //   pulse FWHM  ≈ 8.3 ns     (ch0/ch1 capillary pair)
 // Sim files: build/datacomp/radical_E{25,150}GeV.root
 //   DeltaT_CFD = waveform-emulated (SPR conv. + 5 GS/s + 5% CFD) — the
 //   data-identical estimator.  DeltaT = first-photon leading edge (idealized).
+//   Both are reported as σ(ΔT)/2 to give physical σ_t.
 
 TF1* coreFit(TH1* h, double nsig=2.0, int iters=4) {
   double mu=h->GetMean(), sg=h->GetRMS();
