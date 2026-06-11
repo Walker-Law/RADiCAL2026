@@ -100,6 +100,7 @@ root -l -b -q analysis/compare_graphs.C
 
 Output histograms (24 TH1D + 15 TH2D) are written to `build/radical_output.root`. See `CLAUDE.md` for the full histogram inventory and technical reference.
 
-## Reference
+## References
 
-V. Beresovskyi et al., *"RADiCAL: a Radiation-hard Innovative Calorimeter"*, arXiv:2303.05580v3 (2023).
+1. V. Beresovskyi et al., *"RADiCAL: a Radiation-hard Innovative Calorimeter"*, arXiv:[2303.05580](https://arxiv.org/abs/2303.05580) (2023).
+2. C. Perez-Lara et al., *"Study of time resolution measurements and prospects for energy resolution of an ultra-compact sampling calorimeter (RADiCAL) module at EM shower maximum over the energy range 25 GeV–150 GeV"*, Nucl. Instrum. Methods Phys. Res. A **1068** (2024) 169737, arXiv:[2401.01747](https://arxiv.org/abs/2401.01747).
