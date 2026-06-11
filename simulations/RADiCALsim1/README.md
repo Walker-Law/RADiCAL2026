@@ -32,21 +32,34 @@ A LYSO/W shashlik sampling calorimeter with embedded quartz capillaries for prec
 
 Energy scan (1500 events/point, no optical):
 
-| E (GeV) | σ/E (%) | σ_t (ps) |
-|---------|---------|----------|
-| 5 | 6.42 | 17.2 |
-| 20 | 3.91 | 14.9 |
-| 50 | 3.22 | 13.2 |
-| 120 | 2.62 | 11.0 |
+| E (GeV) | σ/E (%) | σ_t = σ(ΔT)/2 (ps) |
+|---------|---------|---------------------|
+| 5 | 6.42 | 8.6 |
+| 20 | 3.91 | 7.5 |
+| 50 | 3.22 | 6.6 |
+| 120 | 2.62 | 5.5 |
 
-Fits: **σ/E = 14.1%/√E ⊕ 2.38%** &nbsp;&nbsp; **σ_t = 33.9 ps/√E ⊕ 11.5 ps**
+σ_t = σ(ΔT)/2 per the (DW−UP)/2 corner trick: ΔT = t_down − t_up = (L−2z)/v_g cancels MCP, DRS4 timebase, and beam-arrival jitter in the subtraction; dividing by 2 recovers the physical timing resolution.
 
-Data comparison (with optical photons, 5% CFD waveform estimator):
+Fits: **σ/E = 14.1%/√E ⊕ 2.38%** &nbsp;&nbsp; **σ_t = 16.9 ps/√E ⊕ 5.7 ps**
 
-| E (GeV) | Data σ_t | Sim σ_t |
-|---------|----------|---------|
-| 25 GeV | 614 ps | 145 ps |
-| 150 GeV | 476 ps | 68 ps |
+Optical scan (25 events/point, LuAG:Ce scintillation, σ_t = σ(ΔT)/2):
+
+| E (GeV) | LY (npe/MeV) | σ_t (ps) |
+|---------|-------------|---------|
+| 5 | 811 | 79 |
+| 20 | 642 | 55 |
+| 50 | 314 | 55 |
+| 120 | 169 | 49 |
+
+σ_t lies above the photostatistics floor (18–40 ps) due to geometric shower-depth spread in the 15 mm WLS fiber. Geometric excess decreases with energy (77→29 ps) as showers become more reproducible in depth.
+
+Data comparison (with optical photons, 5% CFD, σ_t = σ(ΔT)/2):
+
+| E (GeV) | Data σ_t (DRS4-uncorrected) | Sim CFD σ_t |
+|---------|----------------------------|-------------|
+| 25 GeV | 307 ps | ~72 ps |
+| 150 GeV | 238 ps | ~34 ps |
 
 The ~4–7× gap is attributed to uncalibrated DRS4 inter-cell timing jitter in the raw test-beam data — not a detector limitation.
 
