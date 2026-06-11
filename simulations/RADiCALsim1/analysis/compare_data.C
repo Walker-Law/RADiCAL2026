@@ -30,10 +30,11 @@ TF1* coreFit(TH1* h, double nsig=2.0, int iters=4) {
 void compare_data() {
   gStyle->SetOptStat(0);
   const int N=2; double E[N]={25,150};
-  double dataSig[N]={614,476};                 // ps, measured (5% CFD)
+  double dataDeltaT[N]={614,476};               // ps, σ(ΔT) raw DRS4 (NOT yet ÷2)
+  double dataSig[N]={307,238};                  // ps, σ_t = σ(ΔT)/2 (DRS4-uncorrected)
   double dataFWHM=8.3;                          // ns
-  printf("\n E(GeV) | DATA sigma_t | SIM CFD sigma_t | SIM first-photon | SIM FWHM\n");
-  printf(" -----------------------------------------------------------------------\n");
+  printf("\n E(GeV) | DATA σ_t(÷2) | SIM CFD σ_t(÷2) | SIM 1st-phot σ_t(÷2) | SIM FWHM\n");
+  printf(" --------------------------------------------------------------------------\n");
   for (int i=0;i<N;i++){
     TFile* f=TFile::Open(Form("build/datacomp/radical_E%.0fGeV.root",E[i]));
     if(!f||f->IsZombie()){ printf(" %5.0f | (sim file missing)\n",E[i]); continue; }
@@ -41,10 +42,16 @@ void compare_data() {
     TH1D* hF=(TH1D*)f->Get("DeltaT");
     TH1D* hW=(TH1D*)f->Get("PulseFWHM");
     TF1* gC=coreFit(hC); TF1* gF=coreFit(hF);
-    printf(" %5.0f | %9.0f ps | %12.0f ps | %13.0f ps | %5.1f ns\n",
-      E[i], dataSig[i], gC->GetParameter(2)*1000, gF->GetParameter(2)*1000,
+    // Divide sim σ(ΔT) by 2 to get physical σ_t (corner trick)
+    printf(" %5.0f | %9.0f ps | %12.0f ps | %14.0f ps | %5.1f ns\n",
+      E[i], dataSig[i],
+      gC->GetParameter(2)*500,   // σ(ΔT_CFD)/2
+      gF->GetParameter(2)*500,   // σ(ΔT_1st)/2
       hW->GetMean());
     f->Close();
   }
-  printf("\n DATA pulse FWHM ~ %.1f ns (ch0/ch1)\n\n", dataFWHM);
+  printf("\n DATA: σ(ΔT) = %.0f / %.0f ps (raw DRS4); σ_t = σ(ΔT)/2 = %.0f / %.0f ps\n",
+         dataDeltaT[0], dataDeltaT[1], dataSig[0], dataSig[1]);
+  printf(" DATA pulse FWHM ~ %.1f ns (ch0/ch1)\n", dataFWHM);
+  printf(" Note: residual data/sim gap attributed to uncorrected DRS4 inter-cell jitter.\n\n");
 }
