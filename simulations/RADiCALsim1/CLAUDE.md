@@ -6,7 +6,9 @@
 ## What this is
 
 Geant4 (v11.4.0, FTFP_BERT) replication of the **RADiCAL** (Radiation-hard
-Innovative Calorimeter) shashlik module from **arXiv:2303.05580v3**. Full
+Innovative Calorimeter) shashlik module. Primary geometry reference:
+**arXiv:2401.01747** (NIM A 1068 (2024) 169737, Perez-Lara et al.) and
+**arXiv:2303.05580** (earlier beam-test results, Beresovskyi et al.). Full
 calorimetry simulation: 120 GeV electrons into a LYSO/W sampling stack with
 embedded quartz capillaries for energy (EJ309) and timing (LuAG:Ce WLS) readout.
 
