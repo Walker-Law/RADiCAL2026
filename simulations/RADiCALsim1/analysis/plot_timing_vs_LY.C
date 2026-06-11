@@ -203,11 +203,14 @@ void plot_timing_vs_LY() {
                  Form("DSB1 (paper) ~%.0f npe/MeV", LY_dsb1));
 
     // Label each Geant4 sim point by beam energy.
-    // All three points cluster at ~100 ps; stagger x and y to avoid overlap.
-    const char* simLabels[NS] = {"20 GeV", "50 GeV", "125 GeV"};
-    // Vertical/horizontal stagger to avoid overlap (log x-scale, clustered y)
-    double xOff[NS] = {1.35, 1.35, 1.35};
-    double yOff[NS] = {1.60, 0.62, 1.65};   // 20 up-right, 50 below-right, 125 above-right
+    // Points cluster at 100–160 ps; stagger to avoid overlap on log x-scale.
+    // LY order (high→low): 5(811), 10(757), 20(642), 50(314), 100(182), 120(169)
+    // 100/120 GeV are nearly coincident in both LY and σ_t — split vertically.
+    const char* simLabels[NS] = {"5 GeV", "10 GeV", "20 GeV", "50 GeV", "100 GeV", "120 GeV"};
+    double xOff[NS] = {1.30,  0.10,  1.30,  1.30,  1.30,  0.10};
+    //                 5→right 10←left 20→right 50→right 100→right 120←left
+    double yOff[NS] = {1.55,  0.60,  0.60,  1.55,  1.55,  0.58};
+    //                 5↑    10↓    20↓    50↑    100↑   120↓
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         TLatex lb;
