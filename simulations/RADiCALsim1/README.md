@@ -6,10 +6,10 @@ Full Geant4 (v11.4.0) simulation of the **RADiCAL** (Radiation-hard Innovative C
 
 A LYSO/W shashlik sampling calorimeter with embedded quartz capillaries for precision energy and timing readout:
 
-- **Stack:** 29 LYSO layers (1.5 mm) + 28 W absorbers (2.5 mm) + 56 Tyvek reflector foils (0.01 mm) = 114.06 mm total depth
-- **Transverse size:** 14 × 14 mm, housed in a Delrin shell
+- **Stack:** 29 LYSO layers (1.5 mm) + 28 W absorbers (2.5 mm) + 56 Tyvek foils (0.2032 mm, 0.008″ per [[2]](https://arxiv.org/abs/2401.01747) §2) = **124.88 mm** total depth
+- **Transverse size:** 14 × 14 mm, housed in a Delrin shell; capillary corner offset 3.5 mm from tile center ([[2]](https://arxiv.org/abs/2401.01747) Fig. 2)
 - **Energy capillary (center):** quartz tube + EJ309 liquid scintillator bore
-- **Timing capillaries (4 corners):** quartz rods + LuAG:Ce WLS fiber (6 mm, centered on shower maximum at ~43 mm depth) + Si photodetectors at both ends
+- **Timing capillaries (4 corners):** quartz rods + LuAG:Ce WLS fiber (15 mm at shower max, ~40.4 mm depth, per [[2]](https://arxiv.org/abs/2401.01747) §2) + Si photodetectors at both ends
 
 ## Test-beam line
 
