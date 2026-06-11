@@ -1,9 +1,11 @@
 // RADiCAL module geometry
-// Ref: Wetzel et al., arXiv:2303.05580 — beam test at Fermilab June 2022
+// Refs: [1] Beresovskyi et al., arXiv:2303.05580 (2023) — beam test at Fermilab
+//       [2] Perez-Lara et al., arXiv:2401.01747, NIM A 1068 (2024) 169737 — geometry reference
 //
 // Stack: 29 LYSO tiles (1.5 mm) + 28 W tiles (2.5 mm), LYSO-W-LYSO-... pattern
-// Each tile separated by 0.01 mm Tyvek sheet (56 sheets total)
-// Capillaries: energy (EJ309 liquid) in center hole, timing (LuAG:Ce WLS) in 4 corners
+// Each tile separated by 0.2032 mm (0.008") Tyvek sheet [2] §2 (56 sheets = 124.88 mm total)
+// Capillaries: energy (EJ309 liquid) in center hole, timing (LuAG:Ce WLS, 15 mm) in 4 corners
+// Corner offset: 3.5 mm from tile center [2] Fig. 2; WLS at shower max ~40.4 mm depth [2] Fig. 7
 // Housing: milled Delrin shell
 
 #include "DetectorConstruction.hh"
