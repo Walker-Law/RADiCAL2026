@@ -1,7 +1,12 @@
 # RADiCAL2026
 
-Research repository for the **RADiCAL** project.
-Based on [arXiv:2303.05580v3](https://arxiv.org/abs/2303.05580).
+Research repository for the **RADiCAL** (Radiation-hard Innovative Calorimeter) project.
+Based on [[1]](https://arxiv.org/abs/2303.05580) and [[2]](https://arxiv.org/abs/2401.01747).
+
+## References
+
+1. V. Beresovskyi et al., *"RADiCAL: a Radiation-hard Innovative Calorimeter"*, arXiv:[2303.05580](https://arxiv.org/abs/2303.05580) (2023).
+2. C. Perez-Lara et al., *"Study of time resolution measurements and prospects for energy resolution of an ultra-compact sampling calorimeter (RADiCAL)"*, NIM A **1068** (2024) 169737, arXiv:[2401.01747](https://arxiv.org/abs/2401.01747).
 
 ## Repository layout
 
