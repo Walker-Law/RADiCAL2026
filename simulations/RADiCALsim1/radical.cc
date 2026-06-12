@@ -35,8 +35,7 @@ int main(int argc, char** argv) {
     }
 
     runManager->SetUserInitialization(new ActionInitialization());
-    runManager->Initialize();
-    G4cout << "[RADiCAL] optical photons: " << (useOptical ? "ON" : "OFF (fast)") << G4endl;
+    G4cout << "[RADiCAL] optical photons: ON (use /run/numberOfThreads before /run/initialize)" << G4endl;
 
     auto visManager = new G4VisExecutive();
     visManager->Initialize();
