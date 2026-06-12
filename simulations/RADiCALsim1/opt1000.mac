@@ -1,4 +1,4 @@
-/run/numberOfThreads 1
+/run/numberOfThreads 85
 /run/initialize
 /run/printProgress 1
 /run/beamOn 1000
