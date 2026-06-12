@@ -110,12 +110,12 @@ void plot_timing_vs_LY() {
     Printf("\nExtracting actual sim points from optical runs:");
     const int NS = 6;
     const char* optFiles[NS] = {
-        "build/optical_scan/optical_E5GeV.root",
-        "build/optical_scan/optical_E10GeV.root",
-        "build/optical_scan/optical_E20GeV.root",
-        "build/optical_scan/optical_E50GeV.root",
-        "build/optical_scan/optical_E100GeV.root",
-        "build/optical_scan/optical_E120GeV.root"
+        "optical_scan_1000/optical_E5GeV.root",
+        "optical_scan_1000/optical_E10GeV.root",
+        "optical_scan_1000/optical_E20GeV.root",
+        "optical_scan_1000/optical_E50GeV.root",
+        "optical_scan_1000/optical_E100GeV.root",
+        "optical_scan_1000/optical_E120GeV.root"
     };
     double LY_sim[NS], sig_sim[NS], sig_sim_err[NS];
     int    nSim = 0;
