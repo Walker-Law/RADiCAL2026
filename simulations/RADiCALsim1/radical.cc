@@ -20,7 +20,8 @@ int main(int argc, char** argv) {
     // Optical photon tracking is OFF by default (it is ~100x slower); enable it
     // with env var  RADICAL_OPTICAL=1 ./radical ...  for the photon-based timing.
     // When off, the optical material tables / photodetectors simply sit unused.
-    auto physics = new FTFP_BERT_EMZ();
+    auto physics = new FTFP_BERT();
+    physics->ReplacePhysics(new G4EmStandardPhysics_option4());
     bool useOptical = true;
     if (useOptical) {
         physics->RegisterPhysics(new G4OpticalPhysics());
