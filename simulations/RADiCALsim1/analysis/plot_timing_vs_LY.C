@@ -206,22 +206,26 @@ void plot_timing_vs_LY() {
     // ── Sim point labels — points cluster tightly in y (55–67 ps = 0.055–0.067 ns)
     // Alternate above/below and use absolute y positions to avoid overlap.
     // x positions: 120(147), 100(168), 50(306), 20(608), 10(771), 5(855) npe/MeV
+    // Labels in NDC so placement is independent of data range.
+    // Canvas margins: left=0.15, right=0.06, bottom=0.14, top=0.07
+    // x-axis: log10(1)→log10(10000), NDC 0.15→0.94 (width=0.79)
+    // y-axis: log10(0.005)→log10(1.2), NDC 0.14→0.93 (height=0.79)
+    // Points sit at NDC y ≈ 0.51–0.55. Two rows: top=0.62, bottom=0.40
     const char* simLabels[NS] = {"5 GeV", "10 GeV", "20 GeV", "50 GeV", "100 GeV", "120 GeV"};
-    // xL = label x, yL = label y (data coords, log-log plot)
-    // Points cluster at y=0.055–0.067 ns; alternate above(0.100)/below(0.036)
-    // x spread: 5(855), 10(771), 20(608), 50(306), 100(168), 120(147)
-    //           top row: 5, 20, 100 — well separated in log x
-    //           bottom row: 10, 50, 120 — well separated in log x
-    // top row (y=0.100): 10 GeV, 20 GeV, 100 GeV — spread across log x
-    // bot row (y=0.036):  5 GeV, 50 GeV, 120 GeV — spread across log x
-    double xL[NS] = { 720,   920,   430,   195,    75,    50  };
-    double yL[NS] = {0.036, 0.100, 0.100, 0.036, 0.100, 0.036};
+    // NDC x computed from log10(LY): ndcX = 0.15 + 0.79*(log10(LY)-0)/4
+    // 5GeV(855→2.93): 0.73   10GeV(771→2.89): 0.72   20GeV(608→2.78): 0.70
+    // 50GeV(306→2.49): 0.64  100GeV(168→2.23): 0.59  120GeV(147→2.17): 0.58
+    // top row (ndcY=0.63):  5, 20, 100 GeV
+    // bot row (ndcY=0.40): 10, 50, 120 GeV
+    double ndcX[NS] = {0.73,  0.75,  0.67,  0.59,  0.51,  0.47};
+    double ndcY[NS] = {0.63,  0.40,  0.63,  0.40,  0.63,  0.40};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         TLatex lb;
+        lb.SetNDC();
         lb.SetTextSize(0.032);
         lb.SetTextColor(kRed+1);
-        lb.DrawLatex(xL[i], yL[i], simLabels[i]);
+        lb.DrawLatex(ndcX[i], ndcY[i], simLabels[i]);
     }
 
     // ── Legend ────────────────────────────────────────────────────────────────
