@@ -197,55 +197,46 @@ void plot_timing_vs_LY() {
     gDSB1->SetMarkerColor(kBlue);
     gDSB1->Draw("P same");
 
-    // ── Annotations (placed inside axes) ─────────────────────────────────────
+    // ── DSB1 label ────────────────────────────────────────────────────────────
     TLatex la;
-    la.SetTextSize(0.034);
-    la.SetTextColor(kBlue);
-    la.DrawLatex(3.5, sig_dsb1 * 0.60,
-                 Form("DSB1 (paper) ~%.0f npe/MeV", LY_dsb1));
+    la.SetTextSize(0.032);
+    la.SetTextColor(kBlue+1);
+    la.DrawLatex(35, sig_dsb1 * 1.7, "DSB1 ~25 npe/MeV");
 
-    // Label each Geant4 sim point by beam energy.
-    // Points cluster at 100–160 ps; stagger to avoid overlap on log x-scale.
-    // LY order (high→low): 5(811), 10(757), 20(642), 50(314), 100(182), 120(169)
-    // 100/120 GeV are nearly coincident in both LY and σ_t — split vertically.
+    // ── Sim point labels — points cluster tightly in y (55–67 ps = 0.055–0.067 ns)
+    // Alternate above/below and use absolute y positions to avoid overlap.
+    // x positions: 120(147), 100(168), 50(306), 20(608), 10(771), 5(855) npe/MeV
     const char* simLabels[NS] = {"5 GeV", "10 GeV", "20 GeV", "50 GeV", "100 GeV", "120 GeV"};
-    // Placement strategy (log x, log y):
-    //   5 GeV (LY=811, 158ps):  right+above          — well separated
-    //  10 GeV (LY=757, 116ps):  right+below          — separate from 5 in y
-    //  20 GeV (LY=642, 110ps):  far-left+below       — avoids 10 GeV label
-    //  50 GeV (LY=314, 110ps):  right+above          — room between 20 and 100
-    // 100 GeV (LY=182, 106ps):  right+high-above     — step above 50 GeV label
-    // 120 GeV (LY=169,  99ps):  far-left+below       — near-coincident with 100, push left+down
-    double xOff[NS] = {1.30,  1.30,  0.08,  1.30,  1.30,  0.08};
-    double yOff[NS] = {1.60,  0.52,  0.55,  1.65,  2.10,  0.50};
+    // xL = label x, yL = label y (data coords, log-log plot)
+    // above = ~0.095 ns, below = ~0.038 ns, straddling the cluster at ~0.060 ns
+    double xL[NS] = { 950,   900,   650,   200,    80,    55  };
+    double yL[NS] = {0.095, 0.038, 0.095, 0.038, 0.095, 0.038};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         TLatex lb;
-        lb.SetTextSize(0.030);
+        lb.SetTextSize(0.032);
         lb.SetTextColor(kRed+1);
-        lb.DrawLatex(LY_sim[i] * xOff[i], sig_sim[i] * yOff[i], simLabels[i]);
+        lb.DrawLatex(xL[i], yL[i], simLabels[i]);
     }
 
-    // Note at top-left inside plot area (above the theory curve, below title)
-    TLatex note;
-    note.SetNDC();
-    note.SetTextSize(0.028);
-    note.SetTextColor(kGray+2);
-    note.DrawLatex(0.17, 0.88,
-        "Sim #sigma_{t} = #sigma(#DeltaT)/2 (corner trick). Excess above curve: geometric shower-depth spread.");
-
     // ── Legend ────────────────────────────────────────────────────────────────
-    double legX1 = 0.42, legY1 = 0.14, legX2 = 0.92, legY2 = 0.38;
-    auto legend = new TLegend(legX1, legY1, legX2, legY2);
+    auto legend = new TLegend(0.17, 0.14, 0.72, 0.35);
     legend->SetBorderSize(1);
     legend->SetFillColor(0);
-    legend->SetTextSize(0.036);
-    legend->AddEntry(gPaper,  "Paper Fig. 8 (Geant4, DSB1, 50 GeV)", "p");
-    legend->AddEntry(gCurve,  "#sigma_{t} = 0.52 / #sqrt{LY}  (ns)", "l");
+    legend->SetTextSize(0.034);
+    legend->AddEntry(gPaper, "Paper Fig. 8 (Geant4, DSB1, 50 GeV)", "p");
+    legend->AddEntry(gCurve, "#sigma_{t} = 0.52/#sqrt{LY} ns  (photostatistics)", "l");
     if (gSim && vLY.size() > 0)
-        legend->AddEntry(gSim, "This sim: LuAG:Ce optical (1000 ev/E, 6 energies)", "p");
-    legend->AddEntry(gDSB1,   Form("DSB1 est. ~%.0f npe/MeV (paper)", LY_dsb1), "p");
+        legend->AddEntry(gSim, "This sim: LuAG:Ce, 1000 ev/point, 6 energies", "p");
+    legend->AddEntry(gDSB1, "DSB1 est. ~25 npe/MeV (paper)", "p");
     legend->Draw();
+
+    // ── Subtitle note ─────────────────────────────────────────────────────────
+    TLatex note;
+    note.SetNDC();
+    note.SetTextSize(0.030);
+    note.SetTextColor(kGray+2);
+    note.DrawLatex(0.17, 0.88, "Points above curve: geometric shower-depth spread dominates over photostatistics");
 
     // Title
     TLatex title;
