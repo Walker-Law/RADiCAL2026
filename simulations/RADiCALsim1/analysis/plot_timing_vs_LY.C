@@ -217,7 +217,7 @@ void plot_timing_vs_LY() {
     // 50GeV(306→2.49): 0.64  100GeV(168→2.23): 0.59  120GeV(147→2.17): 0.58
     // top row (ndcY=0.63):  5, 20, 100 GeV
     // bot row (ndcY=0.40): 10, 50, 120 GeV
-    double ndcX[NS] = {0.73,  0.75,  0.67,  0.59,  0.51,  0.47};
+    double ndcX[NS] = {0.80,  0.76,  0.64,  0.57,  0.50,  0.46};
     double ndcY[NS] = {0.63,  0.40,  0.63,  0.40,  0.63,  0.40};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
