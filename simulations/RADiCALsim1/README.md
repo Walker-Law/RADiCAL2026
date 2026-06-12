@@ -43,16 +43,18 @@ Energy scan (1500 events/point, no optical):
 
 Fits: **σ/E = 14.1%/√E ⊕ 2.38%** &nbsp;&nbsp; **σ_t = 16.9 ps/√E ⊕ 5.7 ps**
 
-Optical scan (25 events/point, LuAG:Ce scintillation, σ_t = σ(ΔT)/2):
+Optical scan (1000 events/point, LuAG:Ce scintillation, FTFP_BERT + EMopt4 + 0.1mm cuts, σ_t = σ(ΔT)/2):
 
-| E (GeV) | LY (npe/MeV) | σ_t (ps) |
-|---------|-------------|---------|
-| 5 | 811 | 79 |
-| 20 | 642 | 55 |
-| 50 | 314 | 55 |
-| 120 | 169 | 49 |
+| E (GeV) | LY (npe/MeV) | σ_t (ps) | Theory floor (ps) | Geom excess (ps) |
+|---------|-------------|---------|-------------------|-----------------|
+| 5 | 855 | 67.2 | 17.8 | 64.8 |
+| 10 | 771 | 61.1 | 18.7 | 58.1 |
+| 20 | 608 | 58.8 | 21.1 | 54.9 |
+| 50 | 306 | 57.1 | 29.7 | 48.7 |
+| 100 | 168 | 55.2 | 40.1 | 38.0 |
+| 120 | 147 | 55.5 | 42.9 | 35.2 |
 
-σ_t lies above the photostatistics floor (18–40 ps) due to geometric shower-depth spread in the 15 mm WLS fiber. Geometric excess decreases with energy (77→29 ps) as showers become more reproducible in depth.
+σ_t lies above the photostatistics floor due to geometric shower-depth spread in the 15 mm WLS fiber. Geometric excess decreases with energy (65→35 ps) as showers become more reproducible in depth.
 
 Data comparison (with optical photons, 5% CFD, σ_t = σ(ΔT)/2):
 
