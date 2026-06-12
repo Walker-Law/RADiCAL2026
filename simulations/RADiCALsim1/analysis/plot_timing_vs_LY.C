@@ -239,7 +239,7 @@ void plot_timing_vs_LY() {
     note.SetNDC();
     note.SetTextSize(0.030);
     note.SetTextColor(kGray+2);
-    note.DrawLatex(0.17, 0.88, "Points above curve: geometric shower-depth spread dominates over photostatistics");
+    note.DrawLatex(0.17, 0.88, "Points above curve: geometric shower-depth spread dominates photostatistics");
 
     // Title
     TLatex title;
