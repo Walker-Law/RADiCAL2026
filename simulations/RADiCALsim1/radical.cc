@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
 
     if (useOptical) {
         auto* op = G4OpticalParameters::Instance();
-        op->SetCerenkovMaxPhotonsPerStep(50);
+        op->SetCerenkovMaxPhotonsPerStep(300);
         op->SetCerenkovMaxBetaChange(10.0);
         op->SetCerenkovTrackSecondariesFirst(true);
         op->SetScintTrackSecondariesFirst(true);
