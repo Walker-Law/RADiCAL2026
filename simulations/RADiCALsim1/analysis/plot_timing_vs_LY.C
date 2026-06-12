@@ -212,8 +212,10 @@ void plot_timing_vs_LY() {
     // x spread: 5(855), 10(771), 20(608), 50(306), 100(168), 120(147)
     //           top row: 5, 20, 100 — well separated in log x
     //           bottom row: 10, 50, 120 — well separated in log x
-    double xL[NS] = { 800,   860,   380,   210,    75,    52  };
-    double yL[NS] = {0.100, 0.036, 0.100, 0.036, 0.100, 0.036};
+    // top row (y=0.100): 10 GeV, 20 GeV, 100 GeV — spread across log x
+    // bot row (y=0.036):  5 GeV, 50 GeV, 120 GeV — spread across log x
+    double xL[NS] = { 720,   920,   430,   195,    75,    50  };
+    double yL[NS] = {0.036, 0.100, 0.100, 0.036, 0.100, 0.036};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         TLatex lb;
