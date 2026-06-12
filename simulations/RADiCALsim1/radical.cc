@@ -3,7 +3,8 @@
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
-#include "FTFP_BERT_EMZ.hh"
+#include "FTFP_BERT.hh"
+#include "G4EmStandardPhysics_option4.hh"
 #include "G4OpticalPhysics.hh"
 #include "G4OpticalParameters.hh"
 #include <cstdlib>
