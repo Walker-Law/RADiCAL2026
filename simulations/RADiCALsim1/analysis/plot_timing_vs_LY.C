@@ -208,9 +208,12 @@ void plot_timing_vs_LY() {
     // x positions: 120(147), 100(168), 50(306), 20(608), 10(771), 5(855) npe/MeV
     const char* simLabels[NS] = {"5 GeV", "10 GeV", "20 GeV", "50 GeV", "100 GeV", "120 GeV"};
     // xL = label x, yL = label y (data coords, log-log plot)
-    // above = ~0.095 ns, below = ~0.038 ns, straddling the cluster at ~0.060 ns
-    double xL[NS] = { 950,   900,   650,   200,    80,    55  };
-    double yL[NS] = {0.095, 0.038, 0.095, 0.038, 0.095, 0.038};
+    // Points cluster at y=0.055–0.067 ns; alternate above(0.100)/below(0.036)
+    // x spread: 5(855), 10(771), 20(608), 50(306), 100(168), 120(147)
+    //           top row: 5, 20, 100 — well separated in log x
+    //           bottom row: 10, 50, 120 — well separated in log x
+    double xL[NS] = { 800,   860,   380,   210,    75,    52  };
+    double yL[NS] = {0.100, 0.036, 0.100, 0.036, 0.100, 0.036};
     for (int i = 0; i < NS; i++) {
         if (!simOk[i]) continue;
         TLatex lb;
