@@ -64,9 +64,13 @@ void plot_testbeam(const char* file="build/radical_output.root", double Ebeam=12
   hT->SetTitle(Form("Timing response (downstream #minus upstream), %.0f GeV;#DeltaT (ns);Hits", Ebeam));
   hT->Draw("hist");
   TF1* gT = coreFit(hT, 2.5, 4, kBlue+1); gT->Draw("same");
+  // (DW-UP)/2 corner trick: DeltaT = t_down - t_up shares the same reference,
+  // which cancels in the subtraction (MCP-free, also kills DRS4 timebase + beam
+  // jitter). Physical timing resolution is sigma_t = sigma(DeltaT)/2.
   double muT=gT->GetParameter(1), sgT=gT->GetParameter(2);
-  tl.DrawLatex(0.58,0.85, Form("#mu = %.1f ps", muT*1000));
-  tl.DrawLatex(0.58,0.79, Form("#sigma_{t} = %.2f ps", sgT*1000));
+  double sigT_ps = sgT*1000./2.;
+  tl.DrawLatex(0.58,0.85, Form("#mu_{#DeltaT} = %.1f ps", muT*1000));
+  tl.DrawLatex(0.58,0.79, Form("#sigma_{t} = #sigma(#DeltaT)/2 = %.2f ps", sigT_ps));
   tl.DrawLatex(0.58,0.73, Form("hits = %.0f", hT->GetEntries()));
   c2->SaveAs(Form("%s/timing_resolution_%s.png", out, tag.Data()));
 
@@ -89,7 +93,7 @@ void plot_testbeam(const char* file="build/radical_output.root", double Ebeam=12
 
   printf("\n=== %.0f GeV summary ===\n", Ebeam);
   printf("Energy:  mu=%.3f GeV  sigma=%.3f GeV  sigma/E=%.2f%%\n", muE, sgE, resE);
-  printf("Timing:  mu=%.1f ps   sigma_t=%.2f ps\n", muT*1000, sgT*1000);
+  printf("Timing:  mu_dT=%.1f ps   sigma_t=sigma(dT)/2=%.2f ps\n", muT*1000, sigT_ps);
   printf("Saved 4 PNGs to %s/\n", out);
   f->Close();
 }
