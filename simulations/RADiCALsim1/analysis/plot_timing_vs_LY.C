@@ -256,7 +256,8 @@ void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
     title.DrawLatex(0.17, 0.960, "Timing resolution vs detected light yield");
 
     gSystem->mkdir("build/plots", kTRUE);
-    TString outPng = TString::Format("build/plots/timing_vs_LY_%s.png", scanDir);
+    TString tag = gSystem->BaseName(scanDir);   // strip any leading path from scanDir
+    TString outPng = TString::Format("build/plots/timing_vs_LY_%s.png", tag.Data());
     c->SaveAs(outPng.Data());
     Printf("\nSaved: %s", outPng.Data());
 
