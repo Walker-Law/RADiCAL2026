@@ -17,7 +17,7 @@ TF1* coreFit(TH1* h, double nsig=2.0, int iters=4) {
   return g;
 }
 
-void scan_resolution(const char* dir="build/scan") {
+void scan_resolution(const char* dir="build/scan", const char* prefix="radical") {
   gStyle->SetOptStat(0); gStyle->SetOptFit(0);
   gStyle->SetPadGridX(1); gStyle->SetPadGridY(1);
   const int N=6; double E[N]={5,10,20,50,100,120};
