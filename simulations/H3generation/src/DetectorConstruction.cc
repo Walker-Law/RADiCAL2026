@@ -27,9 +27,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto logicBox = new G4LogicalVolume(solidBox, lead, "Box");
     new G4PVPlacement(nullptr, G4ThreeVector(), logicBox, "Box", logicWorld, false, 0);
 
-    auto boxVis = new G4VisAttributes(G4Colour(0.5, 0.5, 1.0, 0.6));
-    boxVis->SetForceSolid(true);
-    logicBox->SetVisAttributes(boxVis);
+    auto visAttr = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
+    visAttr->SetForceWireframe(true);
+    visAttr->SetVisibility(true);
+    logicBox->SetVisAttributes(visAttr);
+
 
     return physWorld;
 }
