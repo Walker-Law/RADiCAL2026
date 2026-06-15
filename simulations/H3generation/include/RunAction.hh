@@ -20,4 +20,5 @@ private:
     G4Accumulable<G4int> fEnterGraph{0};
     G4Accumulable<G4int> fEnterBlanket{0};
     G4Accumulable<G4int> fNeutronInteractions{0};
+    G4Accumulable<G4int> fNeutronInteractionsBlanket{0};
 };
