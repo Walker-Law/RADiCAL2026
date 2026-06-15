@@ -9,16 +9,44 @@
 
 set -e
 
-# ── Source Geant4 data-path environment if not already set ────────────────────
-# ENSDFSTATE.dat and friends must be reachable; find and source geant4.sh if needed.
-if [ -z "$G4ENSDFSTATEROOT" ]; then
-    G4SH=$(find /home /usr /opt ~/geant4-install -name "geant4.sh" 2>/dev/null | head -1)
-    if [ -n "$G4SH" ]; then
-        source "$G4SH"
-        echo "Sourced Geant4 env: $G4SH"
-    else
-        echo "WARNING: G4ENSDFSTATEROOT not set and geant4.sh not found — run will likely crash." >&2
+# ── Set Geant4 data-path environment by globbing the real data directory ──────
+# Do NOT trust geant4.sh — the build-tree copy has broken relative paths.
+# Find the directory that actually contains the data tables (G4ENSDFSTATE*, etc.)
+# and point each G4*DATA var at the correct versioned subdirectory.
+set_g4_data() {
+    local DATADIR=""
+    for d in ~/geant4-install/share/Geant4/data \
+             /home/*/geant4-install/share/Geant4/data \
+             /usr/share/Geant4/data /opt/geant4*/share/Geant4*/data; do
+        if [ -d "$d" ] && ls "$d"/G4ENSDFSTATE* >/dev/null 2>&1; then
+            DATADIR="$d"; break
+        fi
+    done
+    if [ -z "$DATADIR" ]; then
+        DATADIR=$(dirname "$(find /home /usr /opt -maxdepth 8 -name 'ENSDFSTATE.dat' 2>/dev/null | head -1)" 2>/dev/null)
+        [ -n "$DATADIR" ] && DATADIR=$(dirname "$DATADIR")
     fi
+    if [ -z "$DATADIR" ] || ! ls "$DATADIR"/G4ENSDFSTATE* >/dev/null 2>&1; then
+        echo "ERROR: Geant4 data tables not found. Set G4*DATA vars manually." >&2
+        return 1
+    fi
+    pick() { ls -d "$DATADIR"/$1* 2>/dev/null | head -1; }
+    export G4ENSDFSTATEDATA="$(pick G4ENSDFSTATE)"
+    export G4LEDATA="$(pick G4EMLOW)"
+    export G4LEVELGAMMADATA="$(pick PhotonEvaporation)"
+    export G4RADIOACTIVEDATA="$(pick RadioactiveDecay)"
+    export G4PARTICLEXSDATA="$(pick G4PARTICLEXS)"
+    export G4PIIDATA="$(pick G4PII)"
+    export G4REALSURFACEDATA="$(pick RealSurface)"
+    export G4SAIDXSDATA="$(pick G4SAIDDATA)"
+    export G4ABLADATA="$(pick G4ABLA)"
+    export G4INCLDATA="$(pick G4INCL)"
+    export G4NEUTRONHPDATA="$(pick G4NDL)"
+    echo "Geant4 data dir: $DATADIR"
+}
+
+if [ -z "$G4ENSDFSTATEDATA" ] || [ ! -d "$G4ENSDFSTATEDATA" ]; then
+    set_g4_data || echo "WARNING: run will likely crash without Geant4 data paths." >&2
 fi
 
 # ── Resolve paths from script location (platform-independent) ─────────────────
