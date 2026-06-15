@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
     auto runManager = G4RunManagerFactory::CreateRunManager(G4RunManagerType::SerialOnly);
     runManager->SetUserInitialization(new DetectorConstruction());
-    runManager->SetUserInitialization(new FTFP_BERT());
+    runManager->SetUserInitialization(new Shielding());  // neutron HP + (n,t) reactions
     runManager->SetUserInitialization(new ActionInitialization());
     runManager->Initialize();
 
