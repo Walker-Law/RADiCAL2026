@@ -7,8 +7,8 @@
 #   ./make_plots.sh 100             # the 100-event scan
 #   ./make_plots.sh 1000 --per-energy   # also emit the 24 per-energy plots
 #
-# This script lives in build/plots/ but cd's up to the RADiCALsim1 root, since
-# the analysis macros hardcode build/plots and build/optical_scan_* paths.
+# This script lives in the RADiCALsim1 root (tracked); the analysis macros
+# hardcode build/plots and build/optical_scan_* paths relative to here.
 # Can be run from anywhere (it resolves its own location).
 #
 # Each scan's plots land in their own folder so 100 and 1000 stay separate:
