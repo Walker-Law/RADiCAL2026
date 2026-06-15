@@ -63,7 +63,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto logicBe = new G4LogicalVolume(solidBe, beryllium, "Be_Shell");
     new G4PVPlacement(nullptr, G4ThreeVector(), logicBe, "Be_Shell", logicWorld, false, 0);
 
-    auto beVis = new G4VisAttributes(G4Colour(0.7, 0.7, 0.2, 0.5));
+    auto beVis = new G4VisAttributes(G4Colour(0.7, 0.7, 0.2, 0.12));
     beVis->SetForceSolid(true);
     logicBe->SetVisAttributes(beVis);
 
@@ -72,7 +72,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto logicGraph = new G4LogicalVolume(solidGraph, graphite, "Graphite_Shell");
     new G4PVPlacement(nullptr, G4ThreeVector(), logicGraph, "Graphite_Shell", logicWorld, false, 0);
 
-    auto graphVis = new G4VisAttributes(G4Colour(0.4, 0.4, 0.4, 0.5));
+    auto graphVis = new G4VisAttributes(G4Colour(0.4, 0.4, 0.4, 0.10));
     graphVis->SetForceSolid(true);
     logicGraph->SetVisAttributes(graphVis);
 
@@ -81,7 +81,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto logicBlanket = new G4LogicalVolume(solidBlanket, liSiOGlass, "Blanket");
     new G4PVPlacement(nullptr, G4ThreeVector(), logicBlanket, "Blanket", logicWorld, false, 0);
 
-    auto blanketVis = new G4VisAttributes(G4Colour(0.0, 0.6, 1.0, 0.45));
+    auto blanketVis = new G4VisAttributes(G4Colour(0.0, 0.6, 1.0, 0.12));
     blanketVis->SetForceSolid(true);
     logicBlanket->SetVisAttributes(blanketVis);
 
