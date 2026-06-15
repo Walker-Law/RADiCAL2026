@@ -9,10 +9,15 @@
 #include "ActionInitialization.hh"
 
 int main(int argc, char** argv) {
-    // Must be created first on macOS so Qt owns the main thread
-    G4UIExecutive* uiExec = (argc == 1) ? new G4UIExecutive(argc, argv) : nullptr;
+    // Determine interactive vs batch before touching anything
+    bool interactive = (argc == 1) ||
+                       (argc >= 2 && G4String(argv[1]).find("vis") != std::string::npos);
 
-    auto runManager = G4RunManagerFactory::CreateRunManager();
+    // G4UIExecutive MUST be constructed before RunManager on macOS
+    // so Qt owns the main thread before any worker threads are spawned
+    G4UIExecutive* uiExec = interactive ? new G4UIExecutive(argc, argv) : nullptr;
+
+    auto runManager = G4RunManagerFactory::CreateRunManager(G4RunManagerType::SerialOnly);
     runManager->SetUserInitialization(new DetectorConstruction());
     runManager->SetUserInitialization(new FTFP_BERT());
     runManager->SetUserInitialization(new ActionInitialization());
@@ -23,20 +28,13 @@ int main(int argc, char** argv) {
 
     auto UI = G4UImanager::GetUIpointer();
 
-    if (argc >= 2) {
-        G4String macro = argv[1];
-        if (macro.find("vis") != std::string::npos) {
-            uiExec = new G4UIExecutive(argc, argv);
-            UI->ApplyCommand("/control/execute " + macro);
-            uiExec->SessionStart();
-            delete uiExec;
-        } else {
-            UI->ApplyCommand("/control/execute " + macro);
-        }
-    } else {
-        UI->ApplyCommand("/control/execute vis.mac");
+    if (interactive) {
+        G4String macro = (argc >= 2) ? argv[1] : "vis.mac";
+        UI->ApplyCommand("/control/execute " + macro);
         uiExec->SessionStart();
         delete uiExec;
+    } else {
+        UI->ApplyCommand("/control/execute " + G4String(argv[1]));
     }
 
     delete visManager;
