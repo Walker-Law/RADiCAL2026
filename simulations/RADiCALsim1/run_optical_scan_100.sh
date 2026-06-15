@@ -38,4 +38,4 @@ echo "All done — $(date)"
 ls -lh "$OUTDIR"/
 
 # Plots are generated locally (the cluster has no ROOT). After rsyncing
-# optical_scan_100/ back to the local machine, run:  ./make_plots_100.sh
+# optical_scan_100/ back to the local machine, run:  ./make_plots.sh 100
