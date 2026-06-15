@@ -14,6 +14,7 @@ RunAction::RunAction() {
     am->RegisterAccumulable(fEnterGraph);
     am->RegisterAccumulable(fEnterBlanket);
     am->RegisterAccumulable(fNeutronInteractions);
+    am->RegisterAccumulable(fNeutronInteractionsBlanket);
 
     auto* ana = G4AnalysisManager::Instance();
     ana->SetDefaultFileType("root");
