@@ -13,29 +13,33 @@ RunAction::RunAction() {
     am->RegisterAccumulable(fEnterBe);
     am->RegisterAccumulable(fEnterGraph);
     am->RegisterAccumulable(fEnterBlanket);
+    am->RegisterAccumulable(fNeutronInteractions);
 
-    // Book histograms (indices 0–4 fixed by creation order)
     auto* ana = G4AnalysisManager::Instance();
     ana->SetDefaultFileType("root");
     ana->SetFileName("H3generation");
     ana->SetVerboseLevel(0);
 
-    // Neutron KE spectra entering each layer (0–15 MeV, 150 bins)
+    // H1 histograms (indices 0–4)
     ana->CreateH1("nSpec_Be",      "Neutron KE entering Be (MeV)",       150, 0., 15.);
     ana->CreateH1("nSpec_Graph",   "Neutron KE entering Graphite (MeV)", 150, 0., 15.);
     ana->CreateH1("nSpec_Blanket", "Neutron KE entering Blanket (MeV)",  150, 0., 15.);
+    ana->CreateH1("triton_KE",     "Triton KE at production (MeV)",      100, 0.,  5.);
+    ana->CreateH1("triton_R",      "Triton production radius (cm)",        70, 100., 170.);
 
-    // Triton KE when produced (0–5 MeV, 100 bins)
-    ana->CreateH1("triton_KE", "Triton KE at production (MeV)", 100, 0., 5.);
-
-    // Radial position of triton production (100–170 cm, 70 bins)
-    ana->CreateH1("triton_R", "Triton production radius (cm)", 70, 100., 170.);
+    // Ntuple for scalar summary (index 0) — becomes a TTree in ROOT
+    ana->CreateNtuple("summary", "Run summary");
+    ana->CreateNtupleIColumn("nSourceNeutrons");       // col 0
+    ana->CreateNtupleIColumn("nTritonsTotal");         // col 1
+    ana->CreateNtupleIColumn("nNeutronInteractions");  // col 2
+    ana->CreateNtupleDColumn("TBR_per_source");        // col 3 — tritons / source neutrons
+    ana->CreateNtupleDColumn("TBR_per_interaction");   // col 4 — tritons / neutron interactions
+    ana->FinishNtuple();
 }
 
 void RunAction::BeginOfRunAction(const G4Run*) {
     G4AccumulableManager::Instance()->Reset();
-    auto* ana = G4AnalysisManager::Instance();
-    ana->OpenFile();
+    G4AnalysisManager::Instance()->OpenFile();
 }
 
 void RunAction::AddTriton(const G4String& vol, G4double ke, G4double r) {
@@ -62,18 +66,19 @@ void RunAction::AddParticleEntering(const G4String& vol, G4double ke) {
     }
 }
 
+void RunAction::AddNeutronInteraction() {
+    fNeutronInteractions += 1;
+}
+
 void RunAction::EndOfRunAction(const G4Run* run) {
     G4AccumulableManager::Instance()->Merge();
-
-    auto* ana = G4AnalysisManager::Instance();
-    ana->Write();
-    ana->CloseFile();
 
     G4int nSrc   = run->GetNumberOfEvent();
     G4int tBe    = fTritonsBe.GetValue();
     G4int tGraph = fTritonsGraph.GetValue();
     G4int tBlank = fTritonsBlanket.GetValue();
     G4int tTotal = tBe + tGraph + tBlank;
+    G4int nInt   = fNeutronInteractions.GetValue();
 
     G4int eBe    = fEnterBe.GetValue();
     G4int eGraph = fEnterGraph.GetValue();
@@ -83,25 +88,40 @@ void RunAction::EndOfRunAction(const G4Run* run) {
         return den > 0 ? (G4double)num / den : 0.0;
     };
 
+    // Fill summary ntuple (one row per run)
+    auto* ana = G4AnalysisManager::Instance();
+    ana->FillNtupleIColumn(0, nSrc);
+    ana->FillNtupleIColumn(1, tTotal);
+    ana->FillNtupleIColumn(2, nInt);
+    ana->FillNtupleDColumn(3, ratio(tTotal, nSrc));
+    ana->FillNtupleDColumn(4, ratio(tTotal, nInt));
+    ana->AddNtupleRow();
+
+    ana->Write();
+    ana->CloseFile();
+
     G4cout << "\n======================================================\n";
     G4cout << "  TRITIUM (H-3) PRODUCTION SUMMARY\n";
     G4cout << "======================================================\n";
-    G4cout << std::left << std::setw(28) << "  Source neutrons:"   << nSrc   << "\n";
-    G4cout << std::left << std::setw(28) << "  Total tritons:"     << tTotal << "\n";
-    G4cout << std::left << std::setw(28) << "  Overall TBR:"
-           << std::fixed << std::setprecision(4) << ratio(tTotal, nSrc) << "\n";
+    G4cout << std::left << std::setw(32) << "  Source neutrons:"         << nSrc   << "\n";
+    G4cout << std::left << std::setw(32) << "  Total tritons:"           << tTotal << "\n";
+    G4cout << std::left << std::setw(32) << "  Neutron interactions:"    << nInt   << "\n";
+    G4cout << std::left << std::setw(32) << "  TBR (tritons/source):"
+           << std::fixed << std::setprecision(5) << ratio(tTotal, nSrc) << "\n";
+    G4cout << std::left << std::setw(32) << "  TBR (tritons/n-int):"
+           << std::fixed << std::setprecision(5) << ratio(tTotal, nInt) << "\n";
     G4cout << "------------------------------------------------------\n";
     G4cout << "  Layer               Tritons  Entering   H3/Entering\n";
     G4cout << "------------------------------------------------------\n";
     G4cout << std::left << std::setw(20) << "  Be multiplier"
            << std::setw(9) << tBe << std::setw(11) << eBe
-           << std::fixed << std::setprecision(4) << ratio(tBe, eBe) << "\n";
+           << std::fixed << std::setprecision(5) << ratio(tBe, eBe) << "\n";
     G4cout << std::left << std::setw(20) << "  Graphite moderator"
            << std::setw(9) << tGraph << std::setw(11) << eGraph
-           << std::fixed << std::setprecision(4) << ratio(tGraph, eGraph) << "\n";
+           << std::fixed << std::setprecision(5) << ratio(tGraph, eGraph) << "\n";
     G4cout << std::left << std::setw(20) << "  LiSiO blanket"
            << std::setw(9) << tBlank << std::setw(11) << eBlank
-           << std::fixed << std::setprecision(4) << ratio(tBlank, eBlank) << "\n";
+           << std::fixed << std::setprecision(5) << ratio(tBlank, eBlank) << "\n";
     G4cout << "======================================================\n";
     G4cout << "  ROOT output: H3generation.root\n";
     G4cout << "======================================================\n\n";
