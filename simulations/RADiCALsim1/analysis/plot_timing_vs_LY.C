@@ -109,14 +109,13 @@ void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
     // ── Actual Geant4 sim points from optical runs ────────────────────────────
     Printf("\nExtracting actual sim points from optical runs:");
     const int NS = 6;
-    const char* optFiles[NS] = {
-        "optical_scan_1000/optical_E5GeV.root",
-        "optical_scan_1000/optical_E10GeV.root",
-        "optical_scan_1000/optical_E20GeV.root",
-        "optical_scan_1000/optical_E50GeV.root",
-        "optical_scan_1000/optical_E100GeV.root",
-        "optical_scan_1000/optical_E120GeV.root"
-    };
+    TString optFiles[NS];
+    optFiles[0] = TString::Format("%s/optical_E5GeV.root",   scanDir);
+    optFiles[1] = TString::Format("%s/optical_E10GeV.root",  scanDir);
+    optFiles[2] = TString::Format("%s/optical_E20GeV.root",  scanDir);
+    optFiles[3] = TString::Format("%s/optical_E50GeV.root",  scanDir);
+    optFiles[4] = TString::Format("%s/optical_E100GeV.root", scanDir);
+    optFiles[5] = TString::Format("%s/optical_E120GeV.root", scanDir);
     double LY_sim[NS], sig_sim[NS], sig_sim_err[NS];
     int    nSim = 0;
     bool   simOk[NS] = {false, false, false};
