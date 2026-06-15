@@ -1,0 +1,7 @@
+/vis/open OGL
+/vis/drawVolume
+/vis/scene/add/trajectories smooth
+/vis/viewer/set/autoRefresh true
+/vis/viewer/set/style surface
+/vis/viewer/set/background 0 0 0 1
+/vis/viewer/zoom 1.5
