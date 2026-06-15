@@ -93,7 +93,7 @@ void plot_testbeam(const char* file="build/radical_output.root", double Ebeam=12
 
   printf("\n=== %.0f GeV summary ===\n", Ebeam);
   printf("Energy:  mu=%.3f GeV  sigma=%.3f GeV  sigma/E=%.2f%%\n", muE, sgE, resE);
-  printf("Timing:  mu=%.1f ps   sigma_t=%.2f ps\n", muT*1000, sgT*1000);
+  printf("Timing:  mu_dT=%.1f ps   sigma_t=sigma(dT)/2=%.2f ps\n", muT*1000, sigT_ps);
   printf("Saved 4 PNGs to %s/\n", out);
   f->Close();
 }
