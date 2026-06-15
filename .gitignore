@@ -6,10 +6,14 @@ geant4-install/
 # RADiCAL directory has its own embedded git repo
 RADiCAL/
 
-# Compiled build directories and artifacts
+# Compiled build directories and artifacts (platform-specific — never commit)
 **/build/
 *.o
 *.a
+*.so
+*.dylib
+*.dll
+*.exe
 
 # ROOT output data files (large binary)
 *.root
