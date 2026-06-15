@@ -61,15 +61,17 @@ root -l -b -q "analysis/plot_linearity.C(\"${SCAN}\",\"optical\")"
 # 3. Timing resolution vs detected light yield (all energies, one plot)
 root -l -b -q "analysis/plot_timing_vs_LY.C(\"${SCAN}\")"
 
-# 4. Per-energy plots: energy res, timing res, shower profiles
-for E in "${ENERGIES[@]}"; do
-    ROOTFILE="${SCAN}/optical_E${E}GeV.root"
-    if [ -f "$ROOTFILE" ]; then
-        root -l -b -q "analysis/plot_testbeam.C(\"${ROOTFILE}\",${E})"
-    else
-        echo "skip E=${E} GeV (missing $ROOTFILE)"
-    fi
-done
+# 4. Per-energy plots (only with --per-energy): energy res, timing res, profiles
+if [ "$PER_ENERGY" -eq 1 ]; then
+    for E in "${ENERGIES[@]}"; do
+        ROOTFILE="${SCAN}/optical_E${E}GeV.root"
+        if [ -f "$ROOTFILE" ]; then
+            root -l -b -q "analysis/plot_testbeam.C(\"${ROOTFILE}\",${E})"
+        else
+            echo "skip E=${E} GeV (missing $ROOTFILE)"
+        fi
+    done
+fi
 
 # Move this run's plots into the per-scan folder (keeps 100 vs 1000 separate).
 mv -f build/plots/*.png "$DEST"/ 2>/dev/null || true
