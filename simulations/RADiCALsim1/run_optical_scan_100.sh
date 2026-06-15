@@ -5,8 +5,8 @@
 
 OUTDIR="optical_scan_100"
 mkdir -p "$OUTDIR"
-BINARY="$(pwd)/radical"
-MAC="$(pwd)/../opt100.mac"
+BINARY="$(pwd)/build/radical"
+MAC="$(pwd)/opt100.mac"
 
 run_one() {
     E=$1
