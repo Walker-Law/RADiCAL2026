@@ -67,6 +67,15 @@ root -l -b -q "analysis/plot_linearity.C(\"${SCAN}\",\"optical\")"
 # 3. Timing resolution vs detected light yield (all energies, one plot)
 root -l -b -q "analysis/plot_timing_vs_LY.C(\"${SCAN}\")"
 
+# 3b. Transverse (x-y) shower heatmaps at 3 select layer depths (100 GeV)
+HEATMAP_E=100
+HEATFILE="${SCAN}/optical_E${HEATMAP_E}GeV.root"
+if [ -f "$HEATFILE" ]; then
+    root -l -b -q "analysis/plot_transverse.C(\"${HEATFILE}\",${HEATMAP_E})"
+else
+    echo "skip transverse heatmap (missing $HEATFILE)"
+fi
+
 # 4. Per-energy plots (only with --per-energy): energy res, timing res, profiles
 if [ "$PER_ENERGY" -eq 1 ]; then
     for E in "${ENERGIES[@]}"; do
