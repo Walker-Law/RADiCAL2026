@@ -37,9 +37,10 @@ int main(int argc, char** argv) {
         UI->ApplyCommand("/control/execute " + G4String(argv[1]));
     }
 
-    // Do not explicitly delete visManager/runManager — Shielding physics list
-    // registers G4Cache<G4HadFinalState> objects that outlive the static mutexes
-    // destroyed during C++ teardown, causing harmless but noisy mutex errors.
-    // The OS reclaims all memory cleanly on exit().
+    // Delete explicitly while all statics are alive, then exit() to skip
+    // the remaining C++ static teardown that causes Shielding's
+    // G4Cache<G4HadFinalState> mutex errors.
+    delete visManager;
+    delete runManager;
     exit(0);
 }
