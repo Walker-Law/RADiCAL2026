@@ -3,6 +3,7 @@
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
+#include "G4VProcess.hh"
 #include "G4SystemOfUnits.hh"
 
 SteppingAction::SteppingAction(RunAction* runAction) : fRunAction(runAction) {}
@@ -15,19 +16,33 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
     G4String preName  = preVol->GetLogicalVolume()->GetName();
     G4String postName = postVol->GetLogicalVolume()->GetName();
 
-    // Neutron crossing into a layer — record KE at entry
-    if (preName != postName &&
-        step->GetTrack()->GetParticleDefinition()->GetParticleName() == "neutron") {
+    const G4Track* track = step->GetTrack();
+    G4String pname = track->GetParticleDefinition()->GetParticleName();
+
+    // Neutron entering a new layer — record KE at entry point
+    if (pname == "neutron" && preName != postName) {
         G4double ke = step->GetPostStepPoint()->GetKineticEnergy();
         fRunAction->AddParticleEntering(postName, ke);
     }
 
+    // Count neutron hadronic interactions (any process that isn't pure transport)
+    if (pname == "neutron") {
+        const G4VProcess* proc = step->GetPostStepPoint()->GetProcessDefinedStep();
+        if (proc) {
+            G4String procName = proc->GetProcessName();
+            if (procName != "Transportation" &&
+                procName != "CoulombScat"    &&
+                procName != "nKiller") {
+                fRunAction->AddNeutronInteraction();
+            }
+        }
+    }
+
     // Triton secondaries produced in this step
-    const std::vector<const G4Track*>* secondaries = step->GetSecondaryInCurrentStep();
-    for (const G4Track* sec : *secondaries) {
+    for (const G4Track* sec : *step->GetSecondaryInCurrentStep()) {
         if (sec->GetParticleDefinition()->GetParticleName() == "triton") {
-            G4double ke  = sec->GetKineticEnergy();
-            G4double r   = sec->GetPosition().mag();
+            G4double ke = sec->GetKineticEnergy();
+            G4double r  = sec->GetPosition().mag();
             fRunAction->AddTriton(preName, ke, r);
         }
     }
