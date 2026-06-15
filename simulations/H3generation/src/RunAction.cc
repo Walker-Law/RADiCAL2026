@@ -112,11 +112,14 @@ void RunAction::EndOfRunAction(const G4Run* run) {
     G4cout << "======================================================\n";
     G4cout << std::left << std::setw(32) << "  Source neutrons:"         << nSrc   << "\n";
     G4cout << std::left << std::setw(32) << "  Total tritons:"           << tTotal << "\n";
-    G4cout << std::left << std::setw(32) << "  Neutron interactions:"    << nInt   << "\n";
+    G4cout << std::left << std::setw(32) << "  Neutron interactions (all):"     << nInt        << "\n";
+    G4cout << std::left << std::setw(32) << "  Neutron interactions (blanket):" << nIntBlanket << "\n";
     G4cout << std::left << std::setw(32) << "  TBR (tritons/source):"
            << std::fixed << std::setprecision(5) << ratio(tTotal, nSrc) << "\n";
-    G4cout << std::left << std::setw(32) << "  TBR (tritons/n-int):"
+    G4cout << std::left << std::setw(32) << "  TBR (tritons/n-int all):"
            << std::fixed << std::setprecision(5) << ratio(tTotal, nInt) << "\n";
+    G4cout << std::left << std::setw(32) << "  TBR (tritons/n-int blanket):"
+           << std::fixed << std::setprecision(5) << ratio(tTotal, nIntBlanket) << "\n";
     G4cout << "------------------------------------------------------\n";
     G4cout << "  Layer               Tritons  Entering   H3/Entering\n";
     G4cout << "------------------------------------------------------\n";
