@@ -32,9 +32,11 @@ RunAction::RunAction() {
     ana->CreateNtuple("summary", "Run summary");
     ana->CreateNtupleIColumn("nSourceNeutrons");       // col 0
     ana->CreateNtupleIColumn("nTritonsTotal");         // col 1
-    ana->CreateNtupleIColumn("nNeutronInteractions");  // col 2
-    ana->CreateNtupleDColumn("TBR_per_source");        // col 3 — tritons / source neutrons
-    ana->CreateNtupleDColumn("TBR_per_interaction");   // col 4 — tritons / neutron interactions
+    ana->CreateNtupleIColumn("nNeutronInteractions");        // col 2 — all layers
+    ana->CreateNtupleIColumn("nNeutronInteractionsBlanket"); // col 3 — blanket only
+    ana->CreateNtupleDColumn("TBR_per_source");              // col 4 — tritons / source n
+    ana->CreateNtupleDColumn("TBR_per_interaction");         // col 5 — tritons / all n-int
+    ana->CreateNtupleDColumn("TBR_per_blanket_interaction"); // col 6 — tritons / blanket n-int
     ana->FinishNtuple();
 }
 
