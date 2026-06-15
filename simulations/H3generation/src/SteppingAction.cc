@@ -33,7 +33,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
             if (procName != "Transportation" &&
                 procName != "CoulombScat"    &&
                 procName != "nKiller") {
-                fRunAction->AddNeutronInteraction();
+                fRunAction->AddNeutronInteraction(preName);
             }
         }
     }
