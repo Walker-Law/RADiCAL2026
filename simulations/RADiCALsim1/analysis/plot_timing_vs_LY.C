@@ -81,7 +81,7 @@ bool extractOptPoint(const char* fname, double& LY, double& sig_t, double& sig_t
     return true;
 }
 
-void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
+void plot_timing_vs_LY() {
     gStyle->SetOptStat(0);
     gStyle->SetOptTitle(0);
     gStyle->SetPadLeftMargin(0.15);
@@ -109,19 +109,20 @@ void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
     // ── Actual Geant4 sim points from optical runs ────────────────────────────
     Printf("\nExtracting actual sim points from optical runs:");
     const int NS = 6;
-    TString optFiles[NS];
-    optFiles[0] = TString::Format("%s/optical_E5GeV.root",   scanDir);
-    optFiles[1] = TString::Format("%s/optical_E10GeV.root",  scanDir);
-    optFiles[2] = TString::Format("%s/optical_E20GeV.root",  scanDir);
-    optFiles[3] = TString::Format("%s/optical_E50GeV.root",  scanDir);
-    optFiles[4] = TString::Format("%s/optical_E100GeV.root", scanDir);
-    optFiles[5] = TString::Format("%s/optical_E120GeV.root", scanDir);
+    const char* optFiles[NS] = {
+        "optical_scan_1000/optical_E5GeV.root",
+        "optical_scan_1000/optical_E10GeV.root",
+        "optical_scan_1000/optical_E20GeV.root",
+        "optical_scan_1000/optical_E50GeV.root",
+        "optical_scan_1000/optical_E100GeV.root",
+        "optical_scan_1000/optical_E120GeV.root"
+    };
     double LY_sim[NS], sig_sim[NS], sig_sim_err[NS];
     int    nSim = 0;
     bool   simOk[NS] = {false, false, false};
 
     for (int i = 0; i < NS; i++) {
-        simOk[i] = extractOptPoint(optFiles[i].Data(),
+        simOk[i] = extractOptPoint(optFiles[i],
                                    LY_sim[i], sig_sim[i], sig_sim_err[i]);
         if (simOk[i]) nSim++;
     }
@@ -234,10 +235,8 @@ void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
     legend->SetTextSize(0.034);
     legend->AddEntry(gPaper, "Paper Fig. 8 (Geant4, DSB1, 50 GeV)", "p");
     legend->AddEntry(gCurve, "#sigma_{t} = 0.52/#sqrt{LY} ns  (photostatistics)", "l");
-    if (gSim && vLY.size() > 0) {
-        TString simLabel = TString::Format("This sim: LuAG:Ce, %s, 6 energies", scanDir);
-        legend->AddEntry(gSim, simLabel.Data(), "p");
-    }
+    if (gSim && vLY.size() > 0)
+        legend->AddEntry(gSim, "This sim: LuAG:Ce, 1000 ev/point, 6 energies", "p");
     legend->AddEntry(gDSB1, "DSB1 est. ~25 npe/MeV (paper)", "p");
     legend->Draw();
 
@@ -256,10 +255,8 @@ void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
     title.DrawLatex(0.17, 0.960, "Timing resolution vs detected light yield");
 
     gSystem->mkdir("build/plots", kTRUE);
-    TString tag = gSystem->BaseName(scanDir);   // strip any leading path from scanDir
-    TString outPng = TString::Format("build/plots/timing_vs_LY_%s.png", tag.Data());
-    c->SaveAs(outPng.Data());
-    Printf("\nSaved: %s", outPng.Data());
+    c->SaveAs("build/plots/timing_vs_LY.png");
+    Printf("\nSaved: build/plots/timing_vs_LY.png");
 
     // Summary table
     Printf("\n%-10s  %-16s  %-12s  %-14s  %-12s",
