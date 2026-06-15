@@ -37,24 +37,5 @@ wait
 echo "All done — $(date)"
 ls -lh "$OUTDIR"/
 
-# ── Generate plots ────────────────────────────────────────────────────────────
-echo "Generating plots..."
-mkdir -p plots
-
-ANALYSIS_DIR="$(dirname "$(realpath "$0")")/analysis"
-
-# 1. Timing resolution vs light yield
-root -l -b -q "${ANALYSIS_DIR}/plot_timing_vs_LY.C(\"${OUTDIR}\")"
-
-# 2. Per-energy testbeam plots (energy res, timing res, shower profiles)
-for E in 5 10 20 50 100 120; do
-    ROOTFILE="$(pwd)/$OUTDIR/optical_E${E}GeV.root"
-    if [ -f "$ROOTFILE" ]; then
-        root -l -b -q "${ANALYSIS_DIR}/plot_testbeam.C(\"${ROOTFILE}\",${E})"
-    fi
-done
-
-# 3. Energy and timing resolution curves across all energies
-root -l -b -q "${ANALYSIS_DIR}/scan_resolution.C"
-
-echo "Plots saved to build/plots/"
+# Plots are generated locally (the cluster has no ROOT). After rsyncing
+# optical_scan_100/ back to the local machine, run:  ./make_plots_100.sh
