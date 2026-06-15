@@ -3,7 +3,7 @@
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
-#include "FTFP_BERT.hh"
+#include "Shielding.hh"
 
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
