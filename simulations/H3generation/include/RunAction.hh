@@ -10,6 +10,7 @@ public:
 
     void AddTriton(const G4String& volume, G4double ke, G4double r);
     void AddParticleEntering(const G4String& volume, G4double ke);
+    void AddNeutronInteraction();
 
 private:
     G4Accumulable<G4int> fTritonsBe{0};
@@ -18,4 +19,5 @@ private:
     G4Accumulable<G4int> fEnterBe{0};
     G4Accumulable<G4int> fEnterGraph{0};
     G4Accumulable<G4int> fEnterBlanket{0};
+    G4Accumulable<G4int> fNeutronInteractions{0};
 };
