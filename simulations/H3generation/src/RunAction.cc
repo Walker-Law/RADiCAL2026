@@ -1,6 +1,7 @@
 #include "RunAction.hh"
 #include "G4Run.hh"
 #include "G4AccumulableManager.hh"
+#include "G4AnalysisManager.hh"
 #include "G4SystemOfUnits.hh"
 #include <iomanip>
 
@@ -12,27 +13,61 @@ RunAction::RunAction() {
     am->RegisterAccumulable(fEnterBe);
     am->RegisterAccumulable(fEnterGraph);
     am->RegisterAccumulable(fEnterBlanket);
-    am->RegisterAccumulable(fSourceNeutrons);
+
+    // Book histograms (indices 0–4 fixed by creation order)
+    auto* ana = G4AnalysisManager::Instance();
+    ana->SetDefaultFileType("root");
+    ana->SetFileName("H3generation");
+    ana->SetVerboseLevel(0);
+
+    // Neutron KE spectra entering each layer (0–15 MeV, 150 bins)
+    ana->CreateH1("nSpec_Be",      "Neutron KE entering Be (MeV)",       150, 0., 15.);
+    ana->CreateH1("nSpec_Graph",   "Neutron KE entering Graphite (MeV)", 150, 0., 15.);
+    ana->CreateH1("nSpec_Blanket", "Neutron KE entering Blanket (MeV)",  150, 0., 15.);
+
+    // Triton KE when produced (0–5 MeV, 100 bins)
+    ana->CreateH1("triton_KE", "Triton KE at production (MeV)", 100, 0., 5.);
+
+    // Radial position of triton production (100–170 cm, 70 bins)
+    ana->CreateH1("triton_R", "Triton production radius (cm)", 70, 100., 170.);
 }
 
 void RunAction::BeginOfRunAction(const G4Run*) {
     G4AccumulableManager::Instance()->Reset();
+    auto* ana = G4AnalysisManager::Instance();
+    ana->OpenFile();
 }
 
-void RunAction::AddTriton(const G4String& vol) {
-    if      (vol == "Be_Shell")      fTritonsBe      += 1;
+void RunAction::AddTriton(const G4String& vol, G4double ke, G4double r) {
+    if      (vol == "Be_Shell")       fTritonsBe      += 1;
     else if (vol == "Graphite_Shell") fTritonsGraph   += 1;
     else if (vol == "Blanket")        fTritonsBlanket += 1;
+
+    auto* ana = G4AnalysisManager::Instance();
+    ana->FillH1(3, ke / MeV);
+    ana->FillH1(4, r  / cm);
 }
 
-void RunAction::AddParticleEntering(const G4String& vol) {
-    if      (vol == "Be_Shell")       fEnterBe      += 1;
-    else if (vol == "Graphite_Shell") fEnterGraph   += 1;
-    else if (vol == "Blanket")        fEnterBlanket += 1;
+void RunAction::AddParticleEntering(const G4String& vol, G4double ke) {
+    auto* ana = G4AnalysisManager::Instance();
+    if (vol == "Be_Shell") {
+        fEnterBe += 1;
+        ana->FillH1(0, ke / MeV);
+    } else if (vol == "Graphite_Shell") {
+        fEnterGraph += 1;
+        ana->FillH1(1, ke / MeV);
+    } else if (vol == "Blanket") {
+        fEnterBlanket += 1;
+        ana->FillH1(2, ke / MeV);
+    }
 }
 
 void RunAction::EndOfRunAction(const G4Run* run) {
     G4AccumulableManager::Instance()->Merge();
+
+    auto* ana = G4AnalysisManager::Instance();
+    ana->Write();
+    ana->CloseFile();
 
     G4int nSrc   = run->GetNumberOfEvent();
     G4int tBe    = fTritonsBe.GetValue();
@@ -67,5 +102,7 @@ void RunAction::EndOfRunAction(const G4Run* run) {
     G4cout << std::left << std::setw(20) << "  LiSiO blanket"
            << std::setw(9) << tBlank << std::setw(11) << eBlank
            << std::fixed << std::setprecision(4) << ratio(tBlank, eBlank) << "\n";
+    G4cout << "======================================================\n";
+    G4cout << "  ROOT output: H3generation.root\n";
     G4cout << "======================================================\n\n";
 }
