@@ -1,8 +1,10 @@
 #!/bin/bash
-# make_plots_100.sh — generate plots from the 100-event optical scan.
-# Run LOCALLY (the cluster has no ROOT), AFTER rsyncing optical_scan_100/ back.
+# make_plots.sh — generate plots from an optical scan.
+# Run LOCALLY (the cluster has no ROOT), AFTER rsyncing the scan dir back.
 #
-#   ./make_plots_100.sh
+#   ./make_plots.sh         # defaults to the 100-event scan
+#   ./make_plots.sh 1000    # the 1000-event scan
+#   ./make_plots.sh 100
 #
 # Must be run from the RADiCALsim1 root: the analysis macros hardcode
 # build/plots and build/... output paths.
@@ -10,7 +12,8 @@
 set -e
 cd "$(dirname "$(realpath "$0")")"   # RADiCALsim1 root
 
-SCAN="build/optical_scan_100"
+N="${1:-100}"                        # event count (100 or 1000)
+SCAN="build/optical_scan_${N}"
 ENERGIES=(5 10 20 50 100 120)
 
 if ! command -v root >/dev/null 2>&1; then
