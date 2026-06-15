@@ -1,18 +1,20 @@
 #include "PrimaryGeneratorAction.hh"
 #include "G4ParticleTable.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4RandomDirection.hh"
 
 PrimaryGeneratorAction::PrimaryGeneratorAction() {
     fParticleGun = new G4ParticleGun(1);
-    auto* particle = G4ParticleTable::GetParticleTable()->FindParticle("e-");
-    fParticleGun->SetParticleDefinition(particle);
-    fParticleGun->SetParticleEnergy(10.0 * GeV);
-    fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0, 0, 1));
-    fParticleGun->SetParticlePosition(G4ThreeVector(0, 0, -40.*cm));
+    auto* neutron = G4ParticleTable::GetParticleTable()->FindParticle("neutron");
+    fParticleGun->SetParticleDefinition(neutron);
+    fParticleGun->SetParticleEnergy(14.1 * MeV);  // D-T fusion neutron
+    fParticleGun->SetParticlePosition(G4ThreeVector(0, 0, 0));
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    // Isotropic point source at origin (SDEF POS=0 0 0)
+    fParticleGun->SetParticleMomentumDirection(G4RandomDirection());
     fParticleGun->GeneratePrimaryVertex(event);
 }
