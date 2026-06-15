@@ -39,3 +39,4 @@ ls -lh "$OUTDIR"/
 
 # Plots are generated locally (the cluster has no ROOT). After rsyncing
 # optical_scan_100/ back to the local machine, run:  ./make_plots.sh 100
+# (the 1000-event scan is the default: ./make_plots.sh)
