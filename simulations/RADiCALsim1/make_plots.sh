@@ -30,8 +30,7 @@
 # NOTE: build/plots is gitignored — the tracked plotting logic lives in analysis/.
 
 set -e
-# Script is at <root>/build/plots/make_plots.sh → cd up two levels to the root.
-cd "$(dirname "$(realpath "$0")")/../.."   # RADiCALsim1 root
+cd "$(dirname "$(realpath "$0")")"   # RADiCALsim1 root
 
 N="1000"                             # event count (1000 or 100)
 PER_ENERGY=0                         # off by default — summary plots only
