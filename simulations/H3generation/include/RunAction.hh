@@ -13,11 +13,12 @@ public:
     void AddNeutronInteraction(const G4String& volume);
 
 private:
+    // accumulables for end-of-run scalar computation
     G4Accumulable<G4int> fTritonsBe{0};
-    G4Accumulable<G4int> fTritonsGraph{0};
+    G4Accumulable<G4int> fTritonsW{0};
     G4Accumulable<G4int> fTritonsBlanket{0};
     G4Accumulable<G4int> fEnterBe{0};
-    G4Accumulable<G4int> fEnterGraph{0};
+    G4Accumulable<G4int> fEnterW{0};
     G4Accumulable<G4int> fEnterBlanket{0};
     G4Accumulable<G4int> fNeutronInteractions{0};
     G4Accumulable<G4int> fNeutronInteractionsBlanket{0};
