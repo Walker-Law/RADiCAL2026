@@ -69,8 +69,9 @@ void RunAction::AddParticleEntering(const G4String& vol, G4double ke) {
     }
 }
 
-void RunAction::AddNeutronInteraction() {
+void RunAction::AddNeutronInteraction(const G4String& vol) {
     fNeutronInteractions += 1;
+    if (vol == "Blanket") fNeutronInteractionsBlanket += 1;
 }
 
 void RunAction::EndOfRunAction(const G4Run* run) {
