@@ -121,7 +121,7 @@ void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
     bool   simOk[NS] = {false, false, false};
 
     for (int i = 0; i < NS; i++) {
-        simOk[i] = extractOptPoint(optFiles[i],
+        simOk[i] = extractOptPoint(optFiles[i].Data(),
                                    LY_sim[i], sig_sim[i], sig_sim_err[i]);
         if (simOk[i]) nSim++;
     }
