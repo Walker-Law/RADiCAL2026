@@ -8,20 +8,14 @@ public:
     void BeginOfRunAction(const G4Run*) override;
     void EndOfRunAction(const G4Run*) override;
 
-    void AddTriton(const G4String& volume);
-    void AddParticleEntering(const G4String& volume);
+    void AddTriton(const G4String& volume, G4double ke, G4double r);
+    void AddParticleEntering(const G4String& volume, G4double ke);
 
 private:
-    // tritons produced per layer
     G4Accumulable<G4int> fTritonsBe{0};
     G4Accumulable<G4int> fTritonsGraph{0};
     G4Accumulable<G4int> fTritonsBlanket{0};
-
-    // particles (any) entering each layer
     G4Accumulable<G4int> fEnterBe{0};
     G4Accumulable<G4int> fEnterGraph{0};
     G4Accumulable<G4int> fEnterBlanket{0};
-
-    // source neutrons = events
-    G4Accumulable<G4int> fSourceNeutrons{0};
 };
