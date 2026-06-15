@@ -81,7 +81,7 @@ bool extractOptPoint(const char* fname, double& LY, double& sig_t, double& sig_t
     return true;
 }
 
-void plot_timing_vs_LY() {
+void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
     gStyle->SetOptStat(0);
     gStyle->SetOptTitle(0);
     gStyle->SetPadLeftMargin(0.15);
