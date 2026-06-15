@@ -234,8 +234,10 @@ void plot_timing_vs_LY(const char* scanDir = "optical_scan_1000") {
     legend->SetTextSize(0.034);
     legend->AddEntry(gPaper, "Paper Fig. 8 (Geant4, DSB1, 50 GeV)", "p");
     legend->AddEntry(gCurve, "#sigma_{t} = 0.52/#sqrt{LY} ns  (photostatistics)", "l");
-    if (gSim && vLY.size() > 0)
-        legend->AddEntry(gSim, "This sim: LuAG:Ce, 1000 ev/point, 6 energies", "p");
+    if (gSim && vLY.size() > 0) {
+        TString simLabel = TString::Format("This sim: LuAG:Ce, %s, 6 energies", scanDir);
+        legend->AddEntry(gSim, simLabel.Data(), "p");
+    }
     legend->AddEntry(gDSB1, "DSB1 est. ~25 npe/MeV (paper)", "p");
     legend->Draw();
 
