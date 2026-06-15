@@ -23,7 +23,7 @@ RunAction::RunAction() {
 
     // Spectra histograms (indices 0–4)
     ana->CreateH1("nSpec_Be",      "Neutron KE entering Be (MeV)",       150, 0., 15.);
-    ana->CreateH1("nSpec_Graph",   "Neutron KE entering Graphite (MeV)", 150, 0., 15.);
+    ana->CreateH1("nSpec_W",   "Neutron KE entering W (MeV)", 150, 0., 15.);
     ana->CreateH1("nSpec_Blanket", "Neutron KE entering Blanket (MeV)",  150, 0., 15.);
     ana->CreateH1("triton_KE",     "Triton KE at production (MeV)",      100, 0.,  5.);
     ana->CreateH1("triton_R",      "Triton production radius (cm)",        70, 100., 170.);
@@ -43,7 +43,7 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 
 void RunAction::AddTriton(const G4String& vol, G4double ke, G4double r) {
     if      (vol == "Be_Shell")       fTritonsBe      += 1;
-    else if (vol == "Graphite_Shell") fTritonsGraph   += 1;
+    else if (vol == "W_Shell") fTritonsGraph   += 1;
     else if (vol == "Blanket")        fTritonsBlanket += 1;
 
     auto* ana = G4AnalysisManager::Instance();
@@ -56,7 +56,7 @@ void RunAction::AddParticleEntering(const G4String& vol, G4double ke) {
     if (vol == "Be_Shell") {
         fEnterBe += 1;
         ana->FillH1(0, ke / MeV);
-    } else if (vol == "Graphite_Shell") {
+    } else if (vol == "W_Shell") {
         fEnterGraph += 1;
         ana->FillH1(1, ke / MeV);
     } else if (vol == "Blanket") {
@@ -118,10 +118,10 @@ void RunAction::EndOfRunAction(const G4Run* run) {
     G4cout << std::left << std::setw(20) << "  Be multiplier"
            << std::setw(9) << tBe   << std::setw(11) << eBe
            << std::fixed << std::setprecision(5) << ratio(tBe, eBe) << "\n";
-    G4cout << std::left << std::setw(20) << "  Graphite moderator"
+    G4cout << std::left << std::setw(20) << "  Tungsten layer    "
            << std::setw(9) << tGraph << std::setw(11) << eGraph
            << std::fixed << std::setprecision(5) << ratio(tGraph, eGraph) << "\n";
-    G4cout << std::left << std::setw(20) << "  LiSiO blanket"
+    G4cout << std::left << std::setw(20) << "  Li4SiO4 blanket"
            << std::setw(9) << tBlank << std::setw(11) << eBlank
            << std::fixed << std::setprecision(5) << ratio(tBlank, eBlank) << "\n";
     G4cout << "======================================================\n";
