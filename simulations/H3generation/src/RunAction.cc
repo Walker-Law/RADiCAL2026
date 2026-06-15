@@ -82,7 +82,8 @@ void RunAction::EndOfRunAction(const G4Run* run) {
     G4int tGraph = fTritonsGraph.GetValue();
     G4int tBlank = fTritonsBlanket.GetValue();
     G4int tTotal = tBe + tGraph + tBlank;
-    G4int nInt   = fNeutronInteractions.GetValue();
+    G4int nInt        = fNeutronInteractions.GetValue();
+    G4int nIntBlanket = fNeutronInteractionsBlanket.GetValue();
 
     G4int eBe    = fEnterBe.GetValue();
     G4int eGraph = fEnterGraph.GetValue();
@@ -97,8 +98,10 @@ void RunAction::EndOfRunAction(const G4Run* run) {
     ana->FillNtupleIColumn(0, nSrc);
     ana->FillNtupleIColumn(1, tTotal);
     ana->FillNtupleIColumn(2, nInt);
-    ana->FillNtupleDColumn(3, ratio(tTotal, nSrc));
-    ana->FillNtupleDColumn(4, ratio(tTotal, nInt));
+    ana->FillNtupleIColumn(3, nIntBlanket);
+    ana->FillNtupleDColumn(4, ratio(tTotal, nSrc));
+    ana->FillNtupleDColumn(5, ratio(tTotal, nInt));
+    ana->FillNtupleDColumn(6, ratio(tTotal, nIntBlanket));
     ana->AddNtupleRow();
 
     ana->Write();
