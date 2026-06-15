@@ -9,6 +9,18 @@
 
 set -e
 
+# ── Source Geant4 data-path environment if not already set ────────────────────
+# ENSDFSTATE.dat and friends must be reachable; find and source geant4.sh if needed.
+if [ -z "$G4ENSDFSTATEROOT" ]; then
+    G4SH=$(find /home /usr /opt ~/geant4-install -name "geant4.sh" 2>/dev/null | head -1)
+    if [ -n "$G4SH" ]; then
+        source "$G4SH"
+        echo "Sourced Geant4 env: $G4SH"
+    else
+        echo "WARNING: G4ENSDFSTATEROOT not set and geant4.sh not found — run will likely crash." >&2
+    fi
+fi
+
 # ── Resolve paths from script location (platform-independent) ─────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/build"
