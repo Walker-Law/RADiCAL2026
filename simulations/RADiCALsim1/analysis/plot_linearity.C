@@ -56,7 +56,7 @@ void plot_linearity(const char* dir="build/scan", const char* prefix="radical") 
     printf("  -----------------------------------------------------------------------\n");
 
     for (int i = 0; i < N; i++) {
-        TFile* f = TFile::Open(Form("build/scan/radical_E%.0fGeV.root", E[i]));
+        TFile* f = TFile::Open(Form("%s/%s_E%.0fGeV.root", dir, prefix, E[i]));
         if (!f || f->IsZombie()) {
             Printf("ERROR: cannot open E=%.0f GeV file", E[i]);
             muComb[i] = E[i]; errComb[i] = 0; sgComb[i] = 0.1; errSgComb[i] = 0;
