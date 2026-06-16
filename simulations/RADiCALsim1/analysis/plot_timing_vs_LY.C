@@ -202,30 +202,19 @@ void plot_timing_vs_LY(const char* scanDir="optical_scan_1000") {
     la.SetTextColor(kBlue+1);
     la.DrawLatex(35, sig_dsb1 * 1.7, "DSB1 ~25 npe/MeV");
 
-    // ── Sim point labels — points cluster tightly in y (55–67 ps = 0.055–0.067 ns)
-    // Alternate above/below and use absolute y positions to avoid overlap.
-    // x positions: 120(147), 100(168), 50(306), 20(608), 10(771), 5(855) npe/MeV
-    // Labels in NDC so placement is independent of data range.
-    // Canvas margins: left=0.15, right=0.06, bottom=0.14, top=0.07
-    // x-axis: log10(1)→log10(10000), NDC 0.15→0.94 (width=0.79)
-    // y-axis: log10(0.005)→log10(1.2), NDC 0.14→0.93 (height=0.79)
-    // Points sit at NDC y ≈ 0.51–0.55. Two rows: top=0.62, bottom=0.40
-    const char* simLabels[NS] = {"5 GeV", "10 GeV", "20 GeV", "50 GeV", "100 GeV", "120 GeV"};
-    // NDC x computed from log10(LY): ndcX = 0.15 + 0.79*(log10(LY)-0)/4
-    // 5GeV(855→2.93): 0.73   10GeV(771→2.89): 0.72   20GeV(608→2.78): 0.70
-    // 50GeV(306→2.49): 0.64  100GeV(168→2.23): 0.59  120GeV(147→2.17): 0.58
-    // top row (ndcY=0.63):  5, 20, 100 GeV
-    // bot row (ndcY=0.40): 10, 50, 120 GeV
-    double ndcX[NS] = {0.80,  0.76,  0.64,  0.57,  0.50,  0.46};
-    double ndcY[NS] = {0.63,  0.40,  0.63,  0.40,  0.63,  0.40};
-    for (int i = 0; i < NS; i++) {
-        if (!simOk[i]) continue;
-        TLatex lb;
-        lb.SetNDC();
-        lb.SetTextSize(0.032);
-        lb.SetTextColor(kRed+1);
-        lb.DrawLatex(ndcX[i], ndcY[i], simLabels[i]);
-    }
+    // ── Sim point labels — two clear rows above/below the tight cluster ─────────
+    // Stars cluster at LY≈147–855 npe/MeV, σ_t≈0.055–0.067 ns.
+    // Above row (σ≈0.090 ns): 5, 20, 100 GeV — x matches each energy's LY.
+    // Below row (σ≈0.041 ns): 10, 50, 120 GeV — same logic.
+    TLatex lb;
+    lb.SetTextSize(0.032);
+    lb.SetTextColor(kRed+1);
+    if (simOk[0]) lb.DrawLatex( 820., 0.091, "5 GeV");
+    if (simOk[2]) lb.DrawLatex( 540., 0.087, "20 GeV");
+    if (simOk[4]) lb.DrawLatex( 155., 0.083, "100 GeV");
+    if (simOk[1]) lb.DrawLatex( 670., 0.042, "10 GeV");
+    if (simOk[3]) lb.DrawLatex( 260., 0.041, "50 GeV");
+    if (simOk[5]) lb.DrawLatex( 107., 0.040, "120 GeV");
 
     // ── Legend ────────────────────────────────────────────────────────────────
     auto legend = new TLegend(0.17, 0.14, 0.72, 0.35);
