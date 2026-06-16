@@ -95,7 +95,7 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
         if (!hR[s]) continue;
         hR[s]->SetMarkerColor(cols[s]); hR[s]->SetMarkerStyle(mst[s]); hR[s]->SetMarkerSize(0.9);
         hR[s]->SetLineColor(cols[s]);   hR[s]->SetLineWidth(1);
-        hR[s]->GetXaxis()->SetTitle("Distance from shower axis [mm]");
+        hR[s]->GetXaxis()->SetTitle("Distance from shower axis  [R_{M}]");
         hR[s]->GetXaxis()->SetTitleSize(0.046); hR[s]->GetXaxis()->SetLabelSize(0.040);
         hR[s]->GetYaxis()->SetTitle("Energy deposit [a.u.]");
         hR[s]->GetYaxis()->SetTitleSize(0.046); hR[s]->GetYaxis()->SetLabelSize(0.040);
