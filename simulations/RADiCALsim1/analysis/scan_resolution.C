@@ -71,7 +71,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     // keep file open? clone histos already; close.
   }
   // Dashed-line legend entry for the Longo fit curves
-  TLine* lDash=new TLine(); lDash->SetLineStyle(2); lDash->SetLineWidth(2); lDash->SetLineColor(kGray+1);
+  TLine* lDash=new TLine(); lDash->SetLineStyle(1); lDash->SetLineWidth(2); lDash->SetLineColor(kGray+1);
   leg->AddEntry(lDash,"Longo fit: t^{#alpha-1}e^{-#beta t}","l");
   leg->Draw(); cL->SaveAs(Form("%s/shower_long_overlay.png",out));
 
