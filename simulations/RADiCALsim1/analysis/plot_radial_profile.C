@@ -38,8 +38,8 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     // Limit to R < 7 mm (= 0.335 R_M) where azimuthal coverage is complete.
     const double Rmax_mm = 7.0;              // mm — full-coverage aperture radius
     const double Rmax    = Rmax_mm / RM_mm;  // in R_M
-    const int    NR      = 35;
-    const double dR      = Rmax / NR;        // R_M per bin (~0.0096 R_M)
+    const int    NR      = 22;               // fewer bins → smoother curves
+    const double dR      = Rmax / NR;
 
     double gMax = 0, gMin = 1e30;
     TH1D* hR[NS] = {};
