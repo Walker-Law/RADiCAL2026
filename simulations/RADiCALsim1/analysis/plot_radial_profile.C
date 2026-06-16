@@ -60,13 +60,14 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
             }
         }
 
-        // Divide by ring area (in mm²) → dE/dA
+        // Divide by ring area (in mm²) → dE/dA; zero errors so Draw("C") is clean
         for (int b = 1; b <= NR; b++) {
             double Rc   = hR[s]->GetBinCenter(b) * RM_mm;   // back to mm for area
             double area = 2.0 * TMath::Pi() * Rc * (dR * RM_mm);
             double v = (area > 0 && hR[s]->GetBinContent(b) > 0)
                        ? hR[s]->GetBinContent(b) / area : 0;
             hR[s]->SetBinContent(b, v);
+            hR[s]->SetBinError(b, 0);
         }
 
         for (int b = 1; b <= NR; b++) {
