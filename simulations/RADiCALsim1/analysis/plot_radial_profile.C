@@ -33,12 +33,13 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     if (!f || f->IsZombie()) { printf("ERROR: cannot open %s\n", fname); return; }
 
     // ── Azimuthal-average radial profiles ─────────────────────────────────────
-    // Project each H2 (x,y) → R = sqrt(x²+y²), then normalize by ring area 2πR·ΔR
-    // so the y-axis is energy per unit transverse area (arbitrary units).
-    // Limit to R < 7 mm where all azimuthal angles have full coverage in a 14×14mm tile.
-    const int    NR   = 35;
-    const double Rmax = 7.0;   // mm
-    const double dR   = Rmax / NR;   // 0.2 mm per bin
+    // Project each H2 (x,y) → R = sqrt(x²+y²), normalize by ring area 2πR·ΔR,
+    // and express radius in Molière radius units (R_M).
+    // Limit to R < 7 mm (= 0.335 R_M) where azimuthal coverage is complete.
+    const double Rmax_mm = 7.0;              // mm — full-coverage aperture radius
+    const double Rmax    = Rmax_mm / RM_mm;  // in R_M
+    const int    NR      = 35;
+    const double dR      = Rmax / NR;        // R_M per bin (~0.0096 R_M)
 
     double gMax = 0, gMin = 1e30;
     TH1D* hR[NS] = {};
