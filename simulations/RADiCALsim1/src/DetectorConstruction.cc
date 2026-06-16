@@ -284,6 +284,48 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     tyvekSliceVis->SetForceAuxEdgeVisible(true);
     logicTyvekSlice->SetVisAttributes(tyvekSliceVis);
 
+    // ── Tyvek optical surface: ~98% diffuse (Lambertian) white reflector ─────
+    // dielectric_metal + ground finish → absorbed or diffusely reflected.
+    auto tyvekSurface = new G4OpticalSurface("TyvekSurface");
+    tyvekSurface->SetType(dielectric_metal);
+    tyvekSurface->SetFinish(ground);
+    tyvekSurface->SetModel(unified);
+    std::vector<G4double> tvRefl(6, 0.98);
+    auto tvSurfMPT = new G4MaterialPropertiesTable();
+    tvSurfMPT->AddProperty("REFLECTIVITY", phE, tvRefl);
+    tyvekSurface->SetMaterialPropertiesTable(tvSurfMPT);
+    // Apply to inter-layer Tyvek slices
+    new G4LogicalSkinSurface("TyvekSliceSurf", logicTyvekSlice, tyvekSurface);
+
+    // ── Tyvek outer wrapper: 4 side panels ───────────────────────────────────
+    // Hollow box (outer=housingInnerHalf, inner=tileX/2) fills the gap between
+    // the 14×14 mm tile stack and the Delrin inner wall on all 4 lateral faces.
+    auto solidWrapO = new G4Box("TyvekWrap_O", housingInnerHalf, housingInnerHalf, stackZ/2.0);
+    auto solidWrapI = new G4Box("TyvekWrap_I", tileX/2, tileY/2, stackZ/2.0 + 1.0*mm);
+    auto solidTyvekSides = new G4SubtractionSolid("TyvekSides", solidWrapO, solidWrapI);
+    auto logicTyvekSides = new G4LogicalVolume(solidTyvekSides, tyvek, "TyvekSides");
+    new G4PVPlacement(nullptr, {}, logicTyvekSides, "TyvekSides_Phys", logicCalo, false, 0);
+    new G4LogicalSkinSurface("TyvekSidesSurf", logicTyvekSides, tyvekSurface);
+    logicTyvekSides->SetVisAttributes(tyvekSliceVis);
+
+    // ── Tyvek outer wrapper: upstream + downstream end caps ───────────────────
+    // Thin discs with holes at all 5 capillary positions (drilled same as slices)
+    // so quartz rods pass through unobstructed.
+    auto ecDrillH = wrapThick;   // drill half-length > end cap half-z
+    auto ecDrillC = new G4Tubs("ECDrill_C", 0, centerHoleR, ecDrillH, 0., 360.*deg);
+    auto ecDrillK = new G4Tubs("ECDrill_K", 0, cornerHoleR, ecDrillH, 0., 360.*deg);
+    G4VSolid* solidEC = new G4Box("TyvekEC_B", housingInnerHalf, housingInnerHalf, wrapThick/2.0);
+    solidEC = new G4SubtractionSolid("ec0", solidEC, ecDrillC, nullptr, capXY[0]);
+    for (int c = 1; c < 5; c++)
+        solidEC = new G4SubtractionSolid("ecc", solidEC, ecDrillK, nullptr, capXY[c]);
+    auto logicTyvekEC = new G4LogicalVolume(solidEC, tyvek, "TyvekEndCap");
+    new G4PVPlacement(nullptr, G4ThreeVector(0, 0, -stackZ/2.0 - wrapThick/2.0),
+                      logicTyvekEC, "TyvekECUp_Phys",  logicCalo, false, 0);
+    new G4PVPlacement(nullptr, G4ThreeVector(0, 0, +stackZ/2.0 + wrapThick/2.0),
+                      logicTyvekEC, "TyvekECDn_Phys",  logicCalo, false, 1);
+    new G4LogicalSkinSurface("TyvekEndCapSurf", logicTyvekEC, tyvekSurface);
+    logicTyvekEC->SetVisAttributes(tyvekSliceVis);
+
     // =========================================================================
     // 7. PLACE TILE STACK
     //
