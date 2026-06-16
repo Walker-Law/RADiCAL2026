@@ -436,8 +436,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     pdVis->SetForceSolid(true);
     logicPDUpstream->SetVisAttributes(pdVis);
     logicPDDownstream->SetVisAttributes(pdVis);
-    const G4double zPDUpstream   = -stackZ/2.0 - pdHalfZ;   // abuts upstream rod end
-    const G4double zPDDownstream = +stackZ/2.0 + pdHalfZ;   // abuts downstream rod end
+    // PDs sit just outside the Tyvek end caps (quartz rod photons pass through the
+    // drilled holes in the end caps and arrive at the Si PD through a thin air gap)
+    const G4double zPDUpstream   = -stackZ/2.0 - wrapThick - pdHalfZ;
+    const G4double zPDDownstream = +stackZ/2.0 + wrapThick + pdHalfZ;
 
     for (G4int c = 1; c <= 4; c++) {
         G4ThreeVector xy = capXY[c];
