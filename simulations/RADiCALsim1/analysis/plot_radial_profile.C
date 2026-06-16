@@ -54,9 +54,9 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
             for (int iy = 1; iy <= h2->GetNbinsY(); iy++) {
                 double x = h2->GetXaxis()->GetBinCenter(ix);
                 double y = h2->GetYaxis()->GetBinCenter(iy);
-                double R = TMath::Sqrt(x*x + y*y);
-                double w = h2->GetBinContent(ix, iy);
-                if (w > 0 && R < Rmax) hR[s]->Fill(R, w);
+                double R_mm = TMath::Sqrt(x*x + y*y);
+                double w    = h2->GetBinContent(ix, iy);
+                if (w > 0 && R_mm < Rmax_mm) hR[s]->Fill(R_mm / RM_mm, w);
             }
         }
 
