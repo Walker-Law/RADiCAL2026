@@ -56,8 +56,23 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     cL->cd(); hL->Draw(i==0?"hist":"hist same");
     hL->SetMaximum(0.12);
     leg->AddEntry(hL,Form("%.0f GeV",E[i]),"l");
+    // Longo / gamma-distribution fit: dE/dt ∝ t^(α-1)·exp(−βt)
+    // Bin centers: 0.5..28.5 (29 bins, [0,29]).  Peak at t_max = (α-1)/β ≈ [1]/[2].
+    TF1* fL=new TF1(Form("fL%d",i),"[0]*TMath::Power(x,[1])*TMath::Exp(-[2]*x)",0.5,28.5);
+    double tmax0=2.5*TMath::Log(E[i])+1.0, b0=0.65;
+    fL->SetParameters(hL->GetMaximum(), tmax0*b0, b0);
+    fL->SetParLimits(0,1e-6,10.); fL->SetParLimits(1,0.1,20.); fL->SetParLimits(2,0.01,5.);
+    hL->Fit(fL,"RQ0");  // Q=quiet, 0=don't draw automatically
+    fL->SetLineColor(cols[i]); fL->SetLineStyle(2); fL->SetLineWidth(2);
+    fL->Draw("same");
+    printf("  Longo fit E=%.0f GeV: alpha=%.2f  beta=%.3f  t_max=%.1f layers\n",
+           E[i], fL->GetParameter(1)+1, fL->GetParameter(2),
+           fL->GetParameter(1)/fL->GetParameter(2));
     // keep file open? clone histos already; close.
   }
+  // Dashed-line legend entry for the Longo fit curves
+  TLine* lDash=new TLine(); lDash->SetLineStyle(2); lDash->SetLineWidth(2); lDash->SetLineColor(kGray+1);
+  leg->AddEntry(lDash,"Longo fit: t^{#alpha-1}e^{-#beta t}","l");
   leg->Draw(); cL->SaveAs(Form("%s/shower_long_overlay.png",out));
 
   // ---------- energy resolution curve ----------
