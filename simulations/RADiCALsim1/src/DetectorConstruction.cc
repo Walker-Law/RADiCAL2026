@@ -429,7 +429,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     pdMPT->AddProperty("ABSLENGTH", phE, pdABS);  // then absorb immediately
     siPD->SetMaterialPropertiesTable(pdMPT);
 
-    static const G4double pdHalfZ = 0.02*mm;
     auto solidPD = new G4Tubs("PD", 0, tCap_outR, pdHalfZ, 0., 360.*deg);
     auto logicPDUpstream   = new G4LogicalVolume(solidPD, siPD, "PD_Upstream");
     auto logicPDDownstream = new G4LogicalVolume(solidPD, siPD, "PD_Downstream");
