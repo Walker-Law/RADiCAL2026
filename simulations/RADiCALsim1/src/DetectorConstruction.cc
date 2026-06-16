@@ -187,11 +187,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     static const G4double z_wls        = -stackZ/2.0 + upstreamLen + wlsLen/2.0;
     static const G4double z_downstream = -stackZ/2.0 + upstreamLen + wlsLen + downstreamLen/2.0;
 
-    // Delrin housing — 18 mm × 18 mm outer, 14 mm × 14 mm inner cavity
+    // Photodetector half-thickness (defined early — also needed for cavity size)
+    static const G4double pdHalfZ = 0.02*mm;
+
+    // Tyvek outer wrap — one inter-layer sheet thickness on all 6 faces
+    static const G4double wrapThick = tyvekSliceThick;  // 0.2032 mm
+
+    // Delrin housing — 18 mm × 18 mm outer; inner cavity enlarged by wrapThick
+    // to accommodate the Tyvek side panels between tiles and Delrin wall.
     static const G4double housingOuterHalf = 9.0*mm;
-    static const G4double housingInnerHalf = 7.0*mm;
+    static const G4double housingInnerHalf = 7.0*mm + wrapThick;  // 7.2032 mm
     static const G4double housingHalfZ     = 65.0*mm;   // 130 mm = 13 cm ✓
-    static const G4double cavityHalfZ      = stackZ/2.0 + 0.05*mm; // slight clearance
+    // Cavity must fit: stack + Tyvek end caps (wrapThick each) + PDs (pdHalfZ each)
+    static const G4double cavityHalfZ      = stackZ/2.0 + wrapThick + 2.0*pdHalfZ + 0.05*mm;
 
     // =========================================================================
     // 3. WORLD
