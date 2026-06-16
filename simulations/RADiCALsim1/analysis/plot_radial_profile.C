@@ -124,8 +124,8 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     TGaxis* axRM = new TGaxis(gPad->GetX1(), yTop,
                                gPad->GetX2(), yTop,
                                0, Rmax / RM_mm, 505, "-");
-    axRM->SetTitle(Form("Molière radius   (R_{M} = %.0f mm, LYSO)", RM_mm));
-    axRM->SetTitleSize(0.040); axRM->SetTitleOffset(-1.1);
+    axRM->SetTitle("R_{M}  (LYSO, 20.9 mm)");
+    axRM->SetTitleSize(0.038); axRM->SetTitleOffset(-1.2);
     axRM->SetLabelSize(0.036); axRM->SetLabelOffset(0.005);
     axRM->Draw();
 
