@@ -202,19 +202,22 @@ void plot_timing_vs_LY(const char* scanDir="optical_scan_1000") {
     la.SetTextColor(kBlue+1);
     la.DrawLatex(35, sig_dsb1 * 1.7, "DSB1 ~25 npe/MeV");
 
-    // ── Sim point labels — two clear rows above/below the tight cluster ─────────
-    // Stars cluster at LY≈147–855 npe/MeV, σ_t≈0.055–0.067 ns.
-    // Above row (σ≈0.090 ns): 5, 20, 100 GeV — x matches each energy's LY.
-    // Below row (σ≈0.041 ns): 10, 50, 120 GeV — same logic.
-    TLatex lb;
-    lb.SetTextSize(0.032);
-    lb.SetTextColor(kRed+1);
-    if (simOk[0]) lb.DrawLatex( 820., 0.091, "5 GeV");
-    if (simOk[2]) lb.DrawLatex( 540., 0.087, "20 GeV");
-    if (simOk[4]) lb.DrawLatex( 155., 0.083, "100 GeV");
-    if (simOk[1]) lb.DrawLatex( 670., 0.042, "10 GeV");
-    if (simOk[3]) lb.DrawLatex( 260., 0.041, "50 GeV");
-    if (simOk[5]) lb.DrawLatex( 107., 0.040, "120 GeV");
+    // ── Sim point labels — diagonal staircase above the cluster ──────────────────
+    // Stars cluster at NDC y≈0.49 (σ_t≈0.06 ns). Labels fan above in a diagonal
+    // from top-right (5 GeV, high LY) to bottom-left (120 GeV, low LY) so each
+    // label sits near its point's x-position and the staircase is always legible.
+    // NDC x: 0.15 + 0.79*(log10(LY)/4).  NDC y spacing: 0.048 per step (> text height 0.032).
+    const char* simLabels[NS] = {"5 GeV","10 GeV","20 GeV","50 GeV","100 GeV","120 GeV"};
+    double ndcX[NS] = {0.75, 0.70, 0.65, 0.61, 0.56, 0.51};
+    double ndcY[NS] = {0.76, 0.71, 0.66, 0.61, 0.56, 0.53};
+    for (int i = 0; i < NS; i++) {
+        if (!simOk[i]) continue;
+        TLatex lb;
+        lb.SetNDC();
+        lb.SetTextSize(0.032);
+        lb.SetTextColor(kRed+1);
+        lb.DrawLatex(ndcX[i], ndcY[i], simLabels[i]);
+    }
 
     // ── Legend ────────────────────────────────────────────────────────────────
     auto legend = new TLegend(0.17, 0.14, 0.72, 0.35);
