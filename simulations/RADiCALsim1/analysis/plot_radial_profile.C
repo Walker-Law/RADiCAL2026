@@ -115,7 +115,7 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
 
     // ── Title ─────────────────────────────────────────────────────────────────
     TLatex tit; tit.SetNDC(); tit.SetTextFont(42); tit.SetTextSize(0.042);
-    tit.DrawLatex(0.15, 0.935, Form("Transverse shower profile  (%.0f GeV e^{-})", Egev));
+    tit.DrawLatex(0.15, 0.960, Form("Transverse shower profile  (%.0f GeV e^{-})", Egev));
 
     // ── Secondary x-axis at top: Molière radii ────────────────────────────────
     // In logy mode gPad->GetY2() = log10(ymax); convert back to data coords.
