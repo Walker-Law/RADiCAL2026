@@ -116,7 +116,7 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
 
     // ── Title ─────────────────────────────────────────────────────────────────
     TLatex tit; tit.SetNDC(); tit.SetTextFont(42); tit.SetTextSize(0.042);
-    tit.DrawLatex(0.15, 0.960, Form("Transverse shower profile  (%.0f GeV e^{-})", Egev));
+    tit.DrawLatex(0.15, 0.975, Form("Transverse shower profile  (%.0f GeV e^{-})", Egev));
 
     // ── Note: mm equivalent of x-axis ────────────────────────────────────────
     TLatex note; note.SetNDC(); note.SetTextSize(0.030); note.SetTextColor(kGray+2);
