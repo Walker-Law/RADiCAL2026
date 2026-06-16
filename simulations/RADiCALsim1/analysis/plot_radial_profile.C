@@ -109,9 +109,9 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
 
     // ── Inline depth labels ───────────────────────────────────────────────────
     TLatex lb; lb.SetNDC(); lb.SetTextSize(0.033); lb.SetTextColor(kGray+2);
-    lb.DrawLatex(0.20, 0.81, "Early");
-    lb.DrawLatex(0.27, 0.65, "Shower max");
-    lb.DrawLatex(0.47, 0.35, "Tail");
+    lb.DrawLatex(0.18, 0.34, "Early");        // 1.8 X0 — low, small R
+    lb.DrawLatex(0.22, 0.78, "Shower max");   // 6.1 X0 — highest
+    lb.DrawLatex(0.50, 0.52, "Tail");
 
     // ── Title ─────────────────────────────────────────────────────────────────
     TLatex tit; tit.SetNDC(); tit.SetTextFont(42); tit.SetTextSize(0.042);
