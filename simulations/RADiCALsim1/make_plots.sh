@@ -17,6 +17,7 @@
 #   energy_response.png           E_reco/E_beam uniformity
 #   timing_vs_LY.png              sigma_t vs light yield              [Fig 8]
 #   transverse_heatmap_E<E>.png   x-y shower at early/max/tail depths [Fig 9]
+#   transverse_radial_E120GeV.png lateral dE/dA vs R_M at 6 depth slices
 #
 # --per-energy ALSO emits (5/10/20/50/100/120 GeV):
 #   energy_resolution_E<E>.png  timing_resolution_E<E>.png
