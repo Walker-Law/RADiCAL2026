@@ -51,7 +51,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     // --- longitudinal profile overlay (normalized to unit area) ---
     TH1D* hL=(TH1D*)f->Get("ShowerProfile"); hL=(TH1D*)hL->Clone(Form("L%d",i));
     if(hL->Integral()>0) hL->Scale(1.0/hL->Integral());
-    hL->SetLineColor(cols[i]); hL->SetLineWidth(2);
+    hL->SetLineColor(cols[i]); hL->SetLineWidth(2); hL->SetLineStyle(3);
     hL->SetTitle("Longitudinal shower profile vs energy;LYSO layer;normalized <E>");
     cL->cd(); hL->Draw(i==0?"hist":"hist same");
     hL->SetMaximum(0.12);
