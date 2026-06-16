@@ -109,14 +109,13 @@ void plot_timing_vs_LY(const char* scanDir="optical_scan_1000") {
     // ── Actual Geant4 sim points from optical runs ────────────────────────────
     Printf("\nExtracting actual sim points from optical runs:");
     const int NS = 6;
-    const char* optFiles[NS] = {
-        "optical_scan_1000/optical_E5GeV.root",
-        "optical_scan_1000/optical_E10GeV.root",
-        "optical_scan_1000/optical_E20GeV.root",
-        "optical_scan_1000/optical_E50GeV.root",
-        "optical_scan_1000/optical_E100GeV.root",
-        "optical_scan_1000/optical_E120GeV.root"
-    };
+    const int Egev[NS] = {5, 10, 20, 50, 100, 120};
+    TString optFilesStr[NS];
+    const char* optFiles[NS];
+    for (int i = 0; i < NS; i++) {
+        optFilesStr[i] = Form("%s/optical_E%dGeV.root", scanDir, Egev[i]);
+        optFiles[i]    = optFilesStr[i].Data();
+    }
     double LY_sim[NS], sig_sim[NS], sig_sim_err[NS];
     int    nSim = 0;
     bool   simOk[NS] = {false, false, false};
