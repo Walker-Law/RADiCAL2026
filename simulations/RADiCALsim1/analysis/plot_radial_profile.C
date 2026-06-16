@@ -118,17 +118,9 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     TLatex tit; tit.SetNDC(); tit.SetTextFont(42); tit.SetTextSize(0.042);
     tit.DrawLatex(0.15, 0.960, Form("Transverse shower profile  (%.0f GeV e^{-})", Egev));
 
-    // ── Secondary x-axis at top: Molière radii ────────────────────────────────
-    // In logy mode gPad->GetY2() = log10(ymax); convert back to data coords.
-    c->Update();
-    double yTop = TMath::Power(10.0, gPad->GetY2());
-    TGaxis* axRM = new TGaxis(gPad->GetX1(), yTop,
-                               gPad->GetX2(), yTop,
-                               0, Rmax / RM_mm, 505, "-");
-    axRM->SetTitle("R_{M}  (LYSO, 20.9 mm)");
-    axRM->SetTitleSize(0.038); axRM->SetTitleOffset(-1.2);
-    axRM->SetLabelSize(0.036); axRM->SetLabelOffset(0.005);
-    axRM->Draw();
+    // ── Note: mm equivalent of x-axis ────────────────────────────────────────
+    TLatex note; note.SetNDC(); note.SetTextSize(0.030); note.SetTextColor(kGray+2);
+    note.DrawLatex(0.15, 0.955, Form("R_{M}(LYSO) = %.0f mm  #rightarrow  0.33 R_{M} = %.0f mm", RM_mm, Rmax_mm));
 
     // ── Save ──────────────────────────────────────────────────────────────────
     gSystem->mkdir("build/plots", kTRUE);
