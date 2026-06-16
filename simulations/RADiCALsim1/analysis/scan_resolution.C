@@ -63,7 +63,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     fL->SetParameters(hL->GetMaximum(), tmax0*b0, b0);
     fL->SetParLimits(0,1e-6,10.); fL->SetParLimits(1,0.1,20.); fL->SetParLimits(2,0.01,5.);
     hL->Fit(fL,"RQ0");  // Q=quiet, 0=don't draw automatically
-    fL->SetLineColor(cols[i]); fL->SetLineStyle(2); fL->SetLineWidth(2);
+    fL->SetLineColor(cols[i]); fL->SetLineStyle(1); fL->SetLineWidth(2);
     fL->Draw("same");
     printf("  Longo fit E=%.0f GeV: alpha=%.2f  beta=%.3f  t_max=%.1f layers\n",
            E[i], fL->GetParameter(1)+1, fL->GetParameter(2),
