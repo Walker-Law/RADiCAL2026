@@ -81,7 +81,7 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     TCanvas* c = new TCanvas("cRad", "radial profile", 620, 700);
     c->SetLeftMargin(0.15);
     c->SetBottomMargin(0.13);
-    c->SetTopMargin(0.15);
+    c->SetTopMargin(0.18);
     c->SetRightMargin(0.06);
     c->SetLogy();
     c->SetGrid(1, 1);
