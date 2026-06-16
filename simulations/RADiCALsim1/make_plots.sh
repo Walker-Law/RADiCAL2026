@@ -71,6 +71,14 @@ else
     echo "skip transverse heatmap (missing $HEATFILE)"
 fi
 
+# ── Transverse radial profile (azimuthal average, 6 depth slices in X₀) ──────
+RADFILE="${SCAN}/optical_E120GeV.root"
+if [ -f "$RADFILE" ]; then
+    root -l -b -q "analysis/plot_radial_profile.C(\"${RADFILE}\",120)"
+else
+    echo "skip radial profile (missing $RADFILE)"
+fi
+
 # ── Optional per-energy plots ─────────────────────────────────────────────────
 if [ "$PER_ENERGY" -eq 1 ]; then
     for E in "${ENERGIES[@]}"; do
