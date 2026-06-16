@@ -26,12 +26,14 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     // Effective X₀/mm for the LYSO/W stack: 0.845 X₀ per 4.4064 mm period = 0.1917 X₀/mm
     const int NS = 6;
     const double sliceX0[NS] = { 1.8, 6.1, 10.3, 14.5, 18.7, 22.5 };
-    // Gradient: blue (front/early) → red (back/tail) via ROOT's rainbow palette
-    gStyle->SetPalette(kRainBow);
+    // Gradient: light blue (front) → dark red (back)
     int cols[NS];
     for (int s = 0; s < NS; s++) {
-        int idx = (int)((TColor::GetNumberOfColors() - 1) * s / double(NS - 1));
-        cols[s] = gStyle->GetColorPalette(idx);
+        float t = s / float(NS - 1);
+        float r = 0.40f + 0.45f * t;
+        float g = 0.65f - 0.65f * t;
+        float b = 0.95f - 0.95f * t;
+        cols[s] = TColor::GetColor(r, g, b);
     }
     int mst[NS] = { 24, 20, 25, 21, 26, 22 };
 
