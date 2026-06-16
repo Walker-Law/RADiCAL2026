@@ -118,6 +118,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
     luag->SetMaterialPropertiesTable(lMPT);
 
+    // --- Tyvek: add RINDEX so optical boundary physics activates at Tyvek faces.
+    //     n ≈ 1.50 (HDPE). Reflectivity 98% is set via G4LogicalSkinSurface below.
+    std::vector<G4double> tvRI = {1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
+    auto tvMPT = new G4MaterialPropertiesTable();
+    tvMPT->AddProperty("RINDEX", phE, tvRI);
+    tyvek->SetMaterialPropertiesTable(tvMPT);
+
     // =========================================================================
     // 2. KEY DIMENSIONS
     // =========================================================================
