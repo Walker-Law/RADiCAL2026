@@ -26,8 +26,14 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     // Effective X₀/mm for the LYSO/W stack: 0.845 X₀ per 4.4064 mm period = 0.1917 X₀/mm
     const int NS = 6;
     const double sliceX0[NS] = { 1.8, 6.1, 10.3, 14.5, 18.7, 22.5 };
-    int cols[NS] = { kAzure+2, kRed+1, kGreen+2, kMagenta+1, kOrange+1, kCyan+2 };
-    int mst[NS]  = { 24, 20, 25, 21, 26, 22 };   // open circle, filled circle, open sq, ...
+    // Gradient: blue (front/early) → red (back/tail) via ROOT's rainbow palette
+    gStyle->SetPalette(kRainBow);
+    int cols[NS];
+    for (int s = 0; s < NS; s++) {
+        int idx = (int)((TColor::GetNumberOfColors() - 1) * s / double(NS - 1));
+        cols[s] = gStyle->GetColorPalette(idx);
+    }
+    int mst[NS] = { 24, 20, 25, 21, 26, 22 };
 
     TFile* f = TFile::Open(fname);
     if (!f || f->IsZombie()) { printf("ERROR: cannot open %s\n", fname); return; }
