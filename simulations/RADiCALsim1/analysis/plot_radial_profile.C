@@ -132,11 +132,6 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     TLatex note; note.SetNDC(); note.SetTextSize(0.028); note.SetTextColor(kGray+2);
     note.DrawLatex(0.15, 0.957, Form("R_{M}(LYSO) = %.0f mm  #rightarrow  plot covers 0.33 R_{M} = %.0f mm", RM_mm, Rmax_mm));
 
-    // ── Method note ───────────────────────────────────────────────────────────
-    TLatex m; m.SetNDC(); m.SetTextSize(0.026); m.SetTextColor(kGray+2);
-    m.DrawLatex(0.15, 0.175, "Each point: azimuthal avg of LYSO dE in 70#times70 XY map (0.2mm bins),");
-    m.DrawLatex(0.15, 0.140, "normalised by ring area 2#piR#DeltaR #rightarrow dE/dA [a.u.].  Depth slices = 5 LYSO layers.");
-
     // ── Save ──────────────────────────────────────────────────────────────────
     gSystem->mkdir("build/plots", kTRUE);
     TString out = Form("build/plots/transverse_radial_E%.0fGeV.png", Egev);
