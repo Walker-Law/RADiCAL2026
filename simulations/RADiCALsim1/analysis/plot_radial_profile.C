@@ -93,18 +93,19 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
     bool first = true;
     for (int s = 0; s < NS; s++) {
         if (!hR[s]) continue;
-        hR[s]->SetMarkerColor(cols[s]); hR[s]->SetMarkerStyle(mst[s]); hR[s]->SetMarkerSize(0.9);
-        hR[s]->SetLineColor(cols[s]);   hR[s]->SetLineWidth(1);
+        hR[s]->SetLineColor(cols[s]); hR[s]->SetLineWidth(2);
+        hR[s]->SetMarkerColor(cols[s]); hR[s]->SetMarkerStyle(mst[s]); hR[s]->SetMarkerSize(0.7);
         hR[s]->GetXaxis()->SetTitle("Distance from shower axis  [R_{M}]");
         hR[s]->GetXaxis()->SetTitleSize(0.046); hR[s]->GetXaxis()->SetLabelSize(0.040);
         hR[s]->GetYaxis()->SetTitle("Energy deposit [a.u.]");
         hR[s]->GetYaxis()->SetTitleSize(0.046); hR[s]->GetYaxis()->SetLabelSize(0.040);
         hR[s]->GetYaxis()->SetTitleOffset(1.35);
-        hR[s]->SetMaximum(gMax * 15.0);
-        hR[s]->SetMinimum(gMin * 0.3);
-        if (first) { hR[s]->Draw("P"); first = false; }
-        else        hR[s]->Draw("P same");
-        leg->AddEntry(hR[s], Form("%.1f X_{0}", sliceX0[s]), "p");
+        hR[s]->SetMaximum(gMax * 4.0);
+        hR[s]->SetMinimum(gMin * 0.5);
+        // "C" draws smooth Bezier curve through bin centers, no error bars
+        if (first) { hR[s]->Draw("C"); first = false; }
+        else        hR[s]->Draw("C same");
+        leg->AddEntry(hR[s], Form("%.1f X_{0}", sliceX0[s]), "l");
     }
     leg->Draw();
 
