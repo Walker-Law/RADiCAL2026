@@ -111,9 +111,9 @@ void plot_radial_profile(const char* fname = "build/scan/radical_E120GeV.root",
         hR[s]->GetYaxis()->SetTitleOffset(1.35);
         hR[s]->SetMaximum(gMax * 4.0);
         hR[s]->SetMinimum(gMin * 0.5);
-        // "C" draws smooth Bezier curve through bin centers, no error bars
-        if (first) { hR[s]->Draw("C"); first = false; }
-        else        hR[s]->Draw("C same");
+        // "PL" = markers at bin centers connected by straight lines, no error bars
+        if (first) { hR[s]->Draw("PL"); first = false; }
+        else        hR[s]->Draw("PL same");
         leg->AddEntry(hR[s], Form("%.1f X_{0}", sliceX0[s]), "l");
     }
     leg->Draw();
