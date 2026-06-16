@@ -37,7 +37,7 @@ TF1* coreFit(TH1* h, double nsig=2.0, int iters=4) {
     return g;
 }
 
-void plot_linearity() {
+void plot_linearity(const char* dir="build/scan", const char* prefix="radical") {
     gStyle->SetOptStat(0);
     gStyle->SetOptTitle(0);
     gStyle->SetPadGridX(1);
