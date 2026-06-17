@@ -80,13 +80,22 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     luag->AddElement(Ce,  0.1*perCent);
 
     // =========================================================================
-    // 1b. OPTICAL PROPERTIES  (only quartz, LuAG:Ce, and air get tables, so
-    //     optical photons are produced/propagated only in the timing capillary
-    //     system + surrounding air — keeps photon counts tractable.)
+    // 1b. OPTICAL PROPERTIES
+    //
+    // RADICAL_SCINT_FACTOR=<f>  scales scintillation yield for all scintillators.
+    //   Default f=1.0 (full yield). Set f=0.00005 for visualization (~100 ph/evt
+    //   at 1 GeV) to keep track counts manageable in the Geant4 viewer.
+    // RADICAL_VIS_TIR=1  gives air a 0.1 mm absorption length so only TIR-trapped
+    //   photons in quartz survive — everything in the air volume is killed.
     //
     //   Photon energy grid: ~350–800 nm (1.55–3.54 eV).
     // =========================================================================
     std::vector<G4double> phE = {1.55*eV, 2.07*eV, 2.48*eV, 2.76*eV, 3.10*eV, 3.54*eV};
+
+    // Global scintillation yield scale factor (read once, applied to all scintillators)
+    double scintFactor = 1.0;
+    const char* sfEnv = std::getenv("RADICAL_SCINT_FACTOR");
+    if (sfEnv) { scintFactor = std::atof(sfEnv); if (scintFactor < 1e-10) scintFactor = 1e-10; }
 
     // --- Fused quartz: Cherenkov radiator + light guide ---
     std::vector<G4double> qRI  = {1.455, 1.457, 1.460, 1.462, 1.466, 1.472};
