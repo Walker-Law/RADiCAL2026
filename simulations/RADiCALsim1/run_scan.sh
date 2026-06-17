@@ -24,8 +24,8 @@ printf '/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' "$PROG" "$NEVT
 run_energy() {
     local E=$1
     local TMPD="tmprun_E${E}"
-    local OUT="../$OUTDIR/optical_E${E}GeV.root"
-    local LOG="../$OUTDIR/log_E${E}.log"
+    local OUT="$OUTDIR/optical_E${E}GeV.root"
+    local LOG="$OUTDIR/log_E${E}.log"
 
     mkdir -p "$TMPD"
     local ok=0
