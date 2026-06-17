@@ -125,7 +125,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     std::vector<G4double> lEM  = {0.05, 0.35, 1.00, 0.60, 0.10, 0.02};
     auto lMPT = new G4MaterialPropertiesTable();
     lMPT->AddProperty("RINDEX",                  phE, lRI);
-    lMPT->AddProperty("ABSLENGTH",               phE, lABS);
+    lMPT->AddProperty("ABSLENGTH",               phE, visTIR && std::atoi(visTIR) > 0
+        ? std::vector<G4double>(phE.size(), 0.01*mm) : lABS);
     lMPT->AddProperty("SCINTILLATIONCOMPONENT1",  phE, lEM);
     lMPT->AddConstProperty("SCINTILLATIONYIELD",         22000./MeV * scintFactor);
     lMPT->AddConstProperty("RESOLUTIONSCALE",            1.0);
