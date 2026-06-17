@@ -1,9 +1,5 @@
-# TIR visualization — LYSO scintillation only, no Cherenkov.
-# Yields are scaled by RADICAL_SCINT_FACTOR (set in environment before launch).
-# Suggested run:
-#   RADICAL_OPTICAL=1 RADICAL_SCINT_FACTOR=0.00005 RADICAL_VIS_TIR=1 ./radical tir_vis.mac
-#   (gives ~100 scintillation photons/event at 1 GeV; photons outside quartz killed in 0.1 mm)
-
+/run/initialize
+/process/inactivate Cerenkov
 /vis/open OGL 1000x800
 /vis/drawVolume
 /vis/viewer/set/viewpointThetaPhi 90 0
@@ -11,9 +7,4 @@
 /vis/scene/add/trajectories smooth
 /vis/scene/endOfEventAction accumulate 10
 /vis/viewer/set/background 0.02 0.02 0.08
-
-# Kill Cherenkov so only scintillation photons (420 nm LYSO, 520 nm LuAG) remain
-/process/inactivate Cerenkov
-
-/run/initialize
 /run/beamOn 1
