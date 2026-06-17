@@ -97,9 +97,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     quartz->SetMaterialPropertiesTable(qMPT);
 
     // --- Air: RINDEX=1.0 so optical boundaries work (no Cherenkov: beta*n<1). ---
+    // RADICAL_VIS_TIR=1: give air a 0.1 mm absorption length so photons that escape
+    // the quartz are killed immediately — only TIR-trapped photons remain visible.
     std::vector<G4double> aRI = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     auto aMPT = new G4MaterialPropertiesTable();
     aMPT->AddProperty("RINDEX", phE, aRI);
+    const char* visTIR = std::getenv("RADICAL_VIS_TIR");
+    if (visTIR && std::atoi(visTIR) > 0) {
+        std::vector<G4double> aABS(phE.size(), 0.1*mm);
+        aMPT->AddProperty("ABSLENGTH", phE, aABS);
+    }
     air->SetMaterialPropertiesTable(aMPT);
 
     // --- LuAG:Ce: scintillator. Emission peaks green ~520–540 nm (~2.3–2.4 eV),
