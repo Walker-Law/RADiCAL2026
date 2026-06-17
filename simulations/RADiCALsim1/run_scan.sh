@@ -17,8 +17,14 @@ mkdir -p "$OUTDIR"
 THRESH=$(( NEVT/4 )); [ "$THRESH" -lt 5 ] && THRESH=5
 PROG=$(( NEVT/5 ));  [ "$PROG"   -lt 1 ] && PROG=1
 
-echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  parallel (${#ENERGIES[@]} jobs)"
-printf '/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' "$PROG" "$NEVT" > /tmp/scan.mac
+NJOBS=${#ENERGIES[@]}
+NCORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 8)
+THREADS_PER_JOB=$(( NCORES / NJOBS ))
+[ "$THREADS_PER_JOB" -lt 1 ] && THREADS_PER_JOB=1
+
+echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  parallel ($NJOBS jobs x $THREADS_PER_JOB threads, $NCORES cores)"
+printf '/run/initialize\n/run/numberOfThreads %d\n/run/printProgress %d\n/run/beamOn %d\n' \
+    "$THREADS_PER_JOB" "$PROG" "$NEVT" > /tmp/scan.mac
 
 # Run one energy in its own isolated subdirectory, with retry logic.
 run_energy() {
