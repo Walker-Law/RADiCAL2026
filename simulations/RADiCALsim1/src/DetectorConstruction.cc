@@ -151,11 +151,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         1.793, 1.796, 1.800, 1.803, 1.808,
         1.813, 1.817, 1.821, 1.826, 1.834, 1.860
     };
-    // Absorption (cm): long in visible, falling near UV absorption bands
-    std::vector<G4double> lyABS = {
-        50.*cm, 50.*cm, 50.*cm, 48.*cm, 45.*cm,
-        40.*cm, 30.*cm, 20.*cm,  5.*cm, 0.5*cm, 0.01*cm
-    };
+    // Absorption: long in visible, short near UV; 0.01mm in VIS_TIR mode to kill
+    // photons born in LYSO immediately so only quartz Cherenkov is visible.
+    std::vector<G4double> lyABS = (visTIR && std::atoi(visTIR) > 0)
+        ? std::vector<G4double>(lyE.size(), 0.01*mm)
+        : std::vector<G4double>{50.*cm, 50.*cm, 50.*cm, 48.*cm, 45.*cm,
+                                40.*cm, 30.*cm, 20.*cm,  5.*cm, 0.5*cm, 0.01*cm};
     // Emission spectrum (relative): Gaussian-like peak at 420 nm (2.95 eV)
     std::vector<G4double> lyEM = {
         0.00, 0.00, 0.00, 0.01, 0.05,
