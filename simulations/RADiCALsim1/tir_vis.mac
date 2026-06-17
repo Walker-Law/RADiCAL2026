@@ -7,8 +7,13 @@
 /vis/scene/endOfEventAction accumulate 5
 /vis/viewer/set/background 0.02 0.02 0.08
 
-# THE KEY LINE: draw ONLY optical photons — hides all shower gammas/e-/e+.
+# Show ONLY optical photons (hides shower gammas/e-/e+)
 /vis/filtering/trajectories/create/particleFilter opticalOnly
 /vis/filtering/trajectories/opticalOnly/add opticalphoton
+
+# Colour optical photons purple
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/setRGBA opticalphoton 0.6 0.1 0.9 1.0
+/vis/modeling/trajectories/select drawByParticleID-0
 
 /run/beamOn 1
