@@ -68,8 +68,12 @@ echo "SCAN COMPLETE $(date '+%H:%M:%S')"
 ls -lh "$OUTDIR"/optical_E*GeV.root 2>/dev/null || echo "(no output files found)"
 [ "$any_failed" -eq 1 ] && echo "WARNING: one or more energies failed — check logs in $OUTDIR/"
 
-# Auto-refresh resolution curves
-echo "--- building resolution curves ---"
-cd ..
-root -l -b -q "analysis/scan_resolution.C(\"build/$OUTDIR\",\"optical\")"
-echo "Resolution curves updated -> build/$OUTDIR/resolution_curves.root"
+# Auto-refresh resolution curves (requires ROOT — skipped if not available)
+if command -v root >/dev/null 2>&1; then
+    echo "--- building resolution curves ---"
+    cd ..
+    root -l -b -q "analysis/scan_resolution.C(\"build/$OUTDIR\",\"optical\")"
+    echo "Resolution curves updated -> build/$OUTDIR/resolution_curves.root"
+else
+    echo "ROOT not found — run make_plots.sh locally after rsyncing build/$OUTDIR/"
+fi
