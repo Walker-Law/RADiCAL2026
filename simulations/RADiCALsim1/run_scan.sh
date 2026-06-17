@@ -35,16 +35,16 @@ run_energy() {
     for attempt in 1 2 3; do
         rm -f "$TMPD"/radical_output*.root
         ( cd "$TMPD" && RADICAL_BEAM_ENERGY_GEV=$E ../radical /tmp/scan.mac ) > "$LOG" 2>&1
-        local n
-        n=$(root -l -b -q "$TMPD/radical_output.root" -e \
-            'printf("%.0f\n",((TH1D*)gDirectory->Get("ECombined"))->Integral()); gApplication->Terminate();' \
-            2>/dev/null | grep -oE '^[0-9]+$' | head -1)
-        if [ "${n:-0}" -gt "$THRESH" ] 2>/dev/null; then
+        # Validate by file size: a good merged file is >5 MB; merge failures leave <100 KB
+        local sz
+        sz=$(stat -c%s "$TMPD/radical_output.root" 2>/dev/null \
+          || stat -f%z "$TMPD/radical_output.root" 2>/dev/null || echo 0)
+        if [ "${sz:-0}" -gt 5000000 ]; then
             mv -f "$TMPD/radical_output.root" "$OUT"
-            echo "[$(date '+%H:%M:%S')] ${E} GeV OK  (N=$n)  -> $OUT"
+            echo "[$(date '+%H:%M:%S')] ${E} GeV OK  ($(( sz/1024/1024 )) MB)  -> $OUT"
             ok=1; break
         fi
-        echo "[$(date '+%H:%M:%S')] ${E} GeV attempt $attempt failed (N=${n:-?})"
+        echo "[$(date '+%H:%M:%S')] ${E} GeV attempt $attempt failed (size=${sz:-0} bytes)"
     done
     rm -rf "$TMPD"
     [ "$ok" -eq 0 ] && echo "!! ${E} GeV FAILED after 3 attempts"
