@@ -10,7 +10,7 @@ set -u
 cd "$(dirname "$0")/build" || exit 1
 source ../setup_env.sh >/dev/null 2>&1
 
-ENERGIES=(5 10 20 50 100 120)
+ENERGIES=(5 10 20 25 50 100 120 150)
 NEVT=${1:-1500}
 OUTDIR=${2:-scan}
 mkdir -p "$OUTDIR"
