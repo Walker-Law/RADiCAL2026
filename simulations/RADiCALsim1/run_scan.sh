@@ -20,7 +20,7 @@ PROG=$(( NEVT/5 ));  [ "$PROG"   -lt 1 ] && PROG=1
 THREADS_PER_JOB=32  # 8 jobs x 32 threads = 256 cores total
 
 echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  parallel (${#ENERGIES[@]} jobs x $THREADS_PER_JOB threads)"
-printf '/run/initialize\n/run/numberOfThreads %d\n/run/printProgress %d\n/run/beamOn %d\n' \
+printf '/run/numberOfThreads %d\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
     "$THREADS_PER_JOB" "$PROG" "$NEVT" > /tmp/scan.mac
 
 # Run one energy in its own isolated subdirectory, with retry logic.
