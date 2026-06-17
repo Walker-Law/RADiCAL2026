@@ -20,13 +20,13 @@ TF1* coreFit(TH1* h, double nsig=2.0, int iters=4) {
 void scan_resolution(const char* dir="build/scan", const char* prefix="radical") {
   gStyle->SetOptStat(0); gStyle->SetOptFit(0);
   gStyle->SetPadGridX(1); gStyle->SetPadGridY(1);
-  const int N=6; double E[N]={5,10,20,50,100,120};
+  const int N=8; double E[N]={5,10,20,25,50,100,120,150};
   const char* out="build/plots";
 
   double eRes[N],eResErr[N], tRes[N],tResErr[N], zero[N]={0};
   TCanvas* cL=new TCanvas("cL","long",800,600);
-  TLegend* leg=new TLegend(0.62,0.60,0.88,0.88);
-  int cols[N]={kRed+1,kOrange+1,kGreen+2,kAzure+2,kBlue+1,kMagenta+1};
+  TLegend* leg=new TLegend(0.62,0.55,0.88,0.88);
+  int cols[N]={kRed+1,kOrange+1,kGreen+2,kSpring+4,kAzure+2,kBlue+1,kMagenta+1,kViolet+2};
 
   printf("\n  E(GeV)   mu_E(GeV)  sigma_E   sigma/E(%%)   DeltaT(ps)  sigma_t(ps)\n");
   printf("  -------------------------------------------------------------------\n");
