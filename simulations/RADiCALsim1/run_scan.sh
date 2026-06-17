@@ -13,6 +13,7 @@ source ../setup_env.sh >/dev/null 2>&1
 ENERGIES=(5 10 20 25 50 100 120 150)
 NEVT=${1:-1000}
 OUTDIR=${2:-scan}
+export RADICAL_OPTICAL=1
 mkdir -p "$OUTDIR"
 THRESH=$(( NEVT/4 )); [ "$THRESH" -lt 5 ] && THRESH=5   # merge-OK = integral > THRESH
 PROG=$(( NEVT/5 )); [ "$PROG" -lt 1 ] && PROG=1
