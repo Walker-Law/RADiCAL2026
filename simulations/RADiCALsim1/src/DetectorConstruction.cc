@@ -122,17 +122,53 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     //     light yield ~22000 ph/MeV, decay ~60 ns (literature). ---
     std::vector<G4double> lRI  = {1.84, 1.84, 1.84, 1.84, 1.84, 1.84};
     std::vector<G4double> lABS = {1.*m, 1.*m, 1.*m, 1.*m, 1.*m, 1.*m};
-    // emission spectrum (relative), peaked ~2.3–2.4 eV
     std::vector<G4double> lEM  = {0.05, 0.35, 1.00, 0.60, 0.10, 0.02};
     auto lMPT = new G4MaterialPropertiesTable();
-    lMPT->AddProperty("RINDEX",                 phE, lRI);
-    lMPT->AddProperty("ABSLENGTH",              phE, lABS);
-    lMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, lEM);
-    lMPT->AddConstProperty("SCINTILLATIONYIELD",        22000./MeV);
-    lMPT->AddConstProperty("RESOLUTIONSCALE",           1.0);
+    lMPT->AddProperty("RINDEX",                  phE, lRI);
+    lMPT->AddProperty("ABSLENGTH",               phE, lABS);
+    lMPT->AddProperty("SCINTILLATIONCOMPONENT1",  phE, lEM);
+    lMPT->AddConstProperty("SCINTILLATIONYIELD",         22000./MeV * scintFactor);
+    lMPT->AddConstProperty("RESOLUTIONSCALE",            1.0);
     lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 60.*ns);
     lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
     luag->SetMaterialPropertiesTable(lMPT);
+
+    // --- LYSO:Ce (Lu1.8Y0.2SiO5:Ce) optical properties ---
+    // Refractive index: Mao et al. NIM A 621 (2010) — biaxial average, 7-wavelength fit.
+    //   n ≈ 1.82 at 420 nm, slowly declining to 1.79 at 800 nm (normal dispersion).
+    // Absorption length: 40–50 cm in visible; drops sharply below 390 nm due to
+    //   Ce³⁺ UV absorption bands at 356 nm and 376 nm; self-absorption ~20 cm at peak.
+    // Emission: 420 nm peak (2.95 eV), FWHM ≈ 60 nm — Saint-Gobain LYSO:Ce datasheet.
+    // Yield: 32,000 ph/MeV — Saint-Gobain LYSO:Ce; decay τ₁ = 40 ns.
+    // 11-point grid: 350–800 nm
+    std::vector<G4double> lyE = {
+        1.550*eV, 1.771*eV, 2.067*eV, 2.255*eV, 2.480*eV,
+        2.695*eV, 2.818*eV, 2.952*eV, 3.100*eV, 3.263*eV, 3.542*eV
+    };
+    // n at: 800, 700, 600, 550, 500, 460, 440, 420, 400, 380, 350 nm
+    std::vector<G4double> lyRI = {
+        1.793, 1.796, 1.800, 1.803, 1.808,
+        1.813, 1.817, 1.821, 1.826, 1.834, 1.860
+    };
+    // Absorption (cm): long in visible, falling near UV absorption bands
+    std::vector<G4double> lyABS = {
+        50.*cm, 50.*cm, 50.*cm, 48.*cm, 45.*cm,
+        40.*cm, 30.*cm, 20.*cm,  5.*cm, 0.5*cm, 0.01*cm
+    };
+    // Emission spectrum (relative): Gaussian-like peak at 420 nm (2.95 eV)
+    std::vector<G4double> lyEM = {
+        0.00, 0.00, 0.00, 0.01, 0.05,
+        0.30, 0.70, 1.00, 0.50, 0.05, 0.01
+    };
+    auto lyMPT = new G4MaterialPropertiesTable();
+    lyMPT->AddProperty("RINDEX",                  lyE, lyRI);
+    lyMPT->AddProperty("ABSLENGTH",               lyE, lyABS);
+    lyMPT->AddProperty("SCINTILLATIONCOMPONENT1",  lyE, lyEM);
+    lyMPT->AddConstProperty("SCINTILLATIONYIELD",         32000./MeV * scintFactor);
+    lyMPT->AddConstProperty("RESOLUTIONSCALE",            1.0);
+    lyMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 40.*ns);
+    lyMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
+    lyso->SetMaterialPropertiesTable(lyMPT);
 
     // --- Tyvek: add RINDEX so optical boundary physics activates at Tyvek faces.
     //     n ≈ 1.50 (HDPE). Reflectivity 98% is set via G4LogicalSkinSurface below.
