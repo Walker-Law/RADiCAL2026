@@ -12,13 +12,12 @@
 /vis/scene/endOfEventAction accumulate 5
 /vis/viewer/set/background 0.02 0.02 0.08
 
-# Draw ONLY optical photons (comment out these 2 lines to also see the shower)
-/vis/filtering/trajectories/create/particleFilter opticalOnly
-/vis/filtering/trajectories/opticalOnly/add opticalphoton
-
-# Colour optical photons purple
+# Optical photons purple; EM shower in standard colours
 /vis/modeling/trajectories/create/drawByParticleID
 /vis/modeling/trajectories/drawByParticleID-0/setRGBA opticalphoton 0.6 0.1 0.9 1.0
+/vis/modeling/trajectories/drawByParticleID-0/set e- red
+/vis/modeling/trajectories/drawByParticleID-0/set e+ blue
+/vis/modeling/trajectories/drawByParticleID-0/set gamma green
 /vis/modeling/trajectories/select drawByParticleID-0
 
 /run/beamOn 1
