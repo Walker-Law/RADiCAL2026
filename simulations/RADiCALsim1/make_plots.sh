@@ -40,7 +40,7 @@ done
 
 SCAN="build/optical_scan_${N}"
 DEST="build/plots/optical_scan_${N}"
-ENERGIES=(5 10 20 50 100 120)
+ENERGIES=(5 10 20 25 50 100 120 150)
 HEATMAP_E=100   # representative energy for the transverse heatmap
 
 if ! command -v root >/dev/null 2>&1; then
