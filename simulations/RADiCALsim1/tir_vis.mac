@@ -1,10 +1,9 @@
 /run/initialize
-/process/inactivate Cerenkov
 /vis/open OGL 1000x800
 /vis/drawVolume
 /vis/viewer/set/viewpointThetaPhi 90 0
 /vis/viewer/zoom 2.0
 /vis/scene/add/trajectories smooth
-/vis/scene/endOfEventAction accumulate 10
+/vis/scene/endOfEventAction accumulate 5
 /vis/viewer/set/background 0.02 0.02 0.08
 /run/beamOn 1
