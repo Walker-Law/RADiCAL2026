@@ -80,22 +80,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     luag->AddElement(Ce,  0.1*perCent);
 
     // =========================================================================
-    // 1b. OPTICAL PROPERTIES
-    //
-    // RADICAL_SCINT_FACTOR=<f>  scales scintillation yield for all scintillators.
-    //   Default f=1.0 (full yield). Set f=0.00005 for visualization (~100 ph/evt
-    //   at 1 GeV) to keep track counts manageable in the Geant4 viewer.
-    // RADICAL_VIS_TIR=1  gives air a 0.1 mm absorption length so only TIR-trapped
-    //   photons in quartz survive — everything in the air volume is killed.
+    // 1b. OPTICAL PROPERTIES  (only quartz, LuAG:Ce, and air get tables, so
+    //     optical photons are produced/propagated only in the timing capillary
+    //     system + surrounding air — keeps photon counts tractable.)
     //
     //   Photon energy grid: ~350–800 nm (1.55–3.54 eV).
     // =========================================================================
     std::vector<G4double> phE = {1.55*eV, 2.07*eV, 2.48*eV, 2.76*eV, 3.10*eV, 3.54*eV};
-
-    // Global scintillation yield scale factor (read once, applied to all scintillators)
-    double scintFactor = 1.0;
-    const char* sfEnv = std::getenv("RADICAL_SCINT_FACTOR");
-    if (sfEnv) { scintFactor = std::atof(sfEnv); if (scintFactor < 1e-10) scintFactor = 1e-10; }
 
     // --- Fused quartz: Cherenkov radiator + light guide ---
     std::vector<G4double> qRI  = {1.455, 1.457, 1.460, 1.462, 1.466, 1.472};
@@ -106,79 +97,32 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     quartz->SetMaterialPropertiesTable(qMPT);
 
     // --- Air: RINDEX=1.0 so optical boundaries work (no Cherenkov: beta*n<1). ---
-    // RADICAL_VIS_TIR=1: give air a 0.1 mm absorption length so photons that escape
-    // the quartz are killed immediately — only TIR-trapped photons remain visible.
     std::vector<G4double> aRI = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     auto aMPT = new G4MaterialPropertiesTable();
     aMPT->AddProperty("RINDEX", phE, aRI);
-    const char* visTIR = std::getenv("RADICAL_VIS_TIR");
-    if (visTIR && std::atoi(visTIR) > 0) {
-        std::vector<G4double> aABS(phE.size(), 0.1*mm);
-        aMPT->AddProperty("ABSLENGTH", phE, aABS);
-    }
     air->SetMaterialPropertiesTable(aMPT);
 
     // --- LuAG:Ce: scintillator. Emission peaks green ~520–540 nm (~2.3–2.4 eV),
     //     light yield ~22000 ph/MeV, decay ~60 ns (literature). ---
     std::vector<G4double> lRI  = {1.84, 1.84, 1.84, 1.84, 1.84, 1.84};
     std::vector<G4double> lABS = {1.*m, 1.*m, 1.*m, 1.*m, 1.*m, 1.*m};
+    // emission spectrum (relative), peaked ~2.3–2.4 eV
     std::vector<G4double> lEM  = {0.05, 0.35, 1.00, 0.60, 0.10, 0.02};
     auto lMPT = new G4MaterialPropertiesTable();
-    lMPT->AddProperty("RINDEX",                  phE, lRI);
-    lMPT->AddProperty("ABSLENGTH",               phE, visTIR && std::atoi(visTIR) > 0
-        ? std::vector<G4double>(phE.size(), 0.01*mm) : lABS);
-    lMPT->AddProperty("SCINTILLATIONCOMPONENT1",  phE, lEM);
-    lMPT->AddConstProperty("SCINTILLATIONYIELD",         22000./MeV * scintFactor);
-    lMPT->AddConstProperty("RESOLUTIONSCALE",            1.0);
+    lMPT->AddProperty("RINDEX",                 phE, lRI);
+    lMPT->AddProperty("ABSLENGTH",              phE, lABS);
+    lMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, lEM);
+    lMPT->AddConstProperty("SCINTILLATIONYIELD",        22000./MeV);
+    lMPT->AddConstProperty("RESOLUTIONSCALE",           1.0);
     lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 60.*ns);
     lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
     luag->SetMaterialPropertiesTable(lMPT);
-
-    // --- LYSO:Ce (Lu1.8Y0.2SiO5:Ce) optical properties ---
-    // Refractive index: Mao et al. NIM A 621 (2010) — biaxial average, 7-wavelength fit.
-    //   n ≈ 1.82 at 420 nm, slowly declining to 1.79 at 800 nm (normal dispersion).
-    // Absorption length: 40–50 cm in visible; drops sharply below 390 nm due to
-    //   Ce³⁺ UV absorption bands at 356 nm and 376 nm; self-absorption ~20 cm at peak.
-    // Emission: 420 nm peak (2.95 eV), FWHM ≈ 60 nm — Saint-Gobain LYSO:Ce datasheet.
-    // Yield: 32,000 ph/MeV — Saint-Gobain LYSO:Ce; decay τ₁ = 40 ns.
-    // 11-point grid: 350–800 nm
-    std::vector<G4double> lyE = {
-        1.550*eV, 1.771*eV, 2.067*eV, 2.255*eV, 2.480*eV,
-        2.695*eV, 2.818*eV, 2.952*eV, 3.100*eV, 3.263*eV, 3.542*eV
-    };
-    // n at: 800, 700, 600, 550, 500, 460, 440, 420, 400, 380, 350 nm
-    std::vector<G4double> lyRI = {
-        1.793, 1.796, 1.800, 1.803, 1.808,
-        1.813, 1.817, 1.821, 1.826, 1.834, 1.860
-    };
-    // Absorption: long in visible, short near UV; 0.01mm in VIS_TIR mode to kill
-    // photons born in LYSO immediately so only quartz Cherenkov is visible.
-    std::vector<G4double> lyABS = (visTIR && std::atoi(visTIR) > 0)
-        ? std::vector<G4double>(lyE.size(), 0.01*mm)
-        : std::vector<G4double>{50.*cm, 50.*cm, 50.*cm, 48.*cm, 45.*cm,
-                                40.*cm, 30.*cm, 20.*cm,  5.*cm, 0.5*cm, 0.01*cm};
-    // Emission spectrum (relative): Gaussian-like peak at 420 nm (2.95 eV)
-    std::vector<G4double> lyEM = {
-        0.00, 0.00, 0.00, 0.01, 0.05,
-        0.30, 0.70, 1.00, 0.50, 0.05, 0.01
-    };
-    auto lyMPT = new G4MaterialPropertiesTable();
-    lyMPT->AddProperty("RINDEX",                  lyE, lyRI);
-    lyMPT->AddProperty("ABSLENGTH",               lyE, lyABS);
-    lyMPT->AddProperty("SCINTILLATIONCOMPONENT1",  lyE, lyEM);
-    lyMPT->AddConstProperty("SCINTILLATIONYIELD",         32000./MeV * scintFactor);
-    lyMPT->AddConstProperty("RESOLUTIONSCALE",            1.0);
-    lyMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 40.*ns);
-    lyMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
-    lyso->SetMaterialPropertiesTable(lyMPT);
 
     // --- Tyvek: add RINDEX so optical boundary physics activates at Tyvek faces.
     //     n ≈ 1.50 (HDPE). Reflectivity 98% is set via G4LogicalSkinSurface below.
     std::vector<G4double> tvRI = {1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
     auto tvMPT = new G4MaterialPropertiesTable();
     tvMPT->AddProperty("RINDEX", phE, tvRI);
-    if (visTIR && std::atoi(visTIR) > 0)
-        tvMPT->AddProperty("ABSLENGTH", phE, std::vector<G4double>(phE.size(), 0.01*mm));
     tyvek->SetMaterialPropertiesTable(tvMPT);
 
     // =========================================================================

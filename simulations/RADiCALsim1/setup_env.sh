@@ -10,7 +10,7 @@
 if command -v geant4-config >/dev/null 2>&1; then
     G4INSTALL=$(geant4-config --prefix)
     # geant4-config --sh-setup exports all G4*DATA paths for this installation
-    eval "$(geant4-config --sh-setup)" 2>/dev/null
+    eval "$(geant4-config --sh-setup)"
     # Also source geant4.sh for library paths / LD_LIBRARY_PATH
     [ -f "$G4INSTALL/bin/geant4.sh" ] && source "$G4INSTALL/bin/geant4.sh" 2>/dev/null
     echo "Geant4 environment loaded via geant4-config from $G4INSTALL"
