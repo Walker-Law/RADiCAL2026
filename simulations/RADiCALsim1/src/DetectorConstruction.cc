@@ -177,6 +177,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     std::vector<G4double> tvRI = {1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
     auto tvMPT = new G4MaterialPropertiesTable();
     tvMPT->AddProperty("RINDEX", phE, tvRI);
+    if (visTIR && std::atoi(visTIR) > 0)
+        tvMPT->AddProperty("ABSLENGTH", phE, std::vector<G4double>(phE.size(), 0.01*mm));
     tyvek->SetMaterialPropertiesTable(tvMPT);
 
     // =========================================================================
