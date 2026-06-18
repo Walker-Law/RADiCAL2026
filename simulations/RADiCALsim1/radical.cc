@@ -13,6 +13,12 @@
 #include "ActionInitialization.hh"
 
 int main(int argc, char** argv) {
+    // Bare `./radical` (no macro arg) = interactive 1 GeV optical viewer.
+    // Default the beam to 1 GeV for that case; overwrite=0 means an explicit
+    // `RADICAL_BEAM_ENERGY_GEV=...` still wins, and batch/scan runs (which pass
+    // a macro arg) are untouched.
+    if (argc < 2) setenv("RADICAL_BEAM_ENERGY_GEV", "1", 0);
+
     auto runManager = G4RunManagerFactory::CreateRunManager();
     runManager->SetUserInitialization(new DetectorConstruction());
 
