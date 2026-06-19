@@ -109,7 +109,7 @@ for E in "${ENERGIES[@]}"; do
 
     CHUNKS=()
     for (( C=0; C<CHUNKS_PER_E; C++ )); do
-        f="tmprun_E${E}_c${C}/radical_output.root"
+        f="tmprun_E${E}_c${C}.root"
         [ -f "$f" ] && CHUNKS+=("$f")
     done
 
