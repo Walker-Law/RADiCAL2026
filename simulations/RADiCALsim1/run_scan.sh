@@ -50,6 +50,7 @@ mkdir -p "$OUTDIR"
 echo "Scan: NEVT=$NEVT/energy   optical=$([ "$OPTICAL" = 1 ] && echo ON || echo OFF)   tag=$TAG"
 echo "  ${#ENERGIES[@]} energies x $CHUNKS_PER_E chunks x $EVT_PER_CHUNK events = $(( ${#ENERGIES[@]} * CHUNKS_PER_E )) simultaneous processes"
 echo "  output -> $OUTDIR"
+[ "$OPTICAL" = "1" ] && echo "  optical photon step cap -> ${RADICAL_OPT_MAXSTEP}"
 echo "  hadd   -> ${HADD:-<none found>}"
 echo "------------------------------------------------------------"
 
