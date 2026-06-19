@@ -16,19 +16,17 @@ mkdir -p "$OUTDIR"
 PROG=5
 
 THREADS=32
-echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  sequential  threads=$THREADS"
-printf '/random/setSeeds timestamp\n/run/numberOfThreads %d\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
-    "$THREADS" "$PROG" "$NEVT" > /tmp/scan.mac
+echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  parallel (${#ENERGIES[@]} x $THREADS threads)"
 
-any_failed=0
-for E in "${ENERGIES[@]}"; do
+run_energy() {
+    E=$1
     OUT="$OUTDIR/optical_E${E}GeV.root"
     LOG="$OUTDIR/log_E${E}.log"
     TMPD="tmprun_E${E}"
 
     if [ -f "$OUT" ]; then
         echo "[$(date '+%H:%M:%S')] SKIP ${E} GeV (already exists)"
-        continue
+        return 0
     fi
 
     mkdir -p "$TMPD"
@@ -37,7 +35,8 @@ for E in "${ENERGIES[@]}"; do
         rm -f "$TMPD"/radical_output*.root
         SEED1=$(( $(date +%s%N) % 900000000 + 1 ))
         SEED2=$(( SEED1 * 6364136223846793005 % 900000000 + 1 ))
-        sed "s|/random/setSeeds timestamp|/random/setSeeds $SEED1 $SEED2|" /tmp/scan.mac > "$TMPD/run.mac"
+        printf '/random/setSeeds %d %d\n/run/numberOfThreads %d\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
+            "$SEED1" "$SEED2" "$THREADS" "$PROG" "$NEVT" > "$TMPD/run.mac"
         ( cd "$TMPD" && RADICAL_BEAM_ENERGY_GEV=$E ../radical run.mac ) > "$LOG" 2>&1
         sz=$(stat -c%s "$TMPD/radical_output.root" 2>/dev/null \
           || stat -f%z "$TMPD/radical_output.root" 2>/dev/null || echo 0)
@@ -49,10 +48,20 @@ for E in "${ENERGIES[@]}"; do
         echo "[$(date '+%H:%M:%S')] ${E} GeV attempt $attempt failed (size=${sz:-0} bytes)"
     done
     rm -rf "$TMPD"
-    if [ "$ok" -eq 0 ]; then
-        echo "!! ${E} GeV FAILED after 3 attempts"
-        any_failed=1
-    fi
+    [ "$ok" -eq 0 ] && echo "!! ${E} GeV FAILED after 3 attempts" && return 1
+    return 0
+}
+export -f run_energy
+export OUTDIR PROG THREADS NEVT
+
+any_failed=0
+pids=()
+for E in "${ENERGIES[@]}"; do
+    run_energy "$E" &
+    pids+=($!)
+done
+for pid in "${pids[@]}"; do
+    wait "$pid" || any_failed=1
 done
 
 echo ""
