@@ -15,11 +15,9 @@ export RADICAL_OPTICAL=1
 mkdir -p "$OUTDIR"
 PROG=5
 
-NCORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 4)
-
-echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  sequential  threads=$NCORES"
-printf '/run/numberOfThreads %d\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
-    "$NCORES" "$PROG" "$NEVT" > /tmp/scan.mac
+echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  sequential"
+printf '/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
+    "$PROG" "$NEVT" > /tmp/scan.mac
 
 any_failed=0
 for E in "${ENERGIES[@]}"; do
