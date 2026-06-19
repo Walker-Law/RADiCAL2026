@@ -17,7 +17,10 @@ mkdir -p "$OUTDIR"
 THRESH=$(( NEVT/4 )); [ "$THRESH" -lt 5 ] && THRESH=5
 PROG=$(( NEVT/5 ));  [ "$PROG"   -lt 1 ] && PROG=1
 
-THREADS_PER_JOB=32  # 8 jobs x 32 threads = 256 cores total
+NCORES=$(sysctl -n hw.logicalcpu 2>/dev/null || nproc 2>/dev/null || echo 8)
+THREADS_PER_JOB=$(( NCORES / ${#ENERGIES[@]} ))
+[ "$THREADS_PER_JOB" -lt 1 ] && THREADS_PER_JOB=1
+# On the 256-core cluster this gives 32; on the local 8-core Mac it gives 1.
 
 echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  parallel (${#ENERGIES[@]} jobs x $THREADS_PER_JOB threads)"
 printf '/run/numberOfThreads %d\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
