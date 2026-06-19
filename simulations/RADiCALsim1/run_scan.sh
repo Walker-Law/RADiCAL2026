@@ -15,10 +15,10 @@ export RADICAL_OPTICAL=1
 mkdir -p "$OUTDIR"
 PROG=5
 
-NCORES=$(nproc)
-echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  sequential  threads=$NCORES"
+THREADS=32
+echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  sequential  threads=$THREADS"
 printf '/random/setSeeds timestamp\n/run/numberOfThreads %d\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
-    "$NCORES" "$PROG" "$NEVT" > /tmp/scan.mac
+    "$THREADS" "$PROG" "$NEVT" > /tmp/scan.mac
 
 any_failed=0
 for E in "${ENERGIES[@]}"; do
