@@ -3,8 +3,7 @@
 #   ./run_scan.sh [NEVT]    defaults: 1000 events -> build/scan/optical_scan_1000/
 #   ./run_scan.sh 500       500 events/energy     -> build/scan/optical_scan_500/
 #
-# All energies run IN PARALLEL, each in an isolated tmprun_E<N>/ subdirectory
-# so their radical_output.root files never collide. Optical photons always ON.
+# Energies run sequentially. Each job uses all available cores via Geant4 MT.
 set -u
 cd "$(dirname "$0")/build" || exit 1
 source ../setup_env.sh >/dev/null 2>&1
@@ -14,32 +13,30 @@ NEVT=${1:-1000}
 OUTDIR="scan/optical_scan_${NEVT}"
 export RADICAL_OPTICAL=1
 mkdir -p "$OUTDIR"
-THRESH=$(( NEVT/4 )); [ "$THRESH" -lt 5 ] && THRESH=5
-PROG=$(( NEVT/5 ));  [ "$PROG"   -lt 1 ] && PROG=1
+PROG=$(( NEVT/5 )); [ "$PROG" -lt 1 ] && PROG=1
 
-NCORES=$(sysctl -n hw.logicalcpu 2>/dev/null || nproc 2>/dev/null || echo 8)
-THREADS_PER_JOB=$(( NCORES / ${#ENERGIES[@]} ))
-[ "$THREADS_PER_JOB" -lt 1 ] && THREADS_PER_JOB=1
-# On the 256-core cluster this gives 32; on the local 8-core Mac it gives 1.
+NCORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 4)
 
-echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  parallel (${#ENERGIES[@]} jobs x $THREADS_PER_JOB threads)"
+echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  sequential  threads=$NCORES"
 printf '/run/numberOfThreads %d\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
-    "$THREADS_PER_JOB" "$PROG" "$NEVT" > /tmp/scan.mac
+    "$NCORES" "$PROG" "$NEVT" > /tmp/scan.mac
 
-# Run one energy in its own isolated subdirectory, with retry logic.
-run_energy() {
-    local E=$1
-    local TMPD="tmprun_E${E}"
-    local OUT="$OUTDIR/optical_E${E}GeV.root"
-    local LOG="$OUTDIR/log_E${E}.log"
+any_failed=0
+for E in "${ENERGIES[@]}"; do
+    OUT="$OUTDIR/optical_E${E}GeV.root"
+    LOG="$OUTDIR/log_E${E}.log"
+    TMPD="tmprun_E${E}"
+
+    if [ -f "$OUT" ]; then
+        echo "[$(date '+%H:%M:%S')] SKIP ${E} GeV (already exists)"
+        continue
+    fi
 
     mkdir -p "$TMPD"
-    local ok=0
+    ok=0
     for attempt in 1 2 3; do
         rm -f "$TMPD"/radical_output*.root
         ( cd "$TMPD" && RADICAL_BEAM_ENERGY_GEV=$E ../radical /tmp/scan.mac ) > "$LOG" 2>&1
-        # Validate by file size: a good merged file is >5 MB; merge failures leave <100 KB
-        local sz
         sz=$(stat -c%s "$TMPD/radical_output.root" 2>/dev/null \
           || stat -f%z "$TMPD/radical_output.root" 2>/dev/null || echo 0)
         if [ "${sz:-0}" -gt 5000000 ]; then
@@ -50,23 +47,10 @@ run_energy() {
         echo "[$(date '+%H:%M:%S')] ${E} GeV attempt $attempt failed (size=${sz:-0} bytes)"
     done
     rm -rf "$TMPD"
-    [ "$ok" -eq 0 ] && echo "!! ${E} GeV FAILED after 3 attempts"
-    return $(( 1 - ok ))
-}
-export -f run_energy
-export OUTDIR THRESH
-
-# Launch all energies in parallel
-pids=()
-for E in "${ENERGIES[@]}"; do
-    run_energy "$E" &
-    pids+=($!)
-done
-
-# Wait for all jobs and collect exit codes
-any_failed=0
-for pid in "${pids[@]}"; do
-    wait "$pid" || any_failed=1
+    if [ "$ok" -eq 0 ]; then
+        echo "!! ${E} GeV FAILED after 3 attempts"
+        any_failed=1
+    fi
 done
 
 echo ""
@@ -74,7 +58,6 @@ echo "SCAN COMPLETE $(date '+%H:%M:%S')"
 ls -lh "$OUTDIR"/optical_E*GeV.root 2>/dev/null || echo "(no output files found)"
 [ "$any_failed" -eq 1 ] && echo "WARNING: one or more energies failed — check logs in $OUTDIR/"
 
-# Auto-refresh resolution curves (requires ROOT — skipped if not available)
 if command -v root >/dev/null 2>&1; then
     echo "--- building resolution curves ---"
     cd ..
