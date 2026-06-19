@@ -123,7 +123,7 @@ for E in "${ENERGIES[@]}"; do
     sz=$(stat -c%s "$OUT" 2>/dev/null || stat -f%z "$OUT" 2>/dev/null || echo 0)
     if [ "${sz:-0}" -gt 5000000 ]; then
         echo "[$(date '+%H:%M:%S')] ${E} GeV OK  ($(( sz/1024/1024 )) MB)  -> $OUT"
-        rm -rf tmprun_E${E}_c*/
+        rm -f tmprun_E${E}_c*.root
     else
         echo "!! ${E} GeV merge failed (${sz} bytes) — chunk logs in $OUTDIR/"
         any_failed=1
