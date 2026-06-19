@@ -13,7 +13,7 @@ NEVT=${1:-1000}
 OUTDIR="scan/optical_scan_${NEVT}"
 export RADICAL_OPTICAL=1
 mkdir -p "$OUTDIR"
-PROG=$(( NEVT/5 )); [ "$PROG" -lt 1 ] && PROG=1
+PROG=5
 
 NCORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 4)
 
