@@ -23,13 +23,16 @@ int main(int argc, char** argv) {
     auto runManager = G4RunManagerFactory::CreateRunManager();
     runManager->SetUserInitialization(new DetectorConstruction());
 
-    // FTFP_BERT, optionally + optical physics (Cherenkov, scintillation, WLS).
-    // Optical photon tracking is OFF by default (it is ~100x slower); enable it
-    // with env var  RADICAL_OPTICAL=1 ./radical ...  for the photon-based timing.
-    // When off, the optical material tables / photodetectors simply sit unused.
+    // FTFP_BERT + optical physics (Cherenkov, scintillation, WLS).
+    // Optical photon tracking is ON by default (the interactive viewer shows the
+    // purple photons). Turn it OFF with  RADICAL_OPTICAL=0 ./radical ...  for the
+    // fast energy scan — energy/shower observables are identical and optical
+    // tracking is ~190x slower. When off, the optical tables / photodetectors sit
+    // unused and DeltaT (optical-only timing) is empty.
     auto physics = new FTFP_BERT();
     physics->ReplacePhysics(new G4EmStandardPhysics_option4());
     bool useOptical = true;
+    if (const char* o = std::getenv("RADICAL_OPTICAL")) useOptical = (std::string(o) != "0");
     if (useOptical) {
         physics->RegisterPhysics(new G4OpticalPhysics());
     }
