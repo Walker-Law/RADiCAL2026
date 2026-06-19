@@ -54,11 +54,48 @@ for E in "${ENERGIES[@]}"; do
     done
 done
 
-echo "[$(date '+%H:%M:%S')] ${#pids[@]} chunks launched — waiting..."
+TOTAL_CHUNKS=${#pids[@]}
+START_T=$(date +%s)
+echo "[$(date '+%H:%M:%S')] $TOTAL_CHUNKS chunks launched across ${#ENERGIES[@]} energies"
+echo "------------------------------------------------------------"
+
+# Background progress monitor — prints a status line every 15 seconds
+monitor() {
+    while true; do
+        sleep 15
+        local now=$(date +%s)
+        local elapsed=$(( now - START_T ))
+        local done=0
+        local parts=""
+        for E in "${ENERGIES[@]}"; do
+            local e_done=0
+            for (( C=0; C<CHUNKS_PER_E; C++ )); do
+                [ -f "tmprun_E${E}_c${C}/radical_output.root" ] && (( e_done++ )) || true
+            done
+            done=$(( done + e_done ))
+            parts="$parts  ${E}GeV:${e_done}/${CHUNKS_PER_E}"
+        done
+        local pct=$(( done * 100 / TOTAL_CHUNKS ))
+        local eta="--"
+        if [ "$done" -gt 0 ]; then
+            local remaining=$(( elapsed * (TOTAL_CHUNKS - done) / done ))
+            eta=$(printf '%dm%ds' $(( remaining/60 )) $(( remaining%60 )))
+        fi
+        printf "[%s] %3d%% (%d/%d chunks)  ETA: %s |%s\n" \
+            "$(date '+%H:%M:%S')" "$pct" "$done" "$TOTAL_CHUNKS" "$eta" "$parts"
+    done
+}
+monitor &
+MONITOR_PID=$!
+
 for pid in "${pids[@]}"; do
     wait "$pid"
 done
-echo "[$(date '+%H:%M:%S')] All chunks complete — merging per energy..."
+kill "$MONITOR_PID" 2>/dev/null
+
+ELAPSED=$(( $(date +%s) - START_T ))
+echo "------------------------------------------------------------"
+echo "[$(date '+%H:%M:%S')] All chunks complete in $(printf '%dm%ds' $(( ELAPSED/60 )) $(( ELAPSED%60 ))) — merging per energy..."
 
 # hadd merge per energy
 any_failed=0
