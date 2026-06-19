@@ -41,6 +41,10 @@ HADD=$( [ -x "$CONDA_ROOT_BIN/hadd" ] && echo "$CONDA_ROOT_BIN/hadd" || command 
 ROOTEXE=$( [ -x "$CONDA_ROOT_BIN/root" ] && echo "$CONDA_ROOT_BIN/root" || command -v root 2>/dev/null )
 
 export RADICAL_OPTICAL=$OPTICAL
+# Optical runs: cap optical-photon steps so trapped photons (bouncing ~forever in
+# the quartz/Tyvek light guide) can't stall an event. 200 preserves the full
+# detected signal; override with RADICAL_OPT_MAXSTEP=... before launching to tune.
+[ "$OPTICAL" = "1" ] && export RADICAL_OPT_MAXSTEP=${RADICAL_OPT_MAXSTEP:-200}
 mkdir -p "$OUTDIR"
 
 echo "Scan: NEVT=$NEVT/energy   optical=$([ "$OPTICAL" = 1 ] && echo ON || echo OFF)   tag=$TAG"
