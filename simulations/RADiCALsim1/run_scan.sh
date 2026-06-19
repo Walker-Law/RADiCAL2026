@@ -16,7 +16,7 @@ mkdir -p "$OUTDIR"
 PROG=5
 
 echo "Scan: NEVT=$NEVT/energy  OUTDIR=$OUTDIR  optical=ON  sequential"
-printf '/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
+printf '/random/setSeeds timestamp\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
     "$PROG" "$NEVT" > /tmp/scan.mac
 
 any_failed=0
