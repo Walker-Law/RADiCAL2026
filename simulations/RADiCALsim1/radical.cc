@@ -8,6 +8,7 @@
 #include "G4OpticalPhysics.hh"
 #include "G4OpticalParameters.hh"
 #include <cstdlib>
+#include <string>
 
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
