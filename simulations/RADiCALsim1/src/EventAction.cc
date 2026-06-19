@@ -35,6 +35,7 @@ EventAction::EventAction() {
 EventAction::~EventAction() {}
 
 void EventAction::BeginOfEventAction(const G4Event*) {
+    if (gTimingOn()) gEvtStart = std::chrono::steady_clock::now();
     fEdepLYSO.fill(0.);
     fEdepW.fill(0.);
     fEdepCenter = 0.;
