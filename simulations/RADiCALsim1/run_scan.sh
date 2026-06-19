@@ -35,7 +35,10 @@ for E in "${ENERGIES[@]}"; do
     ok=0
     for attempt in 1 2 3; do
         rm -f "$TMPD"/radical_output*.root
-        ( cd "$TMPD" && RADICAL_BEAM_ENERGY_GEV=$E ../radical /tmp/scan.mac ) > "$LOG" 2>&1
+        SEED1=$(( $(date +%s%N) % 900000000 + 1 ))
+        SEED2=$(( SEED1 * 6364136223846793005 % 900000000 + 1 ))
+        sed "s|/random/setSeeds timestamp|/random/setSeeds $SEED1 $SEED2|" /tmp/scan.mac > "$TMPD/run.mac"
+        ( cd "$TMPD" && RADICAL_BEAM_ENERGY_GEV=$E ../radical run.mac ) > "$LOG" 2>&1
         sz=$(stat -c%s "$TMPD/radical_output.root" 2>/dev/null \
           || stat -f%z "$TMPD/radical_output.root" 2>/dev/null || echo 0)
         if [ "${sz:-0}" -gt 5000000 ]; then
