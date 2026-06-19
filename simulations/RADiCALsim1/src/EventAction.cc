@@ -2,12 +2,22 @@
 #include "G4Event.hh"
 #include "G4AnalysisManager.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
 #include <numeric>
 #include <cmath>
 #include <algorithm>
+#include <chrono>
 
 // Sentinel for "no hit yet" times (ns); any real hit time is far below this.
 static const G4double kBigTime = 1.0e9;
+
+// Per-event wall-clock timer (thread-local). Set RADICAL_TIMING=1 to enable
+// a one-line "[timing]" printout per event: wall time + photons stored.
+static G4ThreadLocal std::chrono::steady_clock::time_point gEvtStart;
+static bool gTimingOn() {
+    static const bool on = (std::getenv("RADICAL_TIMING") != nullptr);
+    return on;
+}
 
 EventAction::EventAction() {
     fEdepLYSO.fill(0.);
