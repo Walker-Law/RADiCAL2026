@@ -29,14 +29,18 @@ echo "      ${#ENERGIES[@]} energies x $CHUNKS_PER_E chunks x $EVT_PER_CHUNK eve
 
 run_chunk() {
     local E=$1 C=$2
-    local TMPD="tmprun_E${E}_c${C}"
+    local OUTF="$(pwd)/tmprun_E${E}_c${C}.root"  # final location on shared fs
     local LOG="$OUTDIR/log_E${E}_c${C}.log"
-    mkdir -p "$TMPD"
+    local TMPD
+    TMPD=$(mktemp -d /tmp/radical_E${E}_c${C}_XXXXXX)  # local disk — no NFS contention
     local SEED1=$(( (E * 10000 + C * 17 + TS) % 900000000 + 1 ))
     local SEED2=$(( (E * 7919  + C * 31337 + TS * 3) % 900000000 + 1 ))
     printf '/random/setSeeds %d %d\n/run/numberOfThreads 1\n/run/initialize\n/run/beamOn %d\n' \
         "$SEED1" "$SEED2" "$EVT_PER_CHUNK" > "$TMPD/run.mac"
     ( cd "$TMPD" && RADICAL_BEAM_ENERGY_GEV=$E ../radical run.mac ) > "$LOG" 2>&1
+    # Copy result from local /tmp back to shared fs, then clean up
+    [ -f "$TMPD/radical_output.root" ] && mv "$TMPD/radical_output.root" "$OUTF"
+    rm -rf "$TMPD"
 }
 export -f run_chunk
 export OUTDIR EVT_PER_CHUNK TS
