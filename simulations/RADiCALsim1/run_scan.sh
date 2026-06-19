@@ -84,10 +84,16 @@ monitor() {
         for E in "${ENERGIES[@]}"; do
             if [ -f "$OUTDIR/optical_E${E}GeV.root" ]; then
                 status="$status  ${E}GeV:DONE"
+            elif grep -q "write file : radical_output.root" "$OUTDIR/log_E${E}.log" 2>/dev/null; then
+                status="$status  ${E}GeV:merging"
+            elif grep -q "write file" "$OUTDIR/log_E${E}.log" 2>/dev/null; then
+                local nwritten
+                nwritten=$(grep -c "write file" "$OUTDIR/log_E${E}.log" 2>/dev/null || echo 0)
+                status="$status  ${E}GeV:writing(${nwritten}thr)"
+            elif grep -q "open analysis file" "$OUTDIR/log_E${E}.log" 2>/dev/null; then
+                status="$status  ${E}GeV:running"
             else
-                local last
-                last=$(grep -oE 'Event [0-9]+' "$OUTDIR/log_E${E}.log" 2>/dev/null | tail -1)
-                status="$status  ${E}GeV:${last:-init}"
+                status="$status  ${E}GeV:init"
             fi
         done
         printf "[%s] elapsed %dm%ds |%s\n" \
