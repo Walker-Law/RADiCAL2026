@@ -113,7 +113,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     lMPT->AddProperty("RINDEX",                 phE, lRI);
     lMPT->AddProperty("ABSLENGTH",              phE, lABS);
     lMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, lEM);
-    lMPT->AddConstProperty("SCINTILLATIONYIELD",        22000./MeV);
+    // LuAG:Ce light yield, with an optional speed/statistics knob.
+    // RADICAL_SCINT_YIELD scales the nominal 22000 ph/MeV (default 1.0). Cutting
+    // it (e.g. 0.1, 0.01) tracks proportionally fewer scintillation photons ->
+    // faster, fewer p.e.; recover true-yield timing via the sqrt(N) scaling.
+    G4double scintScale = 1.0;
+    if (const char* s = std::getenv("RADICAL_SCINT_YIELD")) {
+        double v = std::atof(s);
+        if (v > 0.) scintScale = v;
+    }
+    lMPT->AddConstProperty("SCINTILLATIONYIELD",        22000./MeV * scintScale);
     lMPT->AddConstProperty("RESOLUTIONSCALE",           1.0);
     lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 60.*ns);
     lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
