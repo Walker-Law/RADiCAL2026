@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
-# Energy scan — 8 parallel energy jobs, each using Geant4 MT.
+# Energy scan — OPTICAL OFF, embarrassingly parallel over events.
 #
-# Strategy: 8 energies run simultaneously, each with THREADS Geant4 worker
-# threads. Each job runs in /tmp (local disk) to avoid NFS contention, then
-# copies the merged ROOT file back to the shared filesystem.
+# With optical photon tracking off, each event is ~0.18 s, so we split each
+# energy into many single-thread processes that run simultaneously and saturate
+# all cores. Per-chunk ROOT files are hadd-merged per energy at the end. No
+# Geant4 MT merge bottleneck.
 #
-# On 512 cores: 8 energies x 64 threads = 512 cores.
+# On 512 cores: 8 energies x 64 chunks x ~16 events = 512 simultaneous processes.
+#
+# NOTE: DeltaT (optical-only timing) will be EMPTY here. This scan is for the
+# energy resolution (sigma/E) and shower shapes. Timing/light-yield is a
+# separate optical run (see CLAUDE.md).
 #
 # Usage:
 #   bash run_scan.sh [NEVT]   (default 1000)
@@ -15,103 +20,114 @@ source ../setup_env.sh >/dev/null 2>&1
 
 ENERGIES=(5 10 20 25 50 100 120 150)
 NEVT=${1:-1000}
-OUTDIR="$(pwd)/scan/optical_scan_${NEVT}"
-TOTAL_CORES=$(nproc 2>/dev/null || echo 512)
-THREADS=$(( TOTAL_CORES / ${#ENERGIES[@]} ))
+OUTDIR="$(pwd)/scan/optical_scan_${NEVT}"     # name kept for analysis-macro compat
 BINARY="$(pwd)/radical"
-PROG=$(( NEVT / 10 )); [ "$PROG" -lt 1 ] && PROG=1
-START_T=$(date +%s)
+TOTAL_CORES=$(nproc 2>/dev/null || echo 512)
+CHUNKS_PER_E=$(( TOTAL_CORES / ${#ENERGIES[@]} ))
+[ "$CHUNKS_PER_E" -lt 1 ] && CHUNKS_PER_E=1
+EVT_PER_CHUNK=$(( (NEVT + CHUNKS_PER_E - 1) / CHUNKS_PER_E ))
 TS=$(date +%s)
+START_T=$(date +%s)
 
-export RADICAL_OPTICAL=1
+export RADICAL_OPTICAL=0        # <-- OPTICAL PHOTONS OFF (fast energy scan)
 mkdir -p "$OUTDIR"
 
-echo "Scan: NEVT=$NEVT/energy  optical=ON"
-echo "      ${#ENERGIES[@]} parallel jobs x $THREADS threads = $TOTAL_CORES cores"
-echo "      output -> $OUTDIR"
+echo "Energy scan: NEVT=$NEVT/energy   optical=OFF"
+echo "  ${#ENERGIES[@]} energies x $CHUNKS_PER_E chunks x $EVT_PER_CHUNK events = $(( ${#ENERGIES[@]} * CHUNKS_PER_E )) simultaneous processes"
+echo "  output -> $OUTDIR"
 echo "------------------------------------------------------------"
 
-run_energy() {
-    local E=$1
-    local OUT="$OUTDIR/optical_E${E}GeV.root"
-    local LOG="$OUTDIR/log_E${E}.log"
+# One chunk: run EVT_PER_CHUNK events single-threaded in /tmp (local disk), then
+# move the result back to the shared filesystem as tmprun_E<E>_c<C>.root.
+run_chunk() {
+    local E=$1 C=$2
+    local OUTF="$(pwd)/tmprun_E${E}_c${C}.root"
+    local LOG="$OUTDIR/log_E${E}_c${C}.log"
     local TMPD
-    TMPD=$(mktemp -d /tmp/radical_E${E}_XXXXXX)
-
-    if [ -f "$OUT" ]; then
-        echo "[$(date '+%H:%M:%S')] SKIP ${E} GeV (already exists)"
-        return 0
-    fi
-
-    local SEED1=$(( (E * 10000 + TS) % 900000000 + 1 ))
-    local SEED2=$(( (E * 7919 + TS * 3) % 900000000 + 1 ))
-    printf '/random/setSeeds %d %d\n/run/numberOfThreads %d\n/run/initialize\n/run/printProgress %d\n/run/beamOn %d\n' \
-        "$SEED1" "$SEED2" "$THREADS" "$PROG" "$NEVT" > "$TMPD/run.mac"
-
-    echo "[$(date '+%H:%M:%S')] START ${E} GeV  (${THREADS} threads, $NEVT events) in $TMPD"
+    TMPD=$(mktemp -d /tmp/radical_E${E}_c${C}_XXXXXX)
+    local SEED1=$(( (E * 100003 + C * 17 + TS) % 900000000 + 1 ))
+    local SEED2=$(( (E * 7919   + C * 31337 + TS * 3) % 900000000 + 1 ))
+    printf '/random/setSeeds %d %d\n/run/numberOfThreads 1\n/run/initialize\n/run/beamOn %d\n' \
+        "$SEED1" "$SEED2" "$EVT_PER_CHUNK" > "$TMPD/run.mac"
     ( cd "$TMPD" && RADICAL_BEAM_ENERGY_GEV=$E "$BINARY" run.mac ) > "$LOG" 2>&1
-
-    local ok=0
-    local sz
-    sz=$(stat -c%s "$TMPD/radical_output.root" 2>/dev/null \
-      || stat -f%z "$TMPD/radical_output.root" 2>/dev/null || echo 0)
-    if [ "${sz:-0}" -gt 5000000 ]; then
-        mv -f "$TMPD/radical_output.root" "$OUT"
-        echo "[$(date '+%H:%M:%S')] DONE  ${E} GeV  ($(( sz/1024/1024 )) MB) -> $OUT"
-        ok=1
-    else
-        echo "!! ${E} GeV FAILED (output ${sz} bytes) — see $LOG"
-    fi
+    [ -f "$TMPD/radical_output.root" ] && mv -f "$TMPD/radical_output.root" "$OUTF"
     rm -rf "$TMPD"
-    return $(( 1 - ok ))
 }
-export -f run_energy
-export OUTDIR THREADS BINARY PROG NEVT TS
+export -f run_chunk
+export OUTDIR EVT_PER_CHUNK TS BINARY
 
-# Launch all energies in parallel
+# Launch all chunks for all (not-yet-done) energies simultaneously
 pids=()
 for E in "${ENERGIES[@]}"; do
-    run_energy "$E" &
-    pids+=($!)
+    if [ -f "$OUTDIR/optical_E${E}GeV.root" ]; then
+        echo "[$(date '+%H:%M:%S')] SKIP ${E} GeV (already exists)"
+        continue
+    fi
+    rm -f tmprun_E${E}_c*.root
+    for (( C=0; C<CHUNKS_PER_E; C++ )); do
+        run_chunk "$E" "$C" &
+        pids+=($!)
+    done
 done
+TOTAL_CHUNKS=${#pids[@]}
+echo "[$(date '+%H:%M:%S')] $TOTAL_CHUNKS chunks launched — monitoring..."
 
-# Background progress monitor
+# Progress monitor: count completed chunk files on the shared fs every 10 s.
 monitor() {
     while true; do
-        sleep 15
-        local elapsed=$(( $(date +%s) - START_T ))
-        local status=""
+        sleep 10
+        local done=0 parts=""
         for E in "${ENERGIES[@]}"; do
-            if [ -f "$OUTDIR/optical_E${E}GeV.root" ]; then
-                status="$status  ${E}GeV:DONE"
-            elif grep -q "write file : radical_output.root" "$OUTDIR/log_E${E}.log" 2>/dev/null; then
-                status="$status  ${E}GeV:merging"
-            elif grep -q "write file" "$OUTDIR/log_E${E}.log" 2>/dev/null; then
-                local nwritten
-                nwritten=$(grep -c "write file" "$OUTDIR/log_E${E}.log" 2>/dev/null || echo 0)
-                status="$status  ${E}GeV:writing(${nwritten}thr)"
-            elif grep -q "open analysis file" "$OUTDIR/log_E${E}.log" 2>/dev/null; then
-                status="$status  ${E}GeV:running"
-            else
-                status="$status  ${E}GeV:init"
-            fi
+            [ -f "$OUTDIR/optical_E${E}GeV.root" ] && continue
+            local n
+            n=$(ls tmprun_E${E}_c*.root 2>/dev/null | wc -l | tr -d ' ')
+            done=$(( done + n ))
+            parts="$parts  ${E}:${n}/${CHUNKS_PER_E}"
         done
-        printf "[%s] elapsed %dm%ds |%s\n" \
-            "$(date '+%H:%M:%S')" $(( elapsed/60 )) $(( elapsed%60 )) "$status"
+        local elapsed=$(( $(date +%s) - START_T ))
+        local pct=0
+        [ "$TOTAL_CHUNKS" -gt 0 ] && pct=$(( done * 100 / TOTAL_CHUNKS ))
+        local eta="--"
+        if [ "$done" -gt 0 ]; then
+            local rem=$(( elapsed * (TOTAL_CHUNKS - done) / done ))
+            eta=$(printf '%dm%02ds' $(( rem/60 )) $(( rem%60 )))
+        fi
+        printf "[%s] %3d%% (%d/%d)  ETA %s |%s\n" \
+            "$(date '+%H:%M:%S')" "$pct" "$done" "$TOTAL_CHUNKS" "$eta" "$parts"
     done
 }
-monitor &
-MONITOR_PID=$!
+monitor & MONITOR_PID=$!
 
-any_failed=0
-for pid in "${pids[@]}"; do
-    wait "$pid" || any_failed=1
-done
+for pid in "${pids[@]}"; do wait "$pid"; done
 kill "$MONITOR_PID" 2>/dev/null
 
 ELAPSED=$(( $(date +%s) - START_T ))
 echo "------------------------------------------------------------"
-echo "SCAN COMPLETE $(date '+%H:%M:%S')  total time: $(printf '%dm%ds' $(( ELAPSED/60 )) $(( ELAPSED%60 )))"
+echo "[$(date '+%H:%M:%S')] All chunks done in $(printf '%dm%02ds' $(( ELAPSED/60 )) $(( ELAPSED%60 ))) — merging..."
+
+# hadd merge per energy
+any_failed=0
+for E in "${ENERGIES[@]}"; do
+    OUT="$OUTDIR/optical_E${E}GeV.root"
+    [ -f "$OUT" ] && continue
+    CHUNKS=( tmprun_E${E}_c*.root )
+    if [ ! -e "${CHUNKS[0]}" ]; then
+        echo "!! ${E} GeV: no chunk outputs — check logs in $OUTDIR/"
+        any_failed=1; continue
+    fi
+    hadd -f "$OUT" "${CHUNKS[@]}" > "$OUTDIR/log_E${E}_merge.log" 2>&1
+    if [ -f "$OUT" ]; then
+        sz=$(stat -c%s "$OUT" 2>/dev/null || stat -f%z "$OUT" 2>/dev/null || echo 0)
+        echo "[$(date '+%H:%M:%S')] ${E} GeV OK  (${#CHUNKS[@]} chunks, $(( sz/1024 )) KB) -> $OUT"
+        rm -f tmprun_E${E}_c*.root
+    else
+        echo "!! ${E} GeV merge failed — see $OUTDIR/log_E${E}_merge.log"
+        any_failed=1
+    fi
+done
+
+echo ""
+echo "SCAN COMPLETE $(date '+%H:%M:%S')  total $(printf '%dm%02ds' $(( ELAPSED/60 )) $(( ELAPSED%60 )))"
 ls -lh "$OUTDIR"/optical_E*GeV.root 2>/dev/null || echo "(no output files found)"
 [ "$any_failed" -eq 1 ] && echo "WARNING: one or more energies failed"
 
@@ -121,5 +137,5 @@ if command -v root >/dev/null 2>&1; then
     root -l -b -q "analysis/scan_resolution.C(\"build/scan/optical_scan_${NEVT}\",\"optical\")"
     echo "Resolution curves -> build/scan/optical_scan_${NEVT}/resolution_curves.root"
 else
-    echo "ROOT not found — run make_plots.sh locally after rsyncing build/$OUTDIR/"
+    echo "ROOT not found — run make_plots.sh locally after rsyncing the scan dir"
 fi
