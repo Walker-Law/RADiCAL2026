@@ -103,7 +103,19 @@ kill "$MONITOR_PID" 2>/dev/null
 
 ELAPSED=$(( $(date +%s) - START_T ))
 echo "------------------------------------------------------------"
-echo "[$(date '+%H:%M:%S')] All chunks done in $(printf '%dm%02ds' $(( ELAPSED/60 )) $(( ELAPSED%60 ))) — merging..."
+echo "[$(date '+%H:%M:%S')] All chunks done in $(printf '%dm%02ds' $(( ELAPSED/60 )) $(( ELAPSED%60 )))"
+
+# Merge per energy with hadd IF ROOT is available; otherwise leave the chunk
+# files in place to be rsynced and merged on a machine that has ROOT.
+if ! command -v hadd >/dev/null 2>&1; then
+    echo ""
+    echo "hadd/ROOT not found here — chunk files left in build/ for local merge."
+    echo "On your Mac: rsync the tmprun_E*_c*.root files over, then for each E run"
+    echo "  hadd -f optical_E\${E}GeV.root tmprun_E\${E}_c*.root"
+    echo ""
+    echo "SCAN COMPLETE (chunks only) $(date '+%H:%M:%S')  total $(printf '%dm%02ds' $(( ELAPSED/60 )) $(( ELAPSED%60 )))"
+    exit 0
+fi
 
 # hadd merge per energy
 any_failed=0
