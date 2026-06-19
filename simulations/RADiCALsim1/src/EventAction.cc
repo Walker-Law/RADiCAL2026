@@ -318,4 +318,17 @@ void EventAction::EndOfEventAction(const G4Event*) {
     G4double eModuleReco = totalLYSO / kSamplingFrac;
     bool inAcceptance = (eModuleReco > fEdepPbGlass);
     if (eComb > 0. && inAcceptance) am->FillH1(20, eComb / GeV);   // H1[20]
+
+    // ── Optional per-event timing diagnostic (RADICAL_TIMING=1) ──────────────
+    if (gTimingOn()) {
+        auto dt = std::chrono::duration<double>(
+                      std::chrono::steady_clock::now() - gEvtStart).count();
+        size_t nph = 0;
+        for (int c = 0; c < 4; c++) nph += fPhTUp[c].size() + fPhTDown[c].size();
+        G4cout << "[timing] T" << G4Threading::G4GetThreadId()
+               << "  evt wall=" << dt << " s"
+               << "  E_LYSO=" << totalLYSO / GeV << " GeV"
+               << "  photons_stored=" << nph
+               << (nph >= 4 * 60000 ? " (CAPPED)" : "") << G4endl;
+    }
 }
