@@ -5,6 +5,17 @@
 #include "G4LogicalVolume.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4SystemOfUnits.hh"
+#include <cstdlib>
+
+// Optical-photon transport caps (read once from the environment). A Cherenkov
+// photon in the quartz light guide can ricochet thousands of times (98% Tyvek
+// reflectivity, ~1 m absorption) before it dies — each bounce a tracking step,
+// which makes optical events crawl. Killing photons past a max step count
+// (and/or a max global time) bounds the per-photon work. For a TIMING study
+// this is physically safe: the 5% CFD leading edge is set by the first few ns of
+// light; photons still bouncing at tens of ns can't move it. Both default OFF.
+static G4int    optMaxStep() { static G4int v   = (std::getenv("RADICAL_OPT_MAXSTEP") ? std::atoi(std::getenv("RADICAL_OPT_MAXSTEP")) : 0);   return v; }
+static G4double optTMax()    { static G4double v = (std::getenv("RADICAL_OPT_TMAX")    ? std::atof(std::getenv("RADICAL_OPT_TMAX"))    : 0.); return v; }
 
 SteppingAction::SteppingAction(EventAction* ea) : fEventAction(ea) {}
 SteppingAction::~SteppingAction() {}
@@ -22,8 +33,16 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
                                            pn == "PD_Upstream",
                                            step->GetPostStepPoint()->GetGlobalTime());
                 track->SetTrackStatus(fStopAndKill);
+                return;
             }
         }
+        // Transport caps: kill undetected photons that have bounced/lived too long.
+        const G4int    mx = optMaxStep();
+        const G4double tm = optTMax();
+        if (mx > 0 && track->GetCurrentStepNumber() >= mx)
+            track->SetTrackStatus(fStopAndKill);
+        else if (tm > 0. && step->GetPostStepPoint()->GetGlobalTime() > tm * ns)
+            track->SetTrackStatus(fStopAndKill);
         return;   // optical photons deposit no sampling energy
     }
 
