@@ -1,0 +1,14 @@
+# Batch run for the optical photon locator — fills the SiPM-vs-origin cross-talk
+# matrix (H2[15] "SiPM_vs_OriginCorner") in radical_output.root.
+#
+# Run with optical photons ON, the optical step cap, and a modest beam energy:
+#   RADICAL_OPTICAL=1 RADICAL_OPT_MAXSTEP=200 RADICAL_BEAM_ENERGY_GEV=2 \
+#       ./radical run_batch.mac
+#
+# Each event detects thousands of photons, so ~50 events already gives a clean
+# composition. Increase beamOn for smoother statistics.
+/random/setSeeds 12345 67890
+/run/numberOfThreads 1
+/run/initialize
+/run/printProgress 5
+/run/beamOn 50
