@@ -50,13 +50,18 @@ public:
     // ── Optical-photon timing readout ───────────────────────────────────────
     // Quantum efficiency of the end photodetectors (bialkali/SiPM-like).
     static constexpr G4double kQE = 0.20;
-    void RecordPhoton(G4int corner, bool isUpstream, G4double t) {
+    // originCorner: where the photon was born — 0..3 = corner capillary, 4 = elsewhere.
+    void RecordPhoton(G4int corner, bool isUpstream, G4double t, G4int originCorner) {
         if (corner < 0 || corner >= 4) return;
         if (G4UniformRand() > kQE) return;            // apply QE
         if (isUpstream) { fNphUp[corner]++;   if (t < fTphUp[corner])   fTphUp[corner]   = t;
                           if (fPhTUp[corner].size()   < kMaxStore) fPhTUp[corner].push_back(t); }
         else            { fNphDown[corner]++; if (t < fTphDown[corner]) fTphDown[corner] = t;
                           if (fPhTDown[corner].size() < kMaxStore) fPhTDown[corner].push_back(t); }
+        // Cross-talk bookkeeping: which SiPM caught it vs where it came from.
+        const G4int sipm = corner * 2 + (isUpstream ? 0 : 1);   // 0..7
+        if (originCorner < 0 || originCorner > 4) originCorner = 4;
+        fSiPMOrigin[sipm][originCorner]++;
     }
 
 private:
