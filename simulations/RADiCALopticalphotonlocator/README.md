@@ -27,13 +27,24 @@ event), and opens `vis_corners.mac`. Override any of these with env vars, e.g.
 
 ## Colour key (beam's-eye view, +x right, +y up)
 
-| Corner | Position | Colour |
+Only optical photons born in the **shower-max region** (the WLS section of each
+corner capillary — the LuAG:Ce fiber + surrounding quartz at depth 32.9–47.9 mm,
+straddling layer 9) are coloured by their corner. Light born anywhere else
+(upstream/downstream quartz rods, centre cap, etc.) is dim grey.
+
+| Born in shower-max corner | Position | Colour |
 |--------|----------|--------|
 | top-right    | (+x, +y) | red |
 | top-left     | (−x, +y) | yellow |
 | bottom-right | (+x, −y) | green |
 | bottom-left  | (−x, −y) | blue |
-| born elsewhere (centre cap, etc.) | — | dim grey |
+| born outside the shower-max region | — | dim grey |
+
+> Note: LYSO emits **no** optical photons in this sim — it is the energy-sampling
+> absorber, scored by energy deposit only. The detected light is quartz Cherenkov
+> + LuAG:Ce WLS scintillation generated **inside the capillaries**. The colour
+> therefore marks light created in the capillary's shower-max section, which is
+> embedded among the LYSO tiles at the shower peak.
 
 Only optical photons are drawn (the EM shower is filtered out for clarity). Edit
 the colours, viewpoint, or filter in `vis_corners.mac`.
