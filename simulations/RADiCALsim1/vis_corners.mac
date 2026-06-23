@@ -1,0 +1,53 @@
+# vis_corners.mac — colour optical photons by which corner capillary they were
+# born in, so you can SEE where the light comes from. Shows only optical photons
+# (the EM shower is filtered out for clarity), coloured by origin corner.
+#
+# Run from build/ with optical ON, a modest beam energy, and the optical-photon
+# step cap so it doesn't crawl:
+#   RADICAL_OPT_MAXSTEP=200 RADICAL_BEAM_ENERGY_GEV=2 ./radical vis_corners.mac
+#
+# Corner colour key (beam's-eye view, +x right, +y up):
+#   top-right (+,+) copy0 = RED      top-left (-,+) copy1 = YELLOW
+#   bot-right (+,-) copy2 = GREEN    bot-left (-,-) copy3 = BLUE
+#   light born elsewhere (centre cap, etc.) = dim grey
+
+/run/initialize
+/vis/open OGL 1000x800
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 70 20
+/vis/viewer/zoom 2.0
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate 1
+/vis/viewer/set/background 0.02 0.02 0.08
+
+# Show ONLY optical photons (drop the EM shower so the light is readable)
+/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/particleFilter-0/add opticalphoton
+
+# Colour each photon by the volume it was born in -> the 4 corners as a gradient
+/vis/modeling/trajectories/create/drawByOriginVolume
+# top-right corner (copy 0) = red
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Upstream_0 red
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_0 red
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_0 red
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Downstream_0 red
+# top-left corner (copy 1) = yellow
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Upstream_1 yellow
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_1 yellow
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_1 yellow
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Downstream_1 yellow
+# bottom-right corner (copy 2) = green
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Upstream_2 green
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_2 green
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_2 green
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Downstream_2 green
+# bottom-left corner (copy 3) = blue
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Upstream_3 blue
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_3 blue
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_3 blue
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Downstream_3 blue
+# everything else (centre-cap Cherenkov, etc.) = dim grey
+/vis/modeling/trajectories/drawByOriginVolume-0/default/setRGBA 0.5 0.5 0.5 0.25
+/vis/modeling/trajectories/select drawByOriginVolume-0
+
+/run/beamOn 1
