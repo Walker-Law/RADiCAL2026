@@ -17,6 +17,18 @@
 static G4int    optMaxStep() { static G4int v   = (std::getenv("RADICAL_OPT_MAXSTEP") ? std::atoi(std::getenv("RADICAL_OPT_MAXSTEP")) : 0);   return v; }
 static G4double optTMax()    { static G4double v = (std::getenv("RADICAL_OPT_TMAX")    ? std::atof(std::getenv("RADICAL_OPT_TMAX"))    : 0.); return v; }
 
+// Which corner capillary a photon was born in, from its creation volume name
+// ("Cap_Corner_<part>_<0..3>"). Returns 0..3 for a corner, or 4 for "elsewhere"
+// (centre-cap Cherenkov, etc.). Drives the SiPM-vs-origin cross-talk matrix.
+static G4int originCorner(const G4Track* track) {
+    const G4LogicalVolume* birthVol = track->GetLogicalVolumeAtVertex();
+    if (!birthVol) return 4;
+    const G4String& name = birthVol->GetName();
+    if (name.rfind("Cap_Corner_", 0) != 0 || name.empty()) return 4;
+    const char last = name.back();
+    return (last >= '0' && last <= '3') ? (last - '0') : 4;
+}
+
 SteppingAction::SteppingAction(EventAction* ea) : fEventAction(ea) {}
 SteppingAction::~SteppingAction() {}
 
