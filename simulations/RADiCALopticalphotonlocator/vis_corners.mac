@@ -30,29 +30,23 @@
 /vis/filtering/trajectories/create/particleFilter
 /vis/filtering/trajectories/particleFilter-0/add opticalphoton
 
-# Colour each photon by the volume it was born in -> the 4 corners as a gradient
+# Colour photons by their birth volume. ONLY the shower-max section of each corner
+# (MidTube quartz + WLS fiber) is coloured; the upstream/downstream rods and every
+# other volume fall through to the grey default -> "born outside shower max".
 /vis/modeling/trajectories/create/drawByOriginVolume
 # top-right corner (copy 0) = red
-/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Upstream_0 red
 /vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_0 red
 /vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_0 red
-/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Downstream_0 red
 # top-left corner (copy 1) = yellow
-/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Upstream_1 yellow
 /vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_1 yellow
 /vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_1 yellow
-/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Downstream_1 yellow
 # bottom-right corner (copy 2) = green
-/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Upstream_2 green
 /vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_2 green
 /vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_2 green
-/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Downstream_2 green
 # bottom-left corner (copy 3) = blue
-/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Upstream_3 blue
 /vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_3 blue
 /vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_3 blue
-/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_Downstream_3 blue
-# everything else (centre-cap Cherenkov, etc.) = dim grey
+# everything else (upstream/downstream rods, centre cap, etc.) = dim grey
 /vis/modeling/trajectories/drawByOriginVolume-0/default/setRGBA 0.5 0.5 0.5 0.25
 /vis/modeling/trajectories/select drawByOriginVolume-0
 
