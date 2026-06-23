@@ -398,36 +398,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     eCapTubeVis->SetForceAuxEdgeVisible(true);
     logicECapTube->SetVisAttributes(eCapTubeVis);
 
-    // --- Corner timing capillaries (shared logical volumes) ---
-    // Upstream rod: solid quartz cylinder (fills bore + wall region)
-    auto solidTUpstream = new G4Tubs("TCapUpstream", 0, tCap_outR, upstreamLen/2, 0., 360.*deg);
-    auto logicTUpstream = new G4LogicalVolume(solidTUpstream, quartz, "Cap_Corner_Upstream");
-
-    // Middle WLS section: quartz tube wall
-    auto solidTMidTube = new G4Tubs("TCapMidTube", wlsFiberR, tCap_outR, wlsLen/2, 0., 360.*deg);
-    auto logicTMidTube = new G4LogicalVolume(solidTMidTube, quartz, "Cap_Corner_MidTube");
-
-    // Middle WLS section: LuAG:Ce fiber (scoring volume for timing)
-    auto solidTMidWLS = new G4Tubs("TCapMidWLS", 0, wlsFiberR, wlsLen/2, 0., 360.*deg);
-    auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, luag, "Cap_Corner_WLS");
-
-    // Downstream rod: solid quartz cylinder
+    // --- Corner timing capillary solids ---
+    // The logical volumes are created PER CORNER in the placement loop below (with
+    // a "_0".."_3" name suffix) so each corner is a distinct named volume and can
+    // be coloured separately by drawByOriginVolume in the viewer. Physics is
+    // unchanged: same solids/materials/placements, copy number still = corner idx.
+    auto solidTUpstream   = new G4Tubs("TCapUpstream",  0, tCap_outR, upstreamLen/2, 0., 360.*deg);
+    auto solidTMidTube    = new G4Tubs("TCapMidTube", wlsFiberR, tCap_outR, wlsLen/2, 0., 360.*deg);
+    auto solidTMidWLS     = new G4Tubs("TCapMidWLS",    0, wlsFiberR, wlsLen/2, 0., 360.*deg);
     auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, downstreamLen/2, 0., 360.*deg);
-    auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
 
-    // Quartz timing rods/tube as outlines
+    // Quartz timing rods/tube as wireframe outlines
     auto tRodVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));
     tRodVis->SetForceWireframe(true);
     tRodVis->SetForceAuxEdgeVisible(true);
-    logicTUpstream->SetVisAttributes(tRodVis);
-    logicTDownstream->SetVisAttributes(tRodVis);
-    logicTMidTube->SetVisAttributes(tRodVis);
-
     // LuAG:Ce WLS fiber kept solid (key timing active volume)
     auto wlsVis = new G4VisAttributes(G4Colour(1.0, 0.6, 0.0, 0.95));
     wlsVis->SetForceSolid(true);
     wlsVis->SetForceAuxEdgeVisible(true);
-    logicTMidWLS->SetVisAttributes(wlsVis);
 
     // --- Photodetectors at the upstream & downstream ends of each capillary ---
     // Thin Si pads, abutting the quartz rod ends, that detect optical photons
