@@ -1,0 +1,53 @@
+# vis_corners.mac — colour optical photons born in the SHOWER-MAX REGION by which
+# corner capillary they came from; grey for photons born anywhere else.
+#
+# "Shower-max region" = the WLS section of each corner capillary: the LuAG:Ce
+# fiber (Cap_Corner_WLS, scintillation) + the quartz tube around it
+# (Cap_Corner_MidTube, Cherenkov), both positioned at shower max (~layer 9). Light
+# born in the upstream/downstream quartz rods, the centre cap, or elsewhere is grey.
+# (NB: LYSO itself emits no optical photons in this sim — it is the energy-sampling
+# absorber. The detected light is quartz Cherenkov + LuAG WLS scintillation.)
+#
+# Run from build/ with optical ON. 200000 = effectively uncapped (photons
+# propagate fully for a faithful image); lower RADICAL_OPT_MAXSTEP if it's slow:
+#   RADICAL_OPT_MAXSTEP=200000 RADICAL_BEAM_ENERGY_GEV=5 ./radical vis_corners.mac
+#
+# Corner colour key (beam's-eye view, +x right, +y up):
+#   top-right (+,+) copy0 = RED      top-left (-,+) copy1 = YELLOW
+#   bot-right (+,-) copy2 = GREEN    bot-left (-,-) copy3 = BLUE
+#   born outside the shower-max region = dim grey
+
+/run/initialize
+/vis/open OGL 1000x800
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 70 20
+/vis/viewer/zoom 2.0
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate 1
+/vis/viewer/set/background 0.02 0.02 0.08
+
+# Show ONLY optical photons (drop the EM shower so the light is readable)
+/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/particleFilter-0/add opticalphoton
+
+# Colour photons by their birth volume. ONLY the shower-max section of each corner
+# (MidTube quartz + WLS fiber) is coloured; the upstream/downstream rods and every
+# other volume fall through to the grey default -> "born outside shower max".
+/vis/modeling/trajectories/create/drawByOriginVolume
+# top-right corner (copy 0) = red
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_0 red
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_0 red
+# top-left corner (copy 1) = yellow
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_1 yellow
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_1 yellow
+# bottom-right corner (copy 2) = green
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_2 green
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_2 green
+# bottom-left corner (copy 3) = blue
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_MidTube_3 blue
+/vis/modeling/trajectories/drawByOriginVolume-0/set Cap_Corner_WLS_3 blue
+# everything else (upstream/downstream rods, centre cap, etc.) = dim grey
+/vis/modeling/trajectories/drawByOriginVolume-0/default/setRGBA 0.5 0.5 0.5 0.25
+/vis/modeling/trajectories/select drawByOriginVolume-0
+
+/run/beamOn 1

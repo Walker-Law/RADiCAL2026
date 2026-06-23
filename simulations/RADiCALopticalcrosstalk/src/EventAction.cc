@@ -1,0 +1,342 @@
+#include "EventAction.hh"
+#include "G4Event.hh"
+#include "G4AnalysisManager.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4Threading.hh"
+#include <numeric>
+#include <cmath>
+#include <algorithm>
+#include <chrono>
+
+// Sentinel for "no hit yet" times (ns); any real hit time is far below this.
+static const G4double kBigTime = 1.0e9;
+
+// Per-event wall-clock timer (thread-local). Set RADICAL_TIMING=1 to enable
+// a one-line "[timing]" printout per event: wall time + photons stored.
+static G4ThreadLocal std::chrono::steady_clock::time_point gEvtStart;
+static bool gTimingOn() {
+    static const bool on = (std::getenv("RADICAL_TIMING") != nullptr);
+    return on;
+}
+
+EventAction::EventAction() {
+    fEdepLYSO.fill(0.);
+    fEdepW.fill(0.);
+    fEdepCenter = 0.;
+    fEdepWLS.fill(0.);
+    fEdepTrig.fill(0.);
+    fTimeTrig.fill(kBigTime);
+    fEdepMCP = 0.;
+    fTimeMCP = kBigTime;
+    fEdepPbGlass = 0.;
+    fTphUp.fill(kBigTime); fTphDown.fill(kBigTime);
+    fNphUp.fill(0);        fNphDown.fill(0);
+}
+EventAction::~EventAction() {}
+
+void EventAction::BeginOfEventAction(const G4Event*) {
+    if (gTimingOn()) gEvtStart = std::chrono::steady_clock::now();
+    fEdepLYSO.fill(0.);
+    fEdepW.fill(0.);
+    fEdepCenter = 0.;
+    fEdepWLS.fill(0.);
+    fCornerHits.clear();
+    fLYSOHits.clear();
+    fEdepTrig.fill(0.);
+    fTimeTrig.fill(kBigTime);
+    fEdepMCP = 0.;
+    fTimeMCP = kBigTime;
+    fEdepPbGlass = 0.;
+    fTphUp.fill(kBigTime); fTphDown.fill(kBigTime);
+    fNphUp.fill(0);        fNphDown.fill(0);
+    for (auto& v : fPhTUp)   v.clear();
+    for (auto& v : fPhTDown) v.clear();
+    for (auto& row : fSiPMOrigin) row.fill(0);
+}
+
+// ── DRS4-style waveform emulation (mirrors the CERN test-beam analysis) ─────
+// Build the analog pulse as a sum of single-photon responses
+//   SPR(t) = (1 − e^{−t/τ_r}) · e^{−t/τ_f},  τ_r = 1.0 ns, τ_f = 3.0 ns,
+// sample at 5 GS/s (0.2 ns) like the DRS4 digitizer, then apply the identical
+// 5% constant-fraction discriminator with linear interpolation that the
+// test-beam waveform analysis uses (per user: CFD fraction is 5%, not 50%).
+// Returns CFD time (ns) or −1; optionally reports pulse FWHM for validation.
+static G4double pulseCFD(const std::vector<G4double>& tns, G4double* fwhmOut) {
+    if (tns.size() < 5) return -1.;
+    const G4double tauR = 1.0, tauF = 3.0, dt = 0.2;     // ns
+    G4double t0 = *std::min_element(tns.begin(), tns.end());
+    const int NS = 500;                                   // 100 ns window
+    static G4ThreadLocal std::vector<G4double> wf;        // reused buffer
+    wf.assign(NS, 0.);
+    for (G4double tp : tns) {
+        int s0 = (int)((tp - t0) / dt) + 1;
+        for (int s = s0; s < NS; s++) {
+            G4double td = t0 + s * dt - tp;
+            wf[s] += (1. - std::exp(-td / tauR)) * std::exp(-td / tauF);
+        }
+    }
+    int ipk = std::max_element(wf.begin(), wf.end()) - wf.begin();
+    G4double pk = wf[ipk];
+    if (pk <= 0. || ipk < 1) return -1.;
+    if (fwhmOut) {                                        // FWHM for validation
+        int s1 = ipk, s2 = ipk;
+        while (s1 > 0 && wf[s1] > pk / 2) s1--;
+        while (s2 < NS - 1 && wf[s2] > pk / 2) s2++;
+        *fwhmOut = (s2 - s1) * dt;
+    }
+    G4double thr = 0.05 * pk;                             // 5% CFD, leading edge
+    int s = ipk; while (s > 0 && wf[s] > thr) s--;
+    G4double v1 = wf[s], v2 = wf[s + 1];
+    return t0 + (s + (v2 > v1 ? (thr - v1) / (v2 - v1) : 0.)) * dt;
+}
+
+void EventAction::EndOfEventAction(const G4Event*) {
+    auto am = G4AnalysisManager::Instance();
+
+    // =========================================================================
+    // 1. LONGITUDINAL SHOWER PROFILE + SHOWER SHAPE OBSERVABLES
+    // =========================================================================
+    G4double totalLYSO = 0.;
+    G4int    showerMaxLayer = 0;
+    G4double maxLayerEdep   = 0.;
+    G4double cogNumer = 0., cogDenom = 0.;
+    G4double rmsNumer = 0.;
+
+    for (G4int i = 0; i < 29; i++) {
+        G4double e = fEdepLYSO[i];
+        if (e > 0.) {
+            am->FillH1(0, i + 0.5, e / MeV);   // shower profile (weighted fill)
+            if (e > maxLayerEdep) { maxLayerEdep = e; showerMaxLayer = i; }
+            cogNumer += (i + 0.5) * e;
+            cogDenom += e;
+        }
+        totalLYSO += e;
+    }
+
+    G4double cog = (cogDenom > 0.) ? cogNumer / cogDenom : 0.;  // in layer units
+
+    // RMS of longitudinal distribution
+    if (cogDenom > 0.) {
+        for (G4int i = 0; i < 29; i++) {
+            G4double dl = (i + 0.5) - cog;
+            rmsNumer += fEdepLYSO[i] * dl * dl;
+        }
+    }
+    G4double showerRMS = (cogDenom > 0.) ? std::sqrt(rmsNumer / cogDenom) : 0.;
+
+    // =========================================================================
+    // 2. ABSORBER + SUMMARY
+    // =========================================================================
+    G4double totalW = 0.;
+    for (G4int i = 0; i < 28; i++) totalW += fEdepW[i];
+
+    if (totalLYSO > 0.) am->FillH1(1, totalLYSO / GeV);
+    if (totalW    > 0.) am->FillH1(2, totalW    / GeV);
+    G4double totalActive = totalLYSO + totalW;
+    if (totalActive > 0.) am->FillH1(3, totalLYSO / totalActive);
+
+    // =========================================================================
+    // 3. CAPILLARY SIGNALS
+    // =========================================================================
+    if (fEdepCenter > 0.) {
+        am->FillH1(4, fEdepCenter / MeV);
+        // H1[10]: center cap / total LYSO ratio
+        if (totalLYSO > 0.)
+            am->FillH1(10, (fEdepCenter / MeV) / (totalLYSO / MeV));
+        // H2[3]: EJ309 vs total LYSO linearity
+        am->FillH2(3, totalLYSO / GeV, fEdepCenter / MeV);
+    }
+
+    G4double totalCornerWLS = 0.;
+    for (G4int c = 0; c < 4; c++) {
+        if (fEdepWLS[c] > 0.) {
+            am->FillH1(5, fEdepWLS[c] / MeV);          // all corners combined
+            am->FillH1(11, c + 0.5, fEdepWLS[c] / MeV); // per-corner bar
+            totalCornerWLS += fEdepWLS[c];
+        }
+    }
+    if (totalCornerWLS > 0.) {
+        am->FillH1(13, totalCornerWLS / MeV);
+        // H2[4]: total corner WLS vs total LYSO
+        if (totalLYSO > 0.)
+            am->FillH2(4, totalLYSO / GeV, totalCornerWLS / MeV);
+    }
+
+    // =========================================================================
+    // 4. SHOWER SHAPE HISTOGRAMS (per-event)
+    // =========================================================================
+    if (totalLYSO > 0.) {
+        am->FillH1(7, showerMaxLayer + 0.5);    // shower max layer
+        am->FillH1(8, cog);                      // longitudinal COG (layer units)
+        am->FillH1(9, showerRMS);                // shower longitudinal RMS
+        // H2[6]: shower max vs total LYSO
+        am->FillH2(6, totalLYSO / GeV, showerMaxLayer + 0.5);
+    }
+
+    // =========================================================================
+    // 5. X-Y LATERAL SHOWER PROFILE — integrated + 6 depth slices
+    // =========================================================================
+    // Mapping: layer index → slice H2 id
+    //   Slice 0 → H2[7]  layers  0– 4  (z ≈ −57 to −41 mm)
+    //   Slice 1 → H2[8]  layers  5– 9  (z ≈ −41 to −21 mm)
+    //   Slice 2 → H2[9]  layers 10–14  (z ≈ −21 to  −1 mm)  ← shower max
+    //   Slice 3 → H2[10] layers 15–19  (z ≈  −1 to +19 mm)
+    //   Slice 4 → H2[11] layers 20–24  (z ≈ +19 to +39 mm)
+    //   Slice 5 → H2[12] layers 25–28  (z ≈ +39 to +57 mm)
+    auto depthSliceH2 = [](G4int layer) -> G4int {
+        if (layer <=  4) return 7;
+        if (layer <=  9) return 8;
+        if (layer <= 14) return 9;
+        if (layer <= 19) return 10;
+        if (layer <= 24) return 11;
+        return 12;
+    };
+
+    for (const auto& hit : fLYSOHits) {
+        // H2[2]: integrated X-Y map (all layers)
+        am->FillH2(2, hit.x / mm, hit.y / mm, hit.edep / MeV);
+        // H2[7-12]: depth-sliced X-Y map
+        G4int sliceId = depthSliceH2((G4int)hit.layer);
+        am->FillH2(sliceId, hit.x / mm, hit.y / mm, hit.edep / MeV);
+    }
+
+    // =========================================================================
+    // 6. TIMING RECONSTRUCTION
+    // =========================================================================
+    const G4double stackHalfZ = 57.03 * mm;
+    const G4double c_light    = 299.792458 * mm / ns;
+    const G4double v_quartz   = c_light / 1.46;
+
+    std::array<G4double, 4> cornerEdepSum = {0, 0, 0, 0};
+    std::array<G4double, 4> cornerZSum    = {0, 0, 0, 0};
+    std::array<G4double, 4> cornerTSum    = {0, 0, 0, 0};
+
+    for (const auto& hit : fCornerHits) {
+        int c = (int)hit.corner;
+        cornerEdepSum[c] += hit.edep;
+        cornerZSum[c]    += hit.edep * hit.z;
+        cornerTSum[c]    += hit.edep * hit.t;
+    }
+
+    for (G4int c = 0; c < 4; c++) {
+        if (cornerEdepSum[c] <= 0.) continue;
+        G4double zHit = cornerZSum[c] / cornerEdepSum[c];
+        G4double tHit = cornerTSum[c] / cornerEdepSum[c];
+
+        G4double distUpstream   = zHit - (-stackHalfZ);
+        G4double distDownstream = stackHalfZ - zHit;
+        G4double tArrUpstream   = tHit + distUpstream   / v_quartz;
+        G4double tArrDownstream = tHit + distDownstream / v_quartz;
+        G4double deltaT    = tArrDownstream - tArrUpstream;
+        G4double zReco     = -deltaT * v_quartz / 2.0;
+        G4double zResid    = zReco - zHit;
+
+        // Geometric z-reconstruction diagnostics (kept from the deposition model)
+        am->FillH1(12, zResid / mm);                    // Z residual
+        am->FillH2(0,  deltaT / ns, zHit / mm);         // DeltaT vs true z (geometric)
+        am->FillH2(1,  zReco  / mm, zHit / mm);         // z_reco vs z_true
+    }
+
+    // =========================================================================
+    // 6b. OPTICAL-PHOTON TIMING (the real measurement)
+    //   Per corner, ΔT = t_downstream − t_upstream of the FIRST detected photon
+    //   at each end PD (leading-edge). H1[6] = ΔT (raw difference, NOT ÷2).
+    //
+    //   (DW−UP)/2 corner trick (jwwetzel.github.io/RADiCAL/going_radical.html):
+    //   ΔT = (L − 2z)/v_g, so σ(ΔT) = 2·σ_z/v_g = 2·σ_t.
+    //   Physical timing resolution: σ_t = RMS(H1[6]) / 2.
+    //   The /2 also cancels MCP jitter, DRS4 timebase error, and beam-arrival
+    //   jitter — all common-mode in the DW−UP subtraction.
+    // =========================================================================
+    G4int nPhotTot = 0;
+    for (G4int c = 0; c < 4; c++) {
+        nPhotTot += fNphUp[c] + fNphDown[c];
+        if (fTphUp[c] < kBigTime && fTphDown[c] < kBigTime) {
+            G4double dT = fTphDown[c] - fTphUp[c];      // downstream − upstream (positive)
+            am->FillH1(6, dT / ns);                     // optical ΔT
+            if (totalLYSO > 0.) am->FillH2(5, totalLYSO / GeV, dT / ns);
+        }
+    }
+    if (nPhotTot > 0) am->FillH1(21, nPhotTot);         // photons detected / event
+
+    // =========================================================================
+    // 6c. WAVEFORM-EMULATED TIMING (data-identical estimator)
+    //   Pulse built from ALL detected photon times, digitized DRS4-style, then
+    //   50% CFD — the same estimator as the CERN test-beam waveform analysis.
+    //   H1[22] = ΔT_CFD (downstream − upstream), H1[23] = pulse FWHM check.
+    // =========================================================================
+    for (G4int c = 0; c < 4; c++) {
+        G4double fwUp = -1., fwDn = -1.;
+        G4double tUp = pulseCFD(fPhTUp[c],   &fwUp);
+        G4double tDn = pulseCFD(fPhTDown[c], &fwDn);
+        if (tUp > 0. && tDn > 0.) {
+            am->FillH1(22, (tDn - tUp) / 1.0);   // already in ns
+            if (fwUp > 0.) am->FillH1(23, fwUp);
+            if (fwDn > 0.) am->FillH1(23, fwDn);
+        }
+    }
+
+    // =========================================================================
+    // 7. CERN TEST-BEAM LINE OBSERVABLES
+    //    Trigger counters, MCP timing reference (t0), Pb-glass tail catcher.
+    // =========================================================================
+    if (fEdepTrig[0] > 0.) am->FillH1(14, fEdepTrig[0] / MeV);  // trigger 1 dE
+    if (fEdepTrig[1] > 0.) am->FillH1(15, fEdepTrig[1] / MeV);  // trigger 2 dE
+    if (fEdepMCP    > 0.) am->FillH1(16, fEdepMCP     / MeV);  // MCP radiator dE
+    if (fEdepPbGlass > 0.) am->FillH1(17, fEdepPbGlass / GeV);  // Pb-glass energy
+
+    // Beam time-of-flight: trigger 1 -> MCP (both seen by the primary)
+    if (fTimeTrig[0] < kBigTime && fTimeMCP < kBigTime)
+        am->FillH1(19, (fTimeMCP - fTimeTrig[0]) / ns);
+
+    // Energy-weighted mean WLS arrival time across all 4 corners
+    G4double wlsESum = 0., wlsTSum = 0.;
+    for (const auto& hit : fCornerHits) { wlsESum += hit.edep; wlsTSum += hit.edep * hit.t; }
+    G4double wlsMeanT = (wlsESum > 0.) ? wlsTSum / wlsESum : kBigTime;
+
+    // RADiCAL timing relative to the MCP reference (t0): the key resolution plot
+    if (wlsESum > 0. && fTimeMCP < kBigTime) {
+        am->FillH1(18, (wlsMeanT - fTimeMCP) / ns);             // H1[18]
+        am->FillH2(14, fTimeMCP / ns, wlsMeanT / ns);           // H2[14]
+    }
+
+    // Tail-catcher correlation: RADiCAL sampled energy vs Pb-glass leakage energy
+    if (totalLYSO > 0.)
+        am->FillH2(13, totalLYSO / GeV, fEdepPbGlass / GeV);    // H2[13]
+
+    // Tail-catcher-corrected energy estimator (H1[20]):
+    //   E_comb = E_LYSO + f_s * E_PbGlass,  f_s = LYSO sampling fraction.
+    // The −0.94 LYSO/PbGlass anti-correlation means restoring the (sampling-scaled)
+    // forward leakage cancels the leakage fluctuation, tightening sigma/E.
+    static const G4double kSamplingFrac = 0.18;
+    G4double eComb = totalLYSO + kSamplingFrac * fEdepPbGlass;
+
+    // Beam-acceptance cut: reject halo events that missed the ±7 mm module and
+    // showered straight into the Pb-glass (these form a spurious sharp peak).
+    // A real test beam removes these via trigger/tracking. Keep events where the
+    // module-reconstructed energy exceeds the tail-catcher energy (>50% in module);
+    // this preserves genuine forward-leakage events while cutting clean misses.
+    G4double eModuleReco = totalLYSO / kSamplingFrac;
+    bool inAcceptance = (eModuleReco > fEdepPbGlass);
+    if (eComb > 0. && inAcceptance) am->FillH1(20, eComb / GeV);   // H1[20]
+
+    // ── Optical cross-talk matrix (H2[15]): accumulate this event's detected
+    //    photons by (SiPM, origin corner). The 2D histogram sums over all events.
+    for (G4int sipm = 0; sipm < 8; sipm++)
+        for (G4int origin = 0; origin < 5; origin++)
+            if (fSiPMOrigin[sipm][origin] > 0)
+                am->FillH2(15, sipm + 0.5, origin + 0.5, fSiPMOrigin[sipm][origin]);
+
+    // ── Optional per-event timing diagnostic (RADICAL_TIMING=1) ──────────────
+    if (gTimingOn()) {
+        auto dt = std::chrono::duration<double>(
+                      std::chrono::steady_clock::now() - gEvtStart).count();
+        size_t nph = 0;
+        for (int c = 0; c < 4; c++) nph += fPhTUp[c].size() + fPhTDown[c].size();
+        G4cout << "[timing] T" << G4Threading::G4GetThreadId()
+               << "  evt wall=" << dt << " s"
+               << "  E_LYSO=" << totalLYSO / GeV << " GeV"
+               << "  photons_stored=" << nph
+               << (nph >= 4 * 60000 ? " (CAPPED)" : "") << G4endl;
+    }
+}
