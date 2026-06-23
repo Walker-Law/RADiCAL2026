@@ -25,7 +25,6 @@
 #include "G4LogicalSkinSurface.hh"
 #include <vector>
 #include <cstdlib>
-#include <string>
 
 DetectorConstruction::DetectorConstruction() {}
 DetectorConstruction::~DetectorConstruction() {}
