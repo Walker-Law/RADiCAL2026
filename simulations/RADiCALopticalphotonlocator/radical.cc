@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
         }
     } else {
         auto uiExec = new G4UIExecutive(argc, argv);
-        UI->ApplyCommand("/control/execute vis_purple.mac");
+        UI->ApplyCommand("/control/execute vis_corners.mac");
         uiExec->SessionStart();
         delete uiExec;
     }
