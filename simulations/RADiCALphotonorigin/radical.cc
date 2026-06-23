@@ -15,13 +15,17 @@
 
 int main(int argc, char** argv) {
     // Bare `./radical` (no macro arg) = interactive photon-origin viewer: a 1 GeV
-    // event with optical photons coloured by which corner capillary they were born
-    // in (vis_corners.mac). The step cap (2000) bounds per-photon work for a quick,
-    // readable image; raise it for fuller propagation. overwrite=0 means explicit
-    // env values still win.
+    // event fired into the top-right quadrant (RADICAL_BEAM_QUADRANT=0), with the
+    // shower-max LYSO drawn as 4 colour-coded quadrants and the optical photons
+    // coloured by which corner capillary they were born in (vis_quadrants.mac) —
+    // so you SEE the shower's quadrant light up the matching SiPM. The step cap
+    // (2000) bounds per-photon work for a quick, readable image; raise it for
+    // fuller propagation. overwrite=0 means explicit env values still win, so e.g.
+    // `RADICAL_BEAM_QUADRANT=3 ./radical` views the bottom-left quadrant instead.
     if (argc < 2) {
         setenv("RADICAL_BEAM_ENERGY_GEV", "1",    0);
         setenv("RADICAL_OPT_MAXSTEP",     "2000", 0);
+        setenv("RADICAL_BEAM_QUADRANT",   "0",    0);
     }
 
     auto runManager = G4RunManagerFactory::CreateRunManager();
