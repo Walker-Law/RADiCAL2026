@@ -1,89 +1,91 @@
-# RADiCAL Optical Photon Locator
+# RADiCAL Photon Origin
 
-A focused Geant4 viewer that colours optical-photon trajectories by **which corner
-capillary they were born in**, so you can see where the light in the RADiCAL
-timing capillaries comes from. Derived from `RADiCALsim1` — same geometry, but the
-four corner capillaries are built as distinctly-named per-corner volumes so
-`drawByOriginVolume` can paint each corner a different colour.
+Where does the **particle hit**, and which **SiPM lights up**? This Geant4 study
+maps the transverse impact position of the beam (hence the shower) to the optical
+signal seen by the four corner-capillary SiPMs of a RADiCAL module.
+
+Derived from `RADiCALopticalcrosstalk` — same geometry and readout — with three
+additions:
+
+1. **Random-uniform beam impact.** Each event fires a pencil beam at a fresh
+   random `(x,y)` over the 14×14 mm tile face, so a run sweeps the whole
+   transverse plane. (The cross-talk sim fired a fixed central beam.)
+2. **Shower-max LYSO drawn as 4 colour-coded quadrants.** In the WLS z-window each
+   LYSO tile is built as four 7×7 mm quadrant volumes — TR red, TL yellow, BR
+   green, BL blue — so you can *see* which quadrant the shower develops in.
+3. **Position → SiPM scoring.** Per-corner "where was the beam when this corner
+   lit up" maps, plus a beam-quadrant → detecting-corner response matrix.
+
+> LYSO emits **no** optical photons here — it's the energy-sampling absorber. All
+> detected light is quartz Cherenkov + LuAG:Ce WLS born **inside the corner
+> capillaries**, read out at each end by a SiPM. The colour quadrants just mark
+> *where the shower is*; the physics question is whether an off-centre shower
+> preferentially lights the **nearest** corner SiPM (transverse position
+> sensitivity), which the Molière-radius shower spread blurs.
 
 ## Build
 
 ```bash
 source setup_env.sh
-mkdir -p build && cd build
+rm -rf build && mkdir build && cd build      # fresh, after the dir rename
 cmake .. && make -j$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
 ```
 
-## Run
+## Visual: watch a quadrant light up its SiPM
 
 ```bash
-./radical            # bare = the photon-origin viewer (2 GeV, optical ON, vis_corners.mac)
+cd build
+./radical                                   # bare = TR-quadrant demo (1 GeV)
+RADICAL_BEAM_QUADRANT=3 ./radical vis_quadrants.mac   # bottom-left, etc. (0=TR 1=TL 2=BR 3=BL)
+RADICAL_BEAM_X_MM=2 RADICAL_BEAM_Y_MM=-5 ./radical vis_quadrants.mac   # explicit point
 ```
 
-A bare run defaults the beam to 5 GeV, turns optical photons on, sets the optical
-step cap to 200000 (effectively uncapped, so photons propagate fully for a
-faithful image), and opens `vis_corners.mac`. Override with env vars, e.g.
-`RADICAL_OPT_MAXSTEP=200 ./radical` for a fast (but truncated) preview.
+The shower lands in the coloured quadrant; the optical photons it makes in the
+nearby corner capillary stream to that corner's SiPM, coloured by the same key.
+Only optical photons are drawn (EM shower filtered). Step cap is 2000 for a quick
+image — raise `RADICAL_OPT_MAXSTEP` for fuller propagation.
 
-## Colour key (beam's-eye view, +x right, +y up)
+### Colour key (beam's-eye view, +x right, +y up)
 
-Only optical photons born in the **shower-max region** (the WLS section of each
-corner capillary — the LuAG:Ce fiber + surrounding quartz at depth 32.9–47.9 mm,
-straddling layer 9) are coloured by their corner. Light born anywhere else
-(upstream/downstream quartz rods, centre cap, etc.) is dim grey.
+| Quadrant | Position | Colour | Corner copy |
+|----------|----------|--------|-------------|
+| top-right    | (+x, +y) | red    | 0 |
+| top-left     | (−x, +y) | yellow | 1 |
+| bottom-right | (+x, −y) | green  | 2 |
+| bottom-left  | (−x, −y) | blue   | 3 |
+| light born outside the shower-max corners | — | dim grey | — |
 
-| Born in shower-max corner | Position | Colour |
-|--------|----------|--------|
-| top-right    | (+x, +y) | red |
-| top-left     | (−x, +y) | yellow |
-| bottom-right | (+x, −y) | green |
-| bottom-left  | (−x, −y) | blue |
-| born outside the shower-max region | — | dim grey |
+## Quantitative: position → SiPM maps
 
-> Note: LYSO emits **no** optical photons in this sim — it is the energy-sampling
-> absorber, scored by energy deposit only. The detected light is quartz Cherenkov
-> + LuAG:Ce WLS scintillation generated **inside the capillaries**. The colour
-> therefore marks light created in the capillary's shower-max section, which is
-> embedded among the LYSO tiles at the shower peak.
+Random-uniform beam over the face, scored into:
 
-Only optical photons are drawn (the EM shower is filtered out for clarity). Edit
-the colours, viewpoint, or filter in `vis_corners.mac`.
+- `H2[16-19] CornerLightMap_{TR,TL,BR,BL}` — beam `(x,y)` weighted by the photons
+  that corner's SiPMs detected (where the shower must sit to fire that corner).
+- `H2[20] Quadrant_vs_Corner` — beam quadrant (row) vs detecting corner (col),
+  photon-weighted. Diagonal-dominant = the nearest corner sees the most light.
+- `H2[21] BeamHitMap` — beam impacts, unweighted (sampling-uniformity check).
 
-## Cross-talk graph: which corner's light hits which SiPM
-
-Beyond the live viewer, the locator scores, for every detected photon, the SiPM
-that caught it (4 corners x upstream/downstream = 8) versus the corner it was
-born in. This fills `H2[15] "SiPM_vs_OriginCorner"` in `radical_output.root`.
-
-**Fill it (one process at a time, locally):**
-```bash
-cd build && source ../setup_env.sh
-RADICAL_OPTICAL=1 RADICAL_OPT_MAXSTEP=200 RADICAL_BEAM_ENERGY_GEV=2 ./radical run_batch.mac
-```
-
-**Plot it** (needs ROOT) — a stacked bar per SiPM, coloured by origin corner, with
-a printed percentage-composition table:
-```bash
-cd ..
-root -l -b -q 'analysis/plot_sipm_origin.C("build/radical_output.root")'   # -> build/plots/sipm_origin.png
-```
-
-**Small batch on the cluster** (many cores, auto-merge + plot):
+**Cluster batch** (many cores, auto-merge + plot):
 ```bash
 conda deactivate
-bash run_sipm_batch.sh 512            # 512 events spread over all cores
-# RADICAL_BEAM_ENERGY_GEV=5 bash run_sipm_batch.sh 1024   # denser / higher E
+bash run_origin_batch.sh 4096                       # 4096 random-beam events
+RADICAL_BEAM_ENERGY_GEV=20 bash run_origin_batch.sh 20000
 ```
 
-Each event detects thousands of photons, so even ~50 events gives a clean
-composition. A diagonal result (each bar one solid colour) means the capillaries
-are optically isolated — each SiPM only sees its own corner's light.
+**Plot** (needs ROOT) — 4 corner light maps + the response matrix, with a printed
+row-normalized percentage table:
+```bash
+root -l -b -q 'analysis/plot_photon_origin.C("build/radical_output.root")'
+# -> build/plots/corner_light_maps.png, build/plots/quadrant_vs_corner.png
+```
 
-## How the per-corner colouring works
+Lower beam energy → more localized shower → sharper position sensitivity; higher
+energy → wider shower → more transverse light sharing. Scan `RADICAL_BEAM_ENERGY_GEV`
+to see the trade-off.
 
-`src/DetectorConstruction.cc` places the corner capillary segments via a
-`placeCornerSegment` helper that names each `"<base>_<corner>"` (e.g.
-`Cap_Corner_WLS_0`). The copy number is kept equal to the corner index so timing
-scoring is unchanged. `src/SteppingAction.cc` routes WLS energy by substring match
-on `Cap_Corner_WLS`. `vis_corners.mac` maps each corner's volumes to a colour with
-`/vis/modeling/trajectories/create/drawByOriginVolume`.
+## Also kept: the cross-talk matrix
+
+The origin cross-talk score (`H2[15] SiPM_vs_OriginCorner`, plotted by
+`analysis/plot_sipm_origin.C`) still fills — it answers the complementary question
+of which corner each *detected photon was born in*, independent of beam position.
+```
