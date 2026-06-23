@@ -66,8 +66,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
     auto logVol    = touchable->GetVolume()->GetLogicalVolume();
     const G4String& name = logVol->GetName();
 
-    if (name == "LYSO") {
-        G4int    copy = touchable->GetCopyNumber();
+    // Plain "LYSO" tiles plus the 4 shower-max "LYSO_SMQ_<q>" quadrant volumes
+    // (both carry the LYSO layer index as copy number) score into the same layer.
+    if (name == "LYSO" || name.rfind("LYSO_SMQ_", 0) == 0) {
+        G4int    copy = touchable->GetCopyNumber();   // = LYSO layer index
         G4double x    = step->GetPreStepPoint()->GetPosition().x();
         G4double y    = step->GetPreStepPoint()->GetPosition().y();
         fEventAction->AddEdepLYSO(copy, edep, x, y);
