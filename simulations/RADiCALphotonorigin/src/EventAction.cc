@@ -341,12 +341,33 @@ void EventAction::EndOfEventAction(const G4Event*) {
     const G4double beamY = BeamState::Y() / mm;
     const G4int    beamQ = BeamState::Quadrant();
     am->FillH2(21, beamX, beamY);
+
+    // Corner SiPM transverse positions (mm), order TR,TL,BR,BL = 0..3.
+    static const G4double cornerX[4] = {+3.5, -3.5, +3.5, -3.5};
+    static const G4double cornerY[4] = {+3.5, +3.5, -3.5, -3.5};
+    G4double wSum = 0., xSum = 0., ySum = 0.;
     for (G4int c = 0; c < 4; c++) {
         const G4int nDet = fNphUp[c] + fNphDown[c];
         if (nDet > 0) {
             am->FillH2(16 + c, beamX, beamY, nDet);
             am->FillH2(20, beamQ + 0.5, c + 0.5, nDet);
+            wSum += nDet;
+            xSum += nDet * cornerX[c];
+            ySum += nDet * cornerY[c];
         }
+    }
+    // Light-barycentre position reconstruction from the 4 corner SiPM yields vs
+    // the true beam impact -> the transverse position resolution. The 4 corners
+    // pull x_reco toward +/-3.5, so the response is compressed (regression to
+    // centre); the residual width is the localisation resolution, the reco-vs-true
+    // slope its linearity.
+    if (wSum > 0.) {
+        const G4double xReco = xSum / wSum;
+        const G4double yReco = ySum / wSum;
+        am->FillH1(24, xReco - beamX);   // x residual (mm)
+        am->FillH1(25, yReco - beamY);   // y residual (mm)
+        am->FillH2(22, beamX, xReco);    // x reco vs true
+        am->FillH2(23, beamY, yReco);    // y reco vs true
     }
 
     // ── Optional per-event timing diagnostic (RADICAL_TIMING=1) ──────────────
