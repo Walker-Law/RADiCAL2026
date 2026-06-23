@@ -19,9 +19,10 @@ NCHUNK=$(nproc 2>/dev/null || echo 32)
 PER=$(( (NEVT + NCHUNK - 1) / NCHUNK ))
 BIN="$(pwd)/radical"
 TS=$(date +%s)
-CONDA_BIN="$HOME/miniforge3/envs/hep/bin"
-HADD=$( [ -x "$CONDA_BIN/hadd" ] && echo "$CONDA_BIN/hadd" || command -v hadd 2>/dev/null )
-ROOTEXE=$( [ -x "$CONDA_BIN/root" ] && echo "$CONDA_BIN/root" || command -v root 2>/dev/null )
+# Prefer ROOT on PATH (an active conda env), else any miniforge env that has it
+# (works whether the env is named 'radical', 'hep', etc.).
+HADD=$(command -v hadd 2>/dev/null || ls "$HOME"/miniforge3/envs/*/bin/hadd 2>/dev/null | head -1)
+ROOTEXE=$(command -v root 2>/dev/null || ls "$HOME"/miniforge3/envs/*/bin/root 2>/dev/null | head -1)
 
 echo "Locator batch: $NEVT events @ ${ENERGY} GeV  ($NCHUNK chunks x $PER)  optical ON, step cap $MAXSTEP"
 
