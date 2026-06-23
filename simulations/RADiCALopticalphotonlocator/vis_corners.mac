@@ -8,9 +8,9 @@
 # (NB: LYSO itself emits no optical photons in this sim — it is the energy-sampling
 # absorber. The detected light is quartz Cherenkov + LuAG WLS scintillation.)
 #
-# Run from build/ with optical ON, a modest beam energy, and the optical-photon
-# step cap so it doesn't crawl:
-#   RADICAL_OPT_MAXSTEP=200 RADICAL_BEAM_ENERGY_GEV=2 ./radical vis_corners.mac
+# Run from build/ with optical ON. 200000 = effectively uncapped (photons
+# propagate fully for a faithful image); lower RADICAL_OPT_MAXSTEP if it's slow:
+#   RADICAL_OPT_MAXSTEP=200000 RADICAL_BEAM_ENERGY_GEV=5 ./radical vis_corners.mac
 #
 # Corner colour key (beam's-eye view, +x right, +y up):
 #   top-right (+,+) copy0 = RED      top-left (-,+) copy1 = YELLOW
