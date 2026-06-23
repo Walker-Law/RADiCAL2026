@@ -13,6 +13,7 @@ source ../setup_env.sh >/dev/null 2>&1
 
 NEVT=${1:-512}
 ENERGY=${RADICAL_BEAM_ENERGY_GEV:-2}
+MAXSTEP=${RADICAL_OPT_MAXSTEP:-200000}   # optical step cap (200000 ~ uncapped)
 NCHUNK=$(nproc 2>/dev/null || echo 32)
 [ "$NCHUNK" -gt "$NEVT" ] && NCHUNK=$NEVT
 PER=$(( (NEVT + NCHUNK - 1) / NCHUNK ))
