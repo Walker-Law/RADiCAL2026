@@ -1,6 +1,12 @@
-# vis_corners.mac — colour optical photons by which corner capillary they were
-# born in, so you can SEE where the light comes from. Shows only optical photons
-# (the EM shower is filtered out for clarity), coloured by origin corner.
+# vis_corners.mac — colour optical photons born in the SHOWER-MAX REGION by which
+# corner capillary they came from; grey for photons born anywhere else.
+#
+# "Shower-max region" = the WLS section of each corner capillary: the LuAG:Ce
+# fiber (Cap_Corner_WLS, scintillation) + the quartz tube around it
+# (Cap_Corner_MidTube, Cherenkov), both positioned at shower max (~layer 9). Light
+# born in the upstream/downstream quartz rods, the centre cap, or elsewhere is grey.
+# (NB: LYSO itself emits no optical photons in this sim — it is the energy-sampling
+# absorber. The detected light is quartz Cherenkov + LuAG WLS scintillation.)
 #
 # Run from build/ with optical ON, a modest beam energy, and the optical-photon
 # step cap so it doesn't crawl:
@@ -9,7 +15,7 @@
 # Corner colour key (beam's-eye view, +x right, +y up):
 #   top-right (+,+) copy0 = RED      top-left (-,+) copy1 = YELLOW
 #   bot-right (+,-) copy2 = GREEN    bot-left (-,-) copy3 = BLUE
-#   light born elsewhere (centre cap, etc.) = dim grey
+#   born outside the shower-max region = dim grey
 
 /run/initialize
 /vis/open OGL 1000x800
