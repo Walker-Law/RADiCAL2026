@@ -31,7 +31,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
             if (pn == "PD_Upstream" || pn == "PD_Downstream") {
                 fEventAction->RecordPhoton(postVol->GetCopyNo(),
                                            pn == "PD_Upstream",
-                                           step->GetPostStepPoint()->GetGlobalTime());
+                                           step->GetPostStepPoint()->GetGlobalTime(),
+                                           originCorner(track));
                 track->SetTrackStatus(fStopAndKill);
                 return;
             }
