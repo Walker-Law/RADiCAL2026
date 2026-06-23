@@ -247,6 +247,37 @@ RunAction::RunAction() {
                  "Detected photons: SiPM vs origin corner;SiPM (corner#, U/D);origin corner",
                  8, 0., 8.,
                  5, 0., 5.);
+
+    // ── H2[16-21]: PARTICLE LOCATION -> SiPM EXCITATION (photonorigin study) ──
+
+    // H2[16-19]: per-corner detected-light maps vs beam impact (x,y). Each map is
+    // the beam (x,y) weighted by the photons that corner's SiPMs detected, so it
+    // peaks where the shower must land for that corner to fire — together the 4
+    // maps show the transverse position -> SiPM mapping. 56 bins = 0.25 mm/bin.
+    am->CreateH2("CornerLightMap_TR",
+                 "Corner TR (+,+) detected light vs beam position;beam x (mm);beam y (mm)",
+                 56, -7., 7., 56, -7., 7.);
+    am->CreateH2("CornerLightMap_TL",
+                 "Corner TL (#minus,+) detected light vs beam position;beam x (mm);beam y (mm)",
+                 56, -7., 7., 56, -7., 7.);
+    am->CreateH2("CornerLightMap_BR",
+                 "Corner BR (+,#minus) detected light vs beam position;beam x (mm);beam y (mm)",
+                 56, -7., 7., 56, -7., 7.);
+    am->CreateH2("CornerLightMap_BL",
+                 "Corner BL (#minus,#minus) detected light vs beam position;beam x (mm);beam y (mm)",
+                 56, -7., 7., 56, -7., 7.);
+
+    // H2[20]: beam quadrant (row) vs detecting corner (col), photon-weighted.
+    // Strong diagonal = the SiPM nearest the shower sees the most light (position
+    // sensitivity); off-diagonal = transverse light sharing / cross-talk.
+    am->CreateH2("Quadrant_vs_Corner",
+                 "Beam quadrant vs detecting corner;beam quadrant (TR,TL,BR,BL);detecting corner",
+                 4, 0., 4., 4, 0., 4.);
+
+    // H2[21]: beam impact map (unweighted) — sanity check on the uniform sampling.
+    am->CreateH2("BeamHitMap",
+                 "Beam impact positions;beam x (mm);beam y (mm)",
+                 56, -7., 7., 56, -7., 7.);
 }
 
 RunAction::~RunAction() {}
