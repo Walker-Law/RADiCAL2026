@@ -320,6 +320,13 @@ void EventAction::EndOfEventAction(const G4Event*) {
     bool inAcceptance = (eModuleReco > fEdepPbGlass);
     if (eComb > 0. && inAcceptance) am->FillH1(20, eComb / GeV);   // H1[20]
 
+    // ── Optical cross-talk matrix (H2[15]): accumulate this event's detected
+    //    photons by (SiPM, origin corner). The 2D histogram sums over all events.
+    for (G4int sipm = 0; sipm < 8; sipm++)
+        for (G4int origin = 0; origin < 5; origin++)
+            if (fSiPMOrigin[sipm][origin] > 0)
+                am->FillH2(15, sipm + 0.5, origin + 0.5, fSiPMOrigin[sipm][origin]);
+
     // ── Optional per-event timing diagnostic (RADICAL_TIMING=1) ──────────────
     if (gTimingOn()) {
         auto dt = std::chrono::duration<double>(
