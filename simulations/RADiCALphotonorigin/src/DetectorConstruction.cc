@@ -393,8 +393,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         G4double zc = z + thick / 2.0;
 
         if (isLYSO) {
-            new G4PVPlacement(nullptr, G4ThreeVector(0,0,zc),
-                              logicLYSO, "LYSO_Phys", logicCalo, false, lysoCount++);
+            const bool inShowerMax = (zc >= smZmin && zc <= smZmax);
+            if (inShowerMax) {
+                // 4 colour-coded quadrant volumes tiling this layer (same copy no.)
+                for (G4int q = 0; q < 4; q++)
+                    new G4PVPlacement(nullptr,
+                                      G4ThreeVector(quadCtr[q].x(), quadCtr[q].y(), zc),
+                                      logicLYSOQuad[q], "LYSO_SMQ_Phys", logicCalo, false, lysoCount);
+            } else {
+                new G4PVPlacement(nullptr, G4ThreeVector(0,0,zc),
+                                  logicLYSO, "LYSO_Phys", logicCalo, false, lysoCount);
+            }
+            lysoCount++;
         } else {
             new G4PVPlacement(nullptr, G4ThreeVector(0,0,zc),
                               logicW, "W_Phys", logicCalo, false, wCount++);
