@@ -20,10 +20,10 @@ cmake .. && make -j$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
 ./radical            # bare = the photon-origin viewer (2 GeV, optical ON, vis_corners.mac)
 ```
 
-A bare run defaults the beam to 2 GeV, turns optical photons on, caps optical
-photon steps (`RADICAL_OPT_MAXSTEP=200`, so trapped photons can't stall the
-event), and opens `vis_corners.mac`. Override any of these with env vars, e.g.
-`RADICAL_BEAM_ENERGY_GEV=5 ./radical` for denser light.
+A bare run defaults the beam to 5 GeV, turns optical photons on, sets the optical
+step cap to 200000 (effectively uncapped, so photons propagate fully for a
+faithful image), and opens `vis_corners.mac`. Override with env vars, e.g.
+`RADICAL_OPT_MAXSTEP=200 ./radical` for a fast (but truncated) preview.
 
 ## Colour key (beam's-eye view, +x right, +y up)
 
