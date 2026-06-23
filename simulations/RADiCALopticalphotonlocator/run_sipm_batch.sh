@@ -31,7 +31,7 @@ run_chunk() {
     local tmp; tmp=$(mktemp -d /tmp/sipm_${i}_XXXXXX)
     printf '/random/setSeeds %d %d\n/run/numberOfThreads 1\n/run/initialize\n/run/beamOn %d\n' \
         $(( i * 131 + TS )) $(( i * 977 + TS * 7 )) "$PER" > "$tmp/run.mac"
-    ( cd "$tmp" && RADICAL_OPTICAL=1 RADICAL_OPT_MAXSTEP=200 RADICAL_BEAM_ENERGY_GEV=$ENERGY \
+    ( cd "$tmp" && RADICAL_OPTICAL=1 RADICAL_OPT_MAXSTEP=$MAXSTEP RADICAL_BEAM_ENERGY_GEV=$ENERGY \
         "$BIN" run.mac ) > /dev/null 2>&1
     [ -f "$tmp/radical_output.root" ] && mv -f "$tmp/radical_output.root" "$out"
     rm -rf "$tmp"
