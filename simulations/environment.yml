@@ -1,0 +1,16 @@
+# Reproducible Geant4 + ROOT toolchain for the RADiCAL simulations.
+# Identical on any linux-64 cluster:  conda env create -f environment.yml
+#
+# geant4 from conda-forge automatically pulls all 13 pinned geant4-data-* packages
+# (G4NDL, G4EMLOW, ENSDFSTATE, ...) AND sets the G4*DATA paths on activation, so no
+# manual data download and no setup_env.sh path-juggling is needed. ROOT (hadd +
+# analysis) and an ABI-matched compiler + cmake live in the same env.
+name: radical
+channels:
+  - conda-forge
+dependencies:
+  - geant4=11.4.2      # same 11.4 series as the original source build (11.4.0)
+  - root=6.40.2        # hadd, PyROOT, analysis macros
+  - cmake
+  - make
+  - gxx_linux-64       # C++ compiler with the ABI Geant4/ROOT were built against
