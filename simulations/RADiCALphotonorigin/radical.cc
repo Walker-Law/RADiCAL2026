@@ -14,13 +14,13 @@
 #include "ActionInitialization.hh"
 
 int main(int argc, char** argv) {
-    // Bare `./radical` (no macro arg) = interactive photon-origin viewer: a 5 GeV
+    // Bare `./radical` (no macro arg) = interactive photon-origin viewer: a 1 GeV
     // event with optical photons coloured by which corner capillary they were born
     // in (vis_corners.mac). The step cap (2000) bounds per-photon work for a quick,
     // readable image; raise it for fuller propagation. overwrite=0 means explicit
     // env values still win.
     if (argc < 2) {
-        setenv("RADICAL_BEAM_ENERGY_GEV", "5",    0);
+        setenv("RADICAL_BEAM_ENERGY_GEV", "1",    0);
         setenv("RADICAL_OPT_MAXSTEP",     "2000", 0);
     }
 
