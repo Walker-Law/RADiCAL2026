@@ -295,6 +295,46 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     tyvekSliceVis->SetForceAuxEdgeVisible(true);
     logicTyvekSlice->SetVisAttributes(tyvekSliceVis);
 
+    // ── Shower-max LYSO split into 4 transverse quadrant volumes ──────────────
+    // In the shower-max window (the LuAG:Ce WLS z-span), each 14x14 mm LYSO tile is
+    // built as 4 separate 7x7 quadrant volumes (TR,TL,BR,BL) instead of one tile,
+    // each given a distinct colour. This lets the viewer SEE which transverse
+    // quadrant the shower develops in — colour-matched to the corner capillaries
+    // and SiPMs — directly tying particle location to which corner lights up.
+    // Physics is unchanged: same LYSO material and the same 5 drilled holes (each
+    // quadrant drills its own corner hole + a quarter of the shared centre hole),
+    // so the 4 quadrants tile the identical footprint of the original tile. The
+    // quadrants are named "LYSO_SMQ_<q>" (scored as LYSO via the stepping action)
+    // and carry the LYSO layer index as copy number.
+    G4LogicalVolume* logicLYSOQuad[4];
+    const G4double quadHalf = tileX / 4.0;                       // 3.5 mm (quarter tile)
+    const G4ThreeVector quadCtr[4] = {
+        {+quadHalf, +quadHalf, 0}, {-quadHalf, +quadHalf, 0},   // TR, TL
+        {+quadHalf, -quadHalf, 0}, {-quadHalf, -quadHalf, 0},   // BR, BL
+    };
+    const G4Colour quadColour[4] = {
+        {0.90, 0.10, 0.10}, {0.90, 0.90, 0.10},                 // TR red,   TL yellow
+        {0.10, 0.80, 0.10}, {0.25, 0.45, 1.00},                 // BR green, BL blue
+    };
+    for (G4int q = 0; q < 4; q++) {
+        // 7x7 quadrant. Its own corner cap sits at the quadrant centre (local 0,0);
+        // the shared centre cap sits at the quadrant's inner corner (local -offset).
+        G4VSolid* qs = new G4Box("LYSO_Q", quadHalf, quadHalf, lysoThick / 2);
+        qs = new G4SubtractionSolid("LYSO_Qa", qs, drill_corner, nullptr, G4ThreeVector());
+        qs = new G4SubtractionSolid("LYSO_Qb", qs, drill_center, nullptr, -quadCtr[q]);
+        auto lv = new G4LogicalVolume(qs, lyso, "LYSO_SMQ_" + std::to_string(q));
+        auto vis = new G4VisAttributes(G4Colour(quadColour[q].GetRed(), quadColour[q].GetGreen(),
+                                                quadColour[q].GetBlue(), 0.35));
+        vis->SetForceSolid(true);
+        vis->SetForceAuxEdgeVisible(true);
+        lv->SetVisAttributes(vis);
+        logicLYSOQuad[q] = lv;
+    }
+    // Shower-max window = the WLS fibre z-span. LYSO layers whose centre lies here
+    // are built quadranted (coloured); all others stay the single grey-wire tile.
+    const G4double smZmin = z_wls - wlsLen / 2.0;
+    const G4double smZmax = z_wls + wlsLen / 2.0;
+
     // ── Tyvek optical surface: ~98% diffuse (Lambertian) white reflector ─────
     // dielectric_metal + ground finish → absorbed or diffusely reflected.
     auto tyvekSurface = new G4OpticalSurface("TyvekSurface");
