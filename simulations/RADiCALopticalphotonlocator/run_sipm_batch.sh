@@ -37,7 +37,7 @@ run_chunk() {
     rm -rf "$tmp"
 }
 export -f run_chunk
-export BIN PER TS ENERGY
+export BIN PER TS ENERGY MAXSTEP
 
 rm -f sipm_chunk_*.root
 pids=()
