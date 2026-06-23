@@ -14,11 +14,14 @@
 #include "ActionInitialization.hh"
 
 int main(int argc, char** argv) {
-    // Bare `./radical` (no macro arg) = interactive 1 GeV optical viewer.
-    // Default the beam to 1 GeV for that case; overwrite=0 means an explicit
-    // `RADICAL_BEAM_ENERGY_GEV=...` still wins, and batch/scan runs (which pass
-    // a macro arg) are untouched.
-    if (argc < 2) setenv("RADICAL_BEAM_ENERGY_GEV", "1", 0);
+    // Bare `./radical` (no macro arg) = interactive photon-origin viewer: a 2 GeV
+    // event with optical photons coloured by which corner capillary they were born
+    // in (vis_corners.mac). The step cap keeps trapped photons from stalling the
+    // event. overwrite=0 means explicit env values still win.
+    if (argc < 2) {
+        setenv("RADICAL_BEAM_ENERGY_GEV", "2",   0);
+        setenv("RADICAL_OPT_MAXSTEP",     "200", 0);
+    }
 
     auto runManager = G4RunManagerFactory::CreateRunManager();
     runManager->SetUserInitialization(new DetectorConstruction());
