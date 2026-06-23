@@ -238,6 +238,15 @@ RunAction::RunAction() {
                  "Timing correlation;t_{MCP} (ns);t_{WLS} (ns)",
                  100, 0., 2.,
                  100, 0., 3.);
+
+    // H2[15]: optical cross-talk matrix — for each SiPM (x: 8 = 4 corners x
+    // up/down), how many detected photons came from each origin corner
+    // (y: 0..3 = corners, 4 = born elsewhere/centre). Diagonal-dominant = each
+    // SiPM mostly sees its own capillary's light. Plotted by analysis/plot_sipm_origin.C.
+    am->CreateH2("SiPM_vs_OriginCorner",
+                 "Detected photons: SiPM vs origin corner;SiPM (corner#, U/D);origin corner",
+                 8, 0., 8.,
+                 5, 0., 5.);
 }
 
 RunAction::~RunAction() {}
