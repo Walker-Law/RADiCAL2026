@@ -1,4 +1,5 @@
 #include "EventAction.hh"
+#include "BeamState.hh"
 #include "G4Event.hh"
 #include "G4AnalysisManager.hh"
 #include "G4SystemOfUnits.hh"
