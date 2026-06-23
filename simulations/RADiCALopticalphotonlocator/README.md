@@ -38,6 +38,36 @@ event), and opens `vis_corners.mac`. Override any of these with env vars, e.g.
 Only optical photons are drawn (the EM shower is filtered out for clarity). Edit
 the colours, viewpoint, or filter in `vis_corners.mac`.
 
+## Cross-talk graph: which corner's light hits which SiPM
+
+Beyond the live viewer, the locator scores, for every detected photon, the SiPM
+that caught it (4 corners x upstream/downstream = 8) versus the corner it was
+born in. This fills `H2[15] "SiPM_vs_OriginCorner"` in `radical_output.root`.
+
+**Fill it (one process at a time, locally):**
+```bash
+cd build && source ../setup_env.sh
+RADICAL_OPTICAL=1 RADICAL_OPT_MAXSTEP=200 RADICAL_BEAM_ENERGY_GEV=2 ./radical run_batch.mac
+```
+
+**Plot it** (needs ROOT) — a stacked bar per SiPM, coloured by origin corner, with
+a printed percentage-composition table:
+```bash
+cd ..
+root -l -b -q 'analysis/plot_sipm_origin.C("build/radical_output.root")'   # -> build/plots/sipm_origin.png
+```
+
+**Small batch on the cluster** (many cores, auto-merge + plot):
+```bash
+conda deactivate
+bash run_sipm_batch.sh 512            # 512 events spread over all cores
+# RADICAL_BEAM_ENERGY_GEV=5 bash run_sipm_batch.sh 1024   # denser / higher E
+```
+
+Each event detects thousands of photons, so even ~50 events gives a clean
+composition. A diagonal result (each bar one solid colour) means the capillaries
+are optically isolated — each SiPM only sees its own corner's light.
+
 ## How the per-corner colouring works
 
 `src/DetectorConstruction.cc` places the corner capillary segments via a
