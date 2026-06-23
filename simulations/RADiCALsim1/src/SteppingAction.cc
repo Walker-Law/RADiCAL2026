@@ -66,7 +66,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
     else if (name == "Cap_Center_EJ309") {
         fEventAction->AddCenterCapEdep(edep);
     }
-    else if (name.find("Cap_Corner_WLS") != G4String::npos) {  // now "Cap_Corner_WLS_0..3"
+    else if (name == "Cap_Corner_WLS") {
         G4int    corner = touchable->GetCopyNumber();
         G4double z      = step->GetPreStepPoint()->GetPosition().z();
         G4double t      = step->GetPreStepPoint()->GetGlobalTime();
