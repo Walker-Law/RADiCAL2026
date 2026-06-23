@@ -14,13 +14,14 @@
 #include "ActionInitialization.hh"
 
 int main(int argc, char** argv) {
-    // Bare `./radical` (no macro arg) = interactive photon-origin viewer: a 2 GeV
+    // Bare `./radical` (no macro arg) = interactive photon-origin viewer: a 5 GeV
     // event with optical photons coloured by which corner capillary they were born
-    // in (vis_corners.mac). The step cap keeps trapped photons from stalling the
-    // event. overwrite=0 means explicit env values still win.
+    // in (vis_corners.mac). The step cap (200000 = effectively uncapped) lets
+    // photons propagate fully for a faithful image; lower it if events are slow.
+    // overwrite=0 means explicit env values still win.
     if (argc < 2) {
-        setenv("RADICAL_BEAM_ENERGY_GEV", "2",   0);
-        setenv("RADICAL_OPT_MAXSTEP",     "200", 0);
+        setenv("RADICAL_BEAM_ENERGY_GEV", "5",      0);
+        setenv("RADICAL_OPT_MAXSTEP",     "200000", 0);
     }
 
     auto runManager = G4RunManagerFactory::CreateRunManager();
