@@ -92,6 +92,11 @@ private:
     // mirroring the CERN test-beam analysis). Capped to bound memory.
     static constexpr size_t kMaxStore = 60000;
     std::array<std::vector<G4double>, 4> fPhTUp, fPhTDown;
+
+public:
+    // Cross-talk matrix, this event: [SiPM 0..7][origin corner 0..3, 4=other].
+    // Public so EndOfEventAction can flush it to the H2; reset each BeginOfEvent.
+    std::array<std::array<G4int, 5>, 8> fSiPMOrigin;
 };
 
 #endif
