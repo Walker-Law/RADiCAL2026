@@ -16,7 +16,10 @@ if [ ! -x "$PREFIX/bin/conda" ]; then
     echo ">> Installing Miniforge to $PREFIX ..."
     url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh"
     curl -fsSL -o /tmp/Miniforge3.sh "$url" || wget -O /tmp/Miniforge3.sh "$url"
-    bash /tmp/Miniforge3.sh -b -p "$PREFIX"
+    # -u repairs/updates a pre-existing (possibly partial) install dir in place,
+    # so a leftover ~/miniforge3 doesn't make the installer refuse.
+    upd=""; [ -e "$PREFIX" ] && upd="-u"
+    bash /tmp/Miniforge3.sh -b $upd -p "$PREFIX"
 fi
 
 source "$PREFIX/etc/profile.d/conda.sh"
