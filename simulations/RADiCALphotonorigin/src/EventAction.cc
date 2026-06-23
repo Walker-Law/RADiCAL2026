@@ -328,6 +328,27 @@ void EventAction::EndOfEventAction(const G4Event*) {
             if (fSiPMOrigin[sipm][origin] > 0)
                 am->FillH2(15, sipm + 0.5, origin + 0.5, fSiPMOrigin[sipm][origin]);
 
+    // ── Particle location -> SiPM excitation (the photonorigin measurement) ────
+    //   Where the beam (hence the shower) landed this event, and how the detected
+    //   light split among the 4 corner SiPMs (up+down summed per corner). Fills:
+    //     H2[16..19] CornerLightMap_<TR,TL,BR,BL>: beam (x,y) weighted by that
+    //                corner's detected photons -> where the shower must sit for
+    //                the corner to light up.
+    //     H2[20]     Quadrant_vs_Corner: beam quadrant (row) vs detecting corner
+    //                (col), photon-weighted -> the position->SiPM response matrix.
+    //     H2[21]     BeamHitMap: beam (x,y), unweighted (sampling uniformity check).
+    const G4double beamX = BeamState::X() / mm;
+    const G4double beamY = BeamState::Y() / mm;
+    const G4int    beamQ = BeamState::Quadrant();
+    am->FillH2(21, beamX, beamY);
+    for (G4int c = 0; c < 4; c++) {
+        const G4int nDet = fNphUp[c] + fNphDown[c];
+        if (nDet > 0) {
+            am->FillH2(16 + c, beamX, beamY, nDet);
+            am->FillH2(20, beamQ + 0.5, c + 0.5, nDet);
+        }
+    }
+
     // ── Optional per-event timing diagnostic (RADICAL_TIMING=1) ──────────────
     if (gTimingOn()) {
         auto dt = std::chrono::duration<double>(
