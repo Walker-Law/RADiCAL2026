@@ -278,6 +278,24 @@ RunAction::RunAction() {
     am->CreateH2("BeamHitMap",
                  "Beam impact positions;beam x (mm);beam y (mm)",
                  56, -7., 7., 56, -7., 7.);
+
+    // ── H1[24-25], H2[22-23]: TRANSVERSE POSITION RECONSTRUCTION ─────────────
+    // Reconstruct the shower (x,y) as the light barycentre of the 4 corner SiPM
+    // yields, compare to the true beam impact. Residual width = position
+    // resolution; reco-vs-true slope = linearity (compressed by the +/-3.5 mm
+    // corner lever arm and Moliere light sharing).
+    am->CreateH1("PosResidualX",
+                 "Transverse position residual X;x_{reco} #minus x_{true} (mm);Events",
+                 120, -12., 12.);
+    am->CreateH1("PosResidualY",
+                 "Transverse position residual Y;y_{reco} #minus y_{true} (mm);Events",
+                 120, -12., 12.);
+    am->CreateH2("PosRecoX_vs_TrueX",
+                 "X position reconstruction;x_{true} (mm);x_{reco} (mm)",
+                 56, -7., 7., 50, -5., 5.);
+    am->CreateH2("PosRecoY_vs_TrueY",
+                 "Y position reconstruction;y_{true} (mm);y_{reco} (mm)",
+                 56, -7., 7., 50, -5., 5.);
 }
 
 RunAction::~RunAction() {}
