@@ -23,7 +23,7 @@ CONDA_BIN="$HOME/miniforge3/envs/hep/bin"
 HADD=$( [ -x "$CONDA_BIN/hadd" ] && echo "$CONDA_BIN/hadd" || command -v hadd 2>/dev/null )
 ROOTEXE=$( [ -x "$CONDA_BIN/root" ] && echo "$CONDA_BIN/root" || command -v root 2>/dev/null )
 
-echo "Locator batch: $NEVT events @ ${ENERGY} GeV  ($NCHUNK chunks x $PER)  optical ON, step cap 200"
+echo "Locator batch: $NEVT events @ ${ENERGY} GeV  ($NCHUNK chunks x $PER)  optical ON, step cap $MAXSTEP"
 
 run_chunk() {
     local i=$1
