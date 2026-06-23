@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
         }
     } else {
         auto uiExec = new G4UIExecutive(argc, argv);
-        UI->ApplyCommand("/control/execute vis_corners.mac");
+        UI->ApplyCommand("/control/execute vis_quadrants.mac");
         uiExec->SessionStart();
         delete uiExec;
     }
