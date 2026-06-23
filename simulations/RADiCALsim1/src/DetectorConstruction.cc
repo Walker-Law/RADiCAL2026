@@ -453,33 +453,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     for (G4int c = 1; c <= 4; c++) {
         G4ThreeVector xy = capXY[c];
-        const G4int ci = c - 1;                          // corner index 0..3 (= copy no.)
-        const G4String sfx = "_" + std::to_string(ci);   // distinct name per corner
-
-        // Per-corner logical volumes (distinct names -> colourable by origin).
-        auto lvUp   = new G4LogicalVolume(solidTUpstream,   quartz, "Cap_Corner_Upstream"   + sfx);
-        auto lvTube = new G4LogicalVolume(solidTMidTube,    quartz, "Cap_Corner_MidTube"    + sfx);
-        auto lvWLS  = new G4LogicalVolume(solidTMidWLS,     luag,   "Cap_Corner_WLS"        + sfx);
-        auto lvDn   = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream" + sfx);
-        lvUp->SetVisAttributes(tRodVis);
-        lvTube->SetVisAttributes(tRodVis);
-        lvDn->SetVisAttributes(tRodVis);
-        lvWLS->SetVisAttributes(wlsVis);
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
-                          lvUp, "TCapUpstream_Phys", logicCalo, false, ci);
+                          logicTUpstream, "TCapUpstream_Phys", logicCalo, false, c-1);
+
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
-                          lvTube, "TCapMidTube_Phys", logicCalo, false, ci);
+                          logicTMidTube, "TCapMidTube_Phys", logicCalo, false, c-1);
+
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
-                          lvWLS, "TCapMidWLS_Phys", logicCalo, false, ci);
+                          logicTMidWLS, "TCapMidWLS_Phys", logicCalo, false, c-1);
+
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
-                          lvDn, "TCapDownstream_Phys", logicCalo, false, ci);
+                          logicTDownstream, "TCapDownstream_Phys", logicCalo, false, c-1);
 
         // photodetectors (copy number = corner index 0..3)
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDUpstream),
-                          logicPDUpstream, "PDUpstream_Phys", logicCalo, false, ci);
+                          logicPDUpstream, "PDUpstream_Phys", logicCalo, false, c-1);
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDDownstream),
-                          logicPDDownstream, "PDDownstream_Phys", logicCalo, false, ci);
+                          logicPDDownstream, "PDDownstream_Phys", logicCalo, false, c-1);
     }
 
     // =========================================================================
