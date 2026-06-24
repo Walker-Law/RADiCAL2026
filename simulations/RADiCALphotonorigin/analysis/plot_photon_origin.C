@@ -143,6 +143,6 @@ void plot_photon_origin(const char* fname = "build/radical_output.root",
                sx, sy, dx->GetEntries());
     }
 
-    printf("\nSaved -> build/plots/{corner_light_maps,dominant_corner_map,"
-           "quadrant_vs_corner,position_resolution}.png\n");
+    printf("\nSaved -> %s/{corner_light_maps,dominant_corner_map,"
+           "quadrant_vs_corner,position_resolution}.png\n", plotDir.Data());
 }
