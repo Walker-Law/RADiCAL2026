@@ -173,30 +173,44 @@ void plot_energy_summary() {
     lg1->Draw();
     c1->SaveAs("build/plots/energy_summary/diagonal_fraction.png");
 
-    // ── (2) Position resolution sigma vs energy ──────────────────────────────
-    // Filter out energies where fit failed (-1).
+    // ── (2) Position resolution sigma vs energy: raw and S-curve corrected ───
     std::vector<double> eX, eY, sX, sY, eXe, eYe, sXe, sYe;
+    std::vector<double> eXc, eYc, sXc, sYc;
     for (int i = 0; i < nGood; i++) {
-        if (sigX[i] > 0) { eX.push_back(goodE[i]); sX.push_back(sigX[i]);
-                            eXe.push_back(0); sXe.push_back(sigXe[i]); }
-        if (sigY[i] > 0) { eY.push_back(goodE[i]); sY.push_back(sigY[i]);
-                            eYe.push_back(0); sYe.push_back(sigYe[i]); }
+        if (sigX[i] > 0)      { eX.push_back(goodE[i]);  sX.push_back(sigX[i]);
+                                 eXe.push_back(0);         sXe.push_back(sigXe[i]); }
+        if (sigY[i] > 0)      { eY.push_back(goodE[i]);  sY.push_back(sigY[i]);
+                                 eYe.push_back(0);         sYe.push_back(sigYe[i]); }
+        if (sigXcorr[i] > 0) { eXc.push_back(goodE[i]); sXc.push_back(sigXcorr[i]); }
+        if (sigYcorr[i] > 0) { eYc.push_back(goodE[i]); sYc.push_back(sigYcorr[i]); }
     }
     TCanvas* c2 = new TCanvas("c2","Position resolution",800,580);
     c2->SetLogx(); c2->SetGrid();
     TMultiGraph* mg2 = new TMultiGraph();
+    TLegend* lg2 = new TLegend(0.52,0.60,0.88,0.88);
     if (!eX.empty()) {
         auto gsx = new TGraphErrors(eX.size(),eX.data(),sX.data(),eXe.data(),sXe.data());
         styleG(gsx, kAzure+1, 20); mg2->Add(gsx,"LP");
-        TLegend* lg2 = new TLegend(0.55,0.65,0.88,0.82);
-        lg2->AddEntry(gsx,"#sigma_{x} (mm)","lp");
-        if (!eY.empty()) {
-            auto gsy = new TGraphErrors(eY.size(),eY.data(),sY.data(),eYe.data(),sYe.data());
-            styleG(gsy, kRed+1, 21); mg2->Add(gsy,"LP");
-            lg2->AddEntry(gsy,"#sigma_{y} (mm)","lp");
-        }
+        lg2->AddEntry(gsx,"#sigma_{x} raw","lp");
+    }
+    if (!eY.empty()) {
+        auto gsy = new TGraphErrors(eY.size(),eY.data(),sY.data(),eYe.data(),sYe.data());
+        styleG(gsy, kRed+1, 21); mg2->Add(gsy,"LP");
+        lg2->AddEntry(gsy,"#sigma_{y} raw","lp");
+    }
+    if (!eXc.empty()) {
+        auto gsxc = new TGraph(eXc.size(),eXc.data(),sXc.data());
+        styleG(gsxc, kAzure+1, 24); gsxc->SetLineStyle(2); mg2->Add(gsxc,"LP");
+        lg2->AddEntry(gsxc,"#sigma_{x} S-curve corr.","lp");
+    }
+    if (!eYc.empty()) {
+        auto gsyc = new TGraph(eYc.size(),eYc.data(),sYc.data());
+        styleG(gsyc, kRed+1, 25); gsyc->SetLineStyle(2); mg2->Add(gsyc,"LP");
+        lg2->AddEntry(gsyc,"#sigma_{y} S-curve corr.","lp");
+    }
+    if (mg2->GetListOfGraphs() && mg2->GetListOfGraphs()->GetSize() > 0) {
         mg2->Draw("A");
-        mg2->SetTitle("Light-barycentre position resolution vs energy;"
+        mg2->SetTitle("Position resolution vs energy: raw vs S-curve corrected;"
                       "Beam energy (GeV);#sigma (mm)");
         lg2->Draw();
     } else {
