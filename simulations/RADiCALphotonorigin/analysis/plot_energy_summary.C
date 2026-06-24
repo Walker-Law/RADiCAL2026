@@ -92,6 +92,7 @@ void plot_energy_summary() {
     // ── collect metrics from each energy file ────────────────────────────────
     double diagMean[kNE], diagTR[kNE], diagTL[kNE], diagBR[kNE], diagBL[kNE];
     double sigX[kNE], sigY[kNE], sigXe[kNE], sigYe[kNE];
+    double sigXcorr[kNE], sigYcorr[kNE];   // S-curve corrected
     double nphMean[kNE], nphErr[kNE];
     int    nGood = 0;
     double goodE[kNE];
