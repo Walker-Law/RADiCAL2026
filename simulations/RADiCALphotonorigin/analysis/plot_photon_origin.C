@@ -53,7 +53,7 @@ void plot_photon_origin(const char* fname = "build/radical_output.root",
             map[i]->Draw("COLZ");
         }
     }
-    c1->SaveAs("build/plots/corner_light_maps.png");
+    c1->SaveAs(plotDir + "/corner_light_maps.png");
 
     // ── (2) QUALITATIVE: dominant-corner partition map ────────────────────────
     // For each (x,y) bin, paint the index (1..4) of the corner with the most light.
