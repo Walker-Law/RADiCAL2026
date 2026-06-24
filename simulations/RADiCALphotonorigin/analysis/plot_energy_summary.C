@@ -271,16 +271,18 @@ void plot_energy_summary() {
     gStyle->SetPalette(kBird);
 
     // ── print summary table ──────────────────────────────────────────────────
-    printf("\n%-8s  %8s  %8s  %8s  %8s  %8s  %8s  %8s\n",
-           "E (GeV)", "diag(%)", "TR(%)", "TL(%)", "BR(%)", "BL(%)", "sx(mm)", "sy(mm)");
-    printf("%s\n", std::string(72,'-').c_str());
+    printf("\n%-8s  %8s  %8s  %8s  %8s  %8s  %8s  %8s  %9s  %9s\n",
+           "E (GeV)", "diag(%)", "TR(%)", "TL(%)", "BR(%)", "BL(%)",
+           "sx(mm)", "sy(mm)", "sx_corr", "sy_corr");
+    printf("%s\n", std::string(90,'-').c_str());
     int j=0;
     for (int ie = 0; ie < kNE; ie++) {
         if (diagMean[ie] < 0) continue;
-        printf("%-8.0f  %8.1f  %8.1f  %8.1f  %8.1f  %8.1f  %8.2f  %8.2f\n",
+        printf("%-8.0f  %8.1f  %8.1f  %8.1f  %8.1f  %8.1f  %8.2f  %8.2f  %9.2f  %9.2f\n",
                kEnergies[ie], diagMean[ie],
                diagTR[j], diagTL[j], diagBR[j], diagBL[j],
-               sigX[ie]>0?sigX[ie]:-1, sigY[ie]>0?sigY[ie]:-1);
+               sigX[ie]>0?sigX[ie]:-1,    sigY[ie]>0?sigY[ie]:-1,
+               sigXcorr[ie]>0?sigXcorr[ie]:-1, sigYcorr[ie]>0?sigYcorr[ie]:-1);
         j++;
     }
     printf("\nSaved -> build/plots/energy_summary/{diagonal_fraction,"
