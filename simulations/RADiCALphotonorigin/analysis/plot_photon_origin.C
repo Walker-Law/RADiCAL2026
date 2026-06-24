@@ -134,7 +134,7 @@ void plot_photon_origin(const char* fname = "build/radical_output.root",
         if (dx->GetEntries() > 0) dx->Fit("gaus", "Q");
         c4->cd(4); dy->SetLineColor(kAzure + 1); dy->SetLineWidth(2); dy->Draw();
         if (dy->GetEntries() > 0) dy->Fit("gaus", "Q");
-        c4->SaveAs("build/plots/position_resolution.png");
+        c4->SaveAs(plotDir + "/position_resolution.png");
 
         double sx = dx->GetFunction("gaus") ? dx->GetFunction("gaus")->GetParameter(2) : dx->GetRMS();
         double sy = dy->GetFunction("gaus") ? dy->GetFunction("gaus")->GetParameter(2) : dy->GetRMS();
