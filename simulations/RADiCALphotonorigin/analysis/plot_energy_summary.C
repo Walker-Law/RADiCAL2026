@@ -31,6 +31,44 @@ static const int    kNE       = 7;
 static const double kEnergies[kNE] = {5, 10, 20, 25, 50, 100, 120};
 static const char*  kTag[4]   = {"TR", "TL", "BR", "BL"};
 
+// Fit the S-curve A*tanh(B*x) from a profile of PosRecoX_vs_TrueX (or Y),
+// return corrected sigma from the residual histogram by remapping the H2.
+// Returns -1 if insufficient statistics or fit fails.
+double sCurveSigma(TFile* f, bool isX) {
+    const char* h2name = isX ? "PosRecoX_vs_TrueX" : "PosRecoY_vs_TrueY";
+    TH2* h2 = (TH2*)f->Get(h2name);
+    if (!h2 || h2->GetEntries() < 50) return -1;
+
+    TProfile* prof = h2->ProfileX(Form("sc_prof_%s_%lld", isX?"x":"y", (long long)h2));
+    prof->SetDirectory(nullptr);
+    TF1 fn("scfn", "[0]*TMath::TanH([1]*x)", -7., 7.);
+    fn.SetParameters(3.2, 0.25);
+    fn.SetParLimits(0, 1.0, 6.0);
+    fn.SetParLimits(1, 0.01, 5.0);
+    TFitResultPtr r = prof->Fit(&fn, "QRNS");
+    if (!r.Get() || !r->IsValid() || r->Status() != 0) return -1;
+    double A = fn.GetParameter(0), B = fn.GetParameter(1);
+    if (A < 0.5 || B < 0.01) return -1;
+
+    // Walk the H2 and fill corrected residuals
+    TH1D hc("hsc_tmp","",120,-12,12);
+    int nx = h2->GetNbinsX(), ny = h2->GetNbinsY();
+    for (int ix=1; ix<=nx; ix++) {
+        double xt = h2->GetXaxis()->GetBinCenter(ix);
+        for (int iy=1; iy<=ny; iy++) {
+            double n = h2->GetBinContent(ix,iy);
+            if (n<=0) continue;
+            double xr = h2->GetYaxis()->GetBinCenter(iy);
+            double rr = xr/A; if(rr>=1) rr=0.9999; if(rr<=-1) rr=-0.9999;
+            hc.Fill(TMath::ATanH(rr)/B - xt, n);
+        }
+    }
+    if (hc.GetEntries() < 10) return -1;
+    hc.Fit("gaus","Q");
+    TF1* g = hc.GetFunction("gaus");
+    return g ? g->GetParameter(2) : hc.GetRMS();
+}
+
 // Returns the mean diagonal fraction (%) across the 4 quadrant rows and the
 // per-row values, from the Quadrant_vs_Corner H2 in a file.
 double diagonalFraction(TFile* f, double perRow[4]) {
