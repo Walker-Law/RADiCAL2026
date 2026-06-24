@@ -52,12 +52,12 @@ if [ -z "$HADD" ]; then
     exit 0
 fi
 echo "merging $(ls origin_chunk_*.root 2>/dev/null | wc -l | tr -d ' ') chunks..."
-"$HADD" -f radical_output.root origin_chunk_*.root > /dev/null 2>&1 && rm -f origin_chunk_*.root
+"$HADD" -f "$OUTFILE" origin_chunk_*.root > /dev/null 2>&1 && rm -f origin_chunk_*.root
 
 if [ -n "$ROOTEXE" ]; then
     echo "plotting..."
     cd ..
-    "$ROOTEXE" -l -b -q 'analysis/plot_photon_origin.C("build/radical_output.root")'
+    "$ROOTEXE" -l -b -q "analysis/plot_photon_origin.C(\"build/${OUTFILE}\", \"${ENERGY}GeV\")"
 else
     echo "root not found — run analysis/plot_photon_origin.C after activating ROOT."
 fi
