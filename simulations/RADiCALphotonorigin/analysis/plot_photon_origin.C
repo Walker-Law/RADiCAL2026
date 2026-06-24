@@ -105,7 +105,7 @@ void plot_photon_origin(const char* fname = "build/radical_output.root",
         gStyle->SetPaintTextFormat(".0f");
         m->SetMarkerSize(1.8);
         m->Draw("COLZ TEXT");
-        c3->SaveAs("build/plots/quadrant_vs_corner.png");
+        c3->SaveAs(plotDir + "/quadrant_vs_corner.png");
 
         printf("\nBeam quadrant -> detecting corner (%% of detected photons, per row):\n");
         printf("  beam\\corner     TR      TL      BR      BL\n");
