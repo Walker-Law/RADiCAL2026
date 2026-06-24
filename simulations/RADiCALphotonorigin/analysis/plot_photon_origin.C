@@ -87,7 +87,7 @@ void plot_photon_origin(const char* fname = "build/radical_output.root",
             lg->AddEntry(mk, Form("%s", kTag[k]), "p");
         }
         lg->Draw();
-        c2->SaveAs("build/plots/dominant_corner_map.png");
+        c2->SaveAs(plotDir + "/dominant_corner_map.png");
         gStyle->SetPalette(kBird);   // restore default for later canvases
     }
 
