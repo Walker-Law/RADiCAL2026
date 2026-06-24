@@ -123,6 +123,9 @@ void plot_energy_summary() {
         if (nph) { nphMean[ie] = nph->GetMean(); nphErr[ie] = nph->GetMeanError(); }
         else { nphMean[ie] = -1; nphErr[ie] = 0; }
 
+        sigXcorr[ie] = sCurveSigma(f, true);
+        sigYcorr[ie] = sCurveSigma(f, false);
+
         goodE[nGood++] = kEnergies[ie];
         f->Close();
     }
