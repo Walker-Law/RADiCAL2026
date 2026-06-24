@@ -14,8 +14,9 @@ cd "$(dirname "$0")/build" || exit 1
 source ../setup_env.sh >/dev/null 2>&1
 
 NEVT=${1:-4096}
+OUTFILE=${2:-radical_output.root}        # optional: output ROOT filename
 ENERGY=${RADICAL_BEAM_ENERGY_GEV:-10}    # moderate E: localized shower, clearer position map
-MAXSTEP=${RADICAL_OPT_MAXSTEP:-20000}    # optical step cap (relative corner yields only)
+MAXSTEP=${RADICAL_OPT_MAXSTEP:-500}      # optical step cap
 NCHUNK=$(nproc 2>/dev/null || echo 32)
 [ "$NCHUNK" -gt "$NEVT" ] && NCHUNK=$NEVT
 PER=$(( (NEVT + NCHUNK - 1) / NCHUNK ))
