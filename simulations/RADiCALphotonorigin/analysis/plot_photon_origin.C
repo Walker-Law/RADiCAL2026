@@ -26,11 +26,17 @@ static const char* kTag[4]   = {"TR", "TL", "BR", "BL"};
 static const char* kMapNm[4] = {"CornerLightMap_TR", "CornerLightMap_TL",
                                 "CornerLightMap_BR", "CornerLightMap_BL"};
 
-void plot_photon_origin(const char* fname = "build/radical_output.root") {
+void plot_photon_origin(const char* fname = "build/radical_output.root",
+                        const char* elabel = "") {
     TFile* f = TFile::Open(fname);
     if (!f || f->IsZombie()) { printf("ERROR: cannot open %s\n", fname); return; }
     gStyle->SetOptStat(0);
-    gSystem->mkdir("build/plots", true);
+
+    // Per-energy plots go into build/plots/<elabel>/ if a label is given,
+    // otherwise straight into build/plots/.
+    TString plotDir = "build/plots";
+    if (strlen(elabel) > 0) plotDir = TString("build/plots/") + elabel;
+    gSystem->mkdir(plotDir, true);
 
     TH2* map[4];
     for (int i = 0; i < 4; i++) map[i] = (TH2*)f->Get(kMapNm[i]);
