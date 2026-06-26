@@ -323,4 +323,24 @@ void plot_energy_summary() {
     }
     printf("\nSaved -> build/plots/energy_summary/{diagonal_fraction,"
            "position_resolution_vs_energy,photons_vs_energy,partition_strip}.png\n");
+
+    // ── print stochastic + constant fit results ──────────────────────────────
+    printf("\nPosition resolution fit:  sigma(E) = A/sqrt(E) [+] B\n");
+    printf("  A [mm*sqrt(GeV)]  =  stochastic term (improves with energy)\n");
+    printf("  B [mm]            =  constant term   (noise floor)\n");
+    printf("%-18s  %8s +/- %-6s  %8s +/- %-6s  %8s\n",
+           "", "A (mm√GeV)", "err", "B (mm)", "err", "χ²/NDF");
+    printf("%s\n", std::string(75,'-').c_str());
+    auto printFit = [](const char* lbl, TF1* f) {
+        if (!f) return;
+        double ndf = f->GetNDF();
+        printf("%-18s  %8.3f +/- %-6.3f  %8.3f +/- %-6.3f  %8.2f\n",
+               lbl, f->GetParameter(0), f->GetParError(0),
+                    f->GetParameter(1), f->GetParError(1),
+                    ndf > 0 ? f->GetChisquare()/ndf : -1.);
+    };
+    printFit("sigma_x raw:",   fRawX);
+    printFit("sigma_y raw:",   fRawY);
+    printFit("sigma_x corr:",  fCorrX);
+    printFit("sigma_y corr:",  fCorrY);
 }
