@@ -184,6 +184,25 @@ void plot_energy_summary() {
         if (sigXcorr[i] > 0) { eXc.push_back(goodE[i]); sXc.push_back(sigXcorr[i]); }
         if (sigYcorr[i] > 0) { eYc.push_back(goodE[i]); sYc.push_back(sigYcorr[i]); }
     }
+
+    // ── fit σ(E) = A/√E ⊕ B  (stochastic ⊕ constant) ───────────────────────
+    auto makeSCFit = [](const char* nm, std::vector<double>& e, std::vector<double>& s,
+                        int col, int lstyle) -> TF1* {
+        if ((int)e.size() < 3) return nullptr;
+        TF1* f = new TF1(nm, "sqrt([0]*[0]/x + [1]*[1])", 4, 130);
+        f->SetParameters(5.0, 1.0);
+        f->SetParLimits(0, 0.01, 50.);
+        f->SetParLimits(1, 0.0,  20.);
+        f->SetLineColor(col); f->SetLineStyle(lstyle); f->SetLineWidth(2);
+        TGraph tmp((int)e.size(), e.data(), s.data());
+        tmp.Fit(f, "QRN");
+        return f;
+    };
+    TF1* fRawX  = makeSCFit("fRawX",  eX,  sX,  kAzure+1, 1);
+    TF1* fRawY  = makeSCFit("fRawY",  eY,  sY,  kRed+1,   1);
+    TF1* fCorrX = makeSCFit("fCorrX", eXc, sXc, kAzure+1, 2);
+    TF1* fCorrY = makeSCFit("fCorrY", eYc, sYc, kRed+1,   2);
+
     TCanvas* c2 = new TCanvas("c2","Position resolution",800,580);
     c2->SetLogx(); c2->SetGrid();
     TMultiGraph* mg2 = new TMultiGraph();
