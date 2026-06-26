@@ -231,6 +231,23 @@ void plot_energy_summary() {
         mg2->Draw("A");
         mg2->SetTitle("Position resolution vs energy: raw vs S-curve corrected;"
                       "Beam energy (GeV);#sigma (mm)");
+        if (fRawX)  fRawX->Draw("same");
+        if (fRawY)  fRawY->Draw("same");
+        if (fCorrX) fCorrX->Draw("same");
+        if (fCorrY) fCorrY->Draw("same");
+        // fit parameter labels on plot
+        TLatex tfit; tfit.SetNDC(); tfit.SetTextSize(0.029); tfit.SetTextColor(kGray+2);
+        double yt = 0.56;
+        auto pLabel = [&](TF1* f, const char* label) {
+            if (!f) return;
+            tfit.DrawLatex(0.14, yt, Form("%s  %.2f/#sqrt{E} #oplus %.2f mm",
+                           label, f->GetParameter(0), f->GetParameter(1)));
+            yt -= 0.057;
+        };
+        pLabel(fRawX,  "#sigma_{x}:");
+        pLabel(fRawY,  "#sigma_{y}:");
+        pLabel(fCorrX, "#sigma_{x,corr}:");
+        pLabel(fCorrY, "#sigma_{y,corr}:");
         lg2->Draw();
     } else {
         TLatex t; t.SetNDC(); t.SetTextSize(0.05);
