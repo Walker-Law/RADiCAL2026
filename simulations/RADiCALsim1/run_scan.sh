@@ -20,7 +20,12 @@ set -u
 cd "$(dirname "$0")/build" || exit 1
 source ../setup_env.sh >/dev/null 2>&1
 
-ENERGIES=(5 10 20 25 50 100 120 150)
+# Energy list: override with RADICAL_ENERGIES="5 10 20 ..." to run a subset.
+if [ -n "${RADICAL_ENERGIES:-}" ]; then
+    read -ra ENERGIES <<< "$RADICAL_ENERGIES"
+else
+    ENERGIES=(5 10 20 25 50 100 120 150)
+fi
 NEVT=${1:-1000}
 OPTICAL=${2:-0}
 TAG=$([ "$OPTICAL" = "1" ] && echo optical || echo energy)
