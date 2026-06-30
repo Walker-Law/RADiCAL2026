@@ -23,15 +23,20 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   const int N=8; double E[N]={5,10,20,25,50,100,120,150};
   const char* out="build/plots";
 
-  double eRes[N],eResErr[N], tRes[N],tResErr[N], zero[N]={0};
+  double eResAll[N],eResErrAll[N], tResAll[N],tResErrAll[N], EAll[N];
   TCanvas* cL=new TCanvas("cL","long",800,600);
   TLegend* leg=new TLegend(0.62,0.55,0.88,0.88);
   int cols[N]={kRed+1,kOrange+1,kGreen+2,kSpring+4,kAzure+2,kBlue+1,kMagenta+1,kViolet+2};
 
   printf("\n  E(GeV)   mu_E(GeV)  sigma_E   sigma/E(%%)   DeltaT(ps)  sigma_t(ps)\n");
   printf("  -------------------------------------------------------------------\n");
+  int nGood=0;
   for(int i=0;i<N;i++){
     TFile* f=TFile::Open(Form("%s/%s_E%.0fGeV.root",dir,prefix,E[i]));
+    if(!f || f->IsZombie()){
+      printf("  %5.0f    -- skipped, file not found --\n",E[i]);
+      continue;
+    }
     // --- energy ---
     TH1D* hE=(TH1D*)f->Get("ECombined");
     { TF1* pre=coreFit(hE,2.0,3); double s=pre->GetParameter(2);
