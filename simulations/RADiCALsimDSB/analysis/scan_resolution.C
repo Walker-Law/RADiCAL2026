@@ -122,7 +122,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   // also store the raw scan points as a tidy TTree for quick inspection
   TTree* tr = new TTree("scan","resolution scan points");
   double bE,bSE,bST; tr->Branch("E",&bE); tr->Branch("sigmaE_pct",&bSE); tr->Branch("sigmaT_ps",&bST);
-  for(int i=0;i<N;i++){ bE=E[i]; bSE=eRes[i]; bST=tRes[i]; tr->Fill(); }
+  for(int i=0;i<nGood;i++){ bE=EAll[i]; bSE=eResAll[i]; bST=tResAll[i]; tr->Fill(); }
   tr->Write();
   fo->Close();
 
