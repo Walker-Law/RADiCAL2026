@@ -100,7 +100,36 @@ Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.2032mm)** = `stackZ` **12
 ### Materials
 LYSO, Tungsten (W), Tyvek, Delrin (POM), fused quartz, EJ309 liquid scintillator,
 **LuAG:Ce** (Lu₃Al₅O₁₂:Ce, 6.73 g/cm³ — Lu 61.5%, Al 15.8%, O 22.6%, Ce 0.1%).
-(LuAG:Ce replaced the original DSB1 WLS polymer.)
+(LuAG:Ce replaced the original DSB1 WLS polymer. The sibling `RADiCALsimDSB`
+swaps this fiber back to DSB1 — see that tree's CLAUDE.md for the comparison.)
+
+### Material properties — verification pass (June 2026)
+Cross-checked every material against the RADiCAL paper (arXiv:2401.01747 HTML)
+and manufacturer/literature datasheets. "no MPT" = material has no
+`SetMaterialPropertiesTable` call, so it produces **zero** optical photons
+regardless of these numbers (only its `density`+composition feed the dE/dx shower).
+
+| Material | In sim | Verified value | Source | Optically active? |
+|----------|--------|-----------------|--------|---------------------|
+| LYSO:Ce | ρ=7.1 g/cm³ ✓ | 7.1 g/cm³ | Saint-Gobain/Luxium datasheet | **No** — no MPT |
+| LYSO:Ce | composition tightened (71.45/4.03/6.37/18.15%) | computed from Lu1.8Y0.2SiO5 (M=440.82) | stoichiometry | — |
+| LYSO:Ce | (not modeled) | 33200 ph/MeV, 36 ns decay, 420 nm emission | Luxium datasheet | n/a — not in sim |
+| Quartz (fused SiO2) | RINDEX 1.455–1.472 ✓ | 1.453–1.476 (350–800nm) | Malitson Sellmeier eq. | Yes |
+| Tyvek | reflectivity 0.98 ✓ | 98% diffuse | coded `REFLECTIVITY` prop, standard detector-wrap spec | surface only |
+| EJ309 | ρ=0.959 g/cm³ ✓ | 0.959 g/cm³ | Eljen datasheet | **No** — no MPT |
+| EJ309 | (not modeled) | ~11500 ph/MeV, 3.5 ns decay, 424 nm emission | Eljen datasheet / NIM papers | n/a — not in sim |
+| LuAG:Ce | ρ=6.73 g/cm³ ✓ | 6.73 g/cm³ | manufacturer datasheets | Yes |
+| LuAG:Ce | yield 22000 ph/MeV ~, decay 60 ns ~, emission peak ~520nm (code grid) | yield 16000–26000 ph/MeV, decay 37–70 ns, emission 510–535 nm | multiple lit. sources, wide spread | Yes |
+
+LuAG:Ce's numbers are within the published literature spread (no single
+authoritative value exists across sources) — left as-is, not changed.
+
+**Architectural note:** LYSO and EJ309 carry zero optical photons in this sim —
+"LYSO light" and "EJ309 yield" histograms are dE/dx energy deposits, not photon
+counts. Only the corner LuAG:Ce fiber does real optical-photon transport
+(Cherenkov in quartz + LuAG:Ce's own scintillation). The ~52 ps σ_t floor in this
+variant traces directly to LuAG:Ce's slow 60 ns decay — see `RADiCALsimDSB` for
+the fast-decay (3.5 ns) comparison.
 
 ### Visualization (for inspection)
 Housing + all tiles + quartz tubes = **wireframe** w/ `SetForceAuxEdgeVisible(true)`.
