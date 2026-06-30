@@ -1,4 +1,4 @@
-# RADiCALsim1 — Claude/AI Reference Guide
+# RADiCALsimLuAG — Claude/AI Reference Guide
 
 > Read this first. It captures everything needed to work on this project without
 > re-deriving context. Keep it updated when geometry, materials, or workflow change.
@@ -13,13 +13,13 @@ calorimetry simulation: 120 GeV electrons into a LYSO/W sampling stack with
 embedded quartz capillaries for energy (EJ309) and timing (LuAG:Ce WLS) readout.
 
 - **Repo:** GitHub `Walker-Law/RADiCAL2026` (public). Git root is `/Users/macro-2/Research`.
-- **Project dir:** `/Users/macro-2/Research/simulations/RADiCALsim1/`
+- **Project dir:** `/Users/macro-2/Research/simulations/RADiCALsimLuAG/`
 - **Sibling:** `simulations/firstsim/` is an earlier prototype — reference only, not the active sim.
 
 ## Directory layout
 
 ```
-RADiCALsim1/
+RADiCALsimLuAG/
   CMakeLists.txt
   setup_env.sh          # sources Geant4 + sets all 12 data paths (USE THIS)
   vis.mac               # geometry-only viewer (NO beamOn)
@@ -37,8 +37,8 @@ RADiCALsim1/
 ## Build & run
 
 ```bash
-cd /Users/macro-2/Research/simulations/RADiCALsim1/build
-source /Users/macro-2/Research/simulations/RADiCALsim1/setup_env.sh   # <-- ALWAYS source first
+cd /Users/macro-2/Research/simulations/RADiCALsimLuAG/build
+source /Users/macro-2/Research/simulations/RADiCALsimLuAG/setup_env.sh   # <-- ALWAYS source first
 make -j$(sysctl -n hw.logicalcpu)
 ./radical                 # opens OpenGL viewer (geometry only)
 ./radical run_batch.mac   # batch physics run -> build/radical_output.root

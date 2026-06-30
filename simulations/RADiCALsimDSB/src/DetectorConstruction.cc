@@ -4,7 +4,7 @@
 //
 // Stack: 29 LYSO tiles (1.5 mm) + 28 W tiles (2.5 mm), LYSO-W-LYSO-... pattern
 // Each tile separated by 0.2032 mm (0.008") Tyvek sheet [2] §2 (56 sheets = 124.88 mm total)
-// Capillaries: energy (EJ309 liquid) in center hole, timing (LuAG:Ce WLS, 15 mm) in 4 corners
+// Capillaries: energy (EJ309 liquid) in center hole, timing (DSB1 WLS, 15 mm) in 4 corners
 // Corner offset: 3.5 mm from tile center [2] Fig. 2; WLS at shower max ~40.4 mm depth [2] Fig. 7
 // Housing: milled Delrin shell
 
@@ -84,7 +84,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     dsb1->AddElement(H,   8.1*perCent);
 
     // =========================================================================
-    // 1b. OPTICAL PROPERTIES  (only quartz, LuAG:Ce, and air get tables, so
+    // 1b. OPTICAL PROPERTIES  (only quartz, DSB1, and air get tables, so
     //     optical photons are produced/propagated only in the timing capillary
     //     system + surrounding air — keeps photon counts tractable.)
     //
@@ -193,14 +193,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // Timing capillary (corners) — paper: OD=1150 µm, bore=950 µm, fiber=900 µm
     static const G4double tCap_outR  = 0.575*mm;   // 1.15 mm OD
     static const G4double tCap_boreR = 0.475*mm;   // 0.95 mm bore
-    static const G4double wlsFiberR  = 0.450*mm;   // 0.9 mm LuAG:Ce fiber
+    static const G4double wlsFiberR  = 0.450*mm;   // 0.9 mm DSB1 fiber
 
     // Timing capillary segmentation.
     // With corrected Tyvek (0.2032 mm), one LYSO+W period = 1.5+2.5+2*0.2032 = 4.4064 mm.
     // Center of LYSO layer L from upstream face = L*4.4064 + 0.75 mm.
     // arXiv:2401.01747 Fig. 7: shower max at layers 8–10 for 20–30 GeV.
     // → WLS centered on layer 9: z = 9*4.4064 + 0.75 ≈ 40.4 mm from upstream face.
-    // arXiv:2401.01747 §2: WLS filament length = 15 mm (LuAG:Ce fiber, 900 µm diam).
+    // arXiv:2401.01747 §2: WLS filament length = 15 mm (DSB1 fiber, 900 µm diam).
     // (Beam travels +z: "upstream" = −z end, "downstream" = +z end.)
     static const G4double showerMaxDepth = 40.4*mm;  // layer 9 centre, arXiv:2401.01747 Fig. 7
     static const G4double wlsLen         = 15.0*mm;  // arXiv:2401.01747 §2: 15 mm WLS length
@@ -389,7 +389,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     //
     //  CENTER (energy): quartz tube + EJ309 liquid bore, full stack length
     //  CORNERS (timing): quartz upstream/downstream rods + quartz tube mid-section
-    //                    + LuAG:Ce WLS fiber at shower max
+    //                    + DSB1 WLS fiber at shower max
     // =========================================================================
 
     // --- Center energy capillary ---
@@ -421,9 +421,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTMidTube = new G4Tubs("TCapMidTube", wlsFiberR, tCap_outR, wlsLen/2, 0., 360.*deg);
     auto logicTMidTube = new G4LogicalVolume(solidTMidTube, quartz, "Cap_Corner_MidTube");
 
-    // Middle WLS section: LuAG:Ce fiber (scoring volume for timing)
+    // Middle WLS section: DSB1 fiber (scoring volume for timing)
     auto solidTMidWLS = new G4Tubs("TCapMidWLS", 0, wlsFiberR, wlsLen/2, 0., 360.*deg);
-    auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, luag, "Cap_Corner_WLS");
+    auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, dsb1, "Cap_Corner_WLS");
 
     // Downstream rod: solid quartz cylinder
     auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, downstreamLen/2, 0., 360.*deg);
@@ -437,7 +437,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicTDownstream->SetVisAttributes(tRodVis);
     logicTMidTube->SetVisAttributes(tRodVis);
 
-    // LuAG:Ce WLS fiber kept solid (key timing active volume)
+    // DSB1 WLS fiber kept solid (key timing active volume)
     auto wlsVis = new G4VisAttributes(G4Colour(1.0, 0.6, 0.0, 0.95));
     wlsVis->SetForceSolid(true);
     wlsVis->SetForceAuxEdgeVisible(true);
