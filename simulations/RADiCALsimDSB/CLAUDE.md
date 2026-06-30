@@ -100,10 +100,14 @@ Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.2032mm)** = `stackZ` **12
 ### Materials
 LYSO, Tungsten (W), Tyvek, Delrin (POM), fused quartz, EJ309 liquid scintillator,
 **DSB1** (polysiloxane WLS, ~1.05 g/cm³, modeled PDMS-like Si 37.9%, O 21.6%,
-C 32.4%, H 8.1%; ~10000 ph/MeV, **~2 ns decay**, RINDEX 1.50). The fast 2 ns decay
-(vs LuAG:Ce's 60 ns) is the whole point of this variant — sharper leading edge →
-better σ_t. Density/yield/decay are literature estimates; verify vs the DSB1
-datasheet. Decay overridable via `RADICAL_DSB_DECAY_NS`.
+C 32.4%, H 8.1%; ~10000 ph/MeV, RINDEX 1.50). **Measured optical properties:**
+absorption peak **λ=425 nm** (matches LYSO ~420 nm emission), emission peak
+**λ=495 nm**, fluorescence decay **τ=3.5 ns**. The fast 3.5 ns decay (vs LuAG:Ce's
+60 ns) is the whole point of this variant — sharper leading edge → better σ_t.
+The fiber is modeled as a self-scintillator, so the 425 nm WLS-absorption band is
+encoded (WLSABSLENGTH/WLSCOMPONENT) but only functional once LYSO 420 nm optical
+light is propagated into it; emission + decay are used now. Density/yield are
+literature estimates. Decay overridable via `RADICAL_DSB_DECAY_NS` (default 3.5).
 
 ### Visualization (for inspection)
 Housing + all tiles + quartz tubes = **wireframe** w/ `SetForceAuxEdgeVisible(true)`.
