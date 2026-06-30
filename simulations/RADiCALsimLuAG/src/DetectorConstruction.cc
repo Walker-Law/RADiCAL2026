@@ -49,13 +49,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     G4Element* Al = nist->FindOrBuildElement("Al");
     G4Element* Ce = nist->FindOrBuildElement("Ce");
 
-    // LYSO:Ce — Lu1.8Y0.2SiO5:Ce, density 7.1 g/cm3
-    // mass fractions from firstsim (Lu 71%, Y 4%, Si 6%, O 19%)
+    // LYSO:Ce — Lu1.8Y0.2SiO5:Ce, density 7.1 g/cm3 (Saint-Gobain/Luxium datasheet,
+    // verified). Mass fractions computed from the molecular formula (M=440.82):
+    // Lu 71.45%, Y 4.03%, Si 6.37%, O 18.15% (Ce dopant <0.2 mol%, omitted).
+    // NOT optically active in this sim — no SCINTILLATIONYIELD/RINDEX table is set
+    // on `lyso`, so LYSO produces zero scintillation/Cherenkov photons here; all
+    // "LYSO light" histograms (H1[1] TotalLYSO etc.) are raw energy deposit (GeV),
+    // not photon counts. Real LYSO:Ce (verified): ~33200 ph/MeV, 36 ns decay,
+    // 420 nm emission peak (matches DSB1's 425 nm absorption peak by design).
     G4Material* lyso = new G4Material("LYSO", 7.1*g/cm3, 4);
-    lyso->AddElement(Lu, 71.0*perCent);
-    lyso->AddElement(Y,   4.0*perCent);
-    lyso->AddElement(Si,  6.0*perCent);
-    lyso->AddElement(O,  19.0*perCent);
+    lyso->AddElement(Lu, 71.45*perCent);
+    lyso->AddElement(Y,   4.03*perCent);
+    lyso->AddElement(Si,  6.37*perCent);
+    lyso->AddElement(O,  18.15*perCent);
 
     // Tyvek — spunbonded HDPE, density 0.41 g/cm3
     G4Material* tyvek = new G4Material("Tyvek", 0.41*g/cm3, 1);
