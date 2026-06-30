@@ -44,21 +44,20 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       if(rb>1)hE->Rebin(rb); delete pre; }
     TF1* gE=coreFit(hE,2.0,4);
     double muE=gE->GetParameter(1), sgE=gE->GetParameter(2), sgEerr=gE->GetParError(2);
-    eRes[i]=100*sgE/muE; eResErr[i]=100*sgEerr/muE;
+    double eResI=100*sgE/muE, eResErrI=100*sgEerr/muE;
     // --- timing ---
     TH1D* hT=(TH1D*)f->Get("DeltaT");
     TF1* gT=coreFit(hT,2.5,4);
     // (DW−UP)/2 corner trick: σ_t = σ(ΔT)/2 (dividing by 2 gives physical timing resolution)
     double muT=gT->GetParameter(1)*1000, sgT=gT->GetParameter(2)*500, sgTerr=gT->GetParError(2)*500;
-    tRes[i]=sgT; tResErr[i]=sgTerr;
     printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f\n",
-           E[i],muE,sgE,eRes[i],muT,sgT);
+           E[i],muE,sgE,eResI,muT,sgT);
     // --- longitudinal profile overlay (normalized to unit area) ---
     TH1D* hL=(TH1D*)f->Get("ShowerProfile"); hL=(TH1D*)hL->Clone(Form("L%d",i));
     if(hL->Integral()>0) hL->Scale(1.0/hL->Integral());
     hL->SetLineColor(cols[i]); hL->SetLineWidth(2); hL->SetLineStyle(3);
     hL->SetTitle("Longitudinal shower profile vs energy;LYSO layer;normalized <E>");
-    cL->cd(); hL->Draw(i==0?"hist":"hist same");
+    cL->cd(); hL->Draw(nGood==0?"hist":"hist same");
     hL->SetMaximum(0.12);
     leg->AddEntry(hL,Form("%.0f GeV",E[i]),"l");
     // Longo / gamma-distribution fit: dE/dt ∝ t^(α-1)·exp(−βt)
@@ -73,8 +72,12 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     printf("  Longo fit E=%.0f GeV: alpha=%.2f  beta=%.3f  t_max=%.1f layers\n",
            E[i], fL->GetParameter(1)+1, fL->GetParameter(2),
            fL->GetParameter(1)/fL->GetParameter(2));
-    // keep file open? clone histos already; close.
+    // record this energy as good, then advance the compacted index
+    EAll[nGood]=E[i]; eResAll[nGood]=eResI; eResErrAll[nGood]=eResErrI;
+    tResAll[nGood]=sgT; tResErrAll[nGood]=sgTerr;
+    nGood++;
   }
+  double zero[N]={0};
   // Dashed-line legend entry for the Longo fit curves
   TLine* lDash=new TLine(); lDash->SetLineStyle(1); lDash->SetLineWidth(2); lDash->SetLineColor(kGray+1);
   leg->AddEntry(lDash,"Longo fit: t^{#alpha-1}e^{-#beta t}","l");
