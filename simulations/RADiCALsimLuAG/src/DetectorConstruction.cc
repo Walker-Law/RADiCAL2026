@@ -73,8 +73,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     delrin->AddElement(H,  6.7*perCent);
     delrin->AddElement(O, 53.3*perCent);
 
-    // EJ309 organic liquid scintillator — density 0.959 g/cm3, H/C ~ 1.25
-    // Approximated as C9H10 (phenyl ring + side chain)
+    // EJ309 organic liquid scintillator — density 0.959 g/cm3 (Eljen datasheet,
+    // verified), H/C ~ 1.25. Approximated as C9H10 (phenyl ring + side chain).
+    // Real EJ309 (verified): ~11500 ph/MeV (75% anthracene), 3.5 ns primary decay,
+    // 424 nm emission peak. NOT optically active in this sim (no MPT set on
+    // `ej309`) — H1[4] CenterCapEnergy is raw energy deposit (MeV), not a real
+    // photoelectron yield; the center capillary is an energy-only readout proxy.
     G4Material* ej309 = new G4Material("EJ309", 0.959*g/cm3, 2);
     ej309->AddElement(C, 91.2*perCent);
     ej309->AddElement(H,  8.8*perCent);
