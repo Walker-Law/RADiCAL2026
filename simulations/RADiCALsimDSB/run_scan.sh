@@ -52,7 +52,7 @@ export RADICAL_OPTICAL=$OPTICAL
 # RADICAL_OPT_MAXSTEP=... (and/or RADICAL_OPT_TMAX=... ns) before launching to cap.
 [ "$OPTICAL" = "1" ] && [ -n "${RADICAL_OPT_MAXSTEP:-}" ] && export RADICAL_OPT_MAXSTEP
 [ "$OPTICAL" = "1" ] && [ -n "${RADICAL_OPT_TMAX:-}" ] && export RADICAL_OPT_TMAX
-mkdir -p "$OUTDIR" "$(pwd)/../build/plots"
+mkdir -p "$OUTDIR" "$(pwd)/plots"
 
 echo "Scan: NEVT=$NEVT/energy   optical=$([ "$OPTICAL" = 1 ] && echo ON || echo OFF)   tag=$TAG"
 echo "  ${#ENERGIES[@]} energies x $CHUNKS_PER_E chunks x $EVT_PER_CHUNK events = $(( ${#ENERGIES[@]} * CHUNKS_PER_E )) simultaneous processes"
