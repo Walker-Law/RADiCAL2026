@@ -106,9 +106,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     aMPT->AddProperty("RINDEX", phE, aRI);
     air->SetMaterialPropertiesTable(aMPT);
 
-    // --- LuAG:Ce: scintillator. Emission peaks green ~520–540 nm (~2.3–2.4 eV),
-    //     light yield ~22000 ph/MeV, decay ~60 ns (literature). ---
-    std::vector<G4double> lRI  = {1.84, 1.84, 1.84, 1.84, 1.84, 1.84};
+    // --- DSB1: fast polysiloxane scintillating WLS. Emits green ~520–540 nm
+    //     (~2.3–2.4 eV). The defining feature vs LuAG:Ce is the FAST decay
+    //     (~2 ns vs 60 ns) -> sharper leading edge -> the ~27 ps timing the
+    //     RADiCAL paper reports. RINDEX ~1.50 (organic), lower density than LuAG.
+    //     NOTE: yield (~10000 ph/MeV) and decay (2 ns) are literature estimates;
+    //     tune SCINTILLATIONTIMECONSTANT1 / SCINTILLATIONYIELD to the DSB1
+    //     datasheet to dial in the absolute σ_t. ---
+    std::vector<G4double> lRI  = {1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
     std::vector<G4double> lABS = {1.*m, 1.*m, 1.*m, 1.*m, 1.*m, 1.*m};
     // emission spectrum (relative), peaked ~2.3–2.4 eV
     std::vector<G4double> lEM  = {0.05, 0.35, 1.00, 0.60, 0.10, 0.02};
@@ -116,8 +121,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     lMPT->AddProperty("RINDEX",                 phE, lRI);
     lMPT->AddProperty("ABSLENGTH",              phE, lABS);
     lMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, lEM);
-    // LuAG:Ce light yield, with an optional speed/statistics knob.
-    // RADICAL_SCINT_YIELD scales the nominal 22000 ph/MeV (default 1.0). Cutting
+    // DSB1 light yield, with an optional speed/statistics knob.
+    // RADICAL_SCINT_YIELD scales the nominal 10000 ph/MeV (default 1.0). Cutting
     // it (e.g. 0.1, 0.01) tracks proportionally fewer scintillation photons ->
     // faster, fewer p.e.; recover true-yield timing via the sqrt(N) scaling.
     G4double scintScale = 1.0;
@@ -125,11 +130,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         double v = std::atof(s);
         if (v > 0.) scintScale = v;
     }
-    lMPT->AddConstProperty("SCINTILLATIONYIELD",        22000./MeV * scintScale);
+    // RADICAL_DSB_DECAY_NS overrides the decay constant (default 2.0 ns) so you
+    // can sweep σ_t vs scintillator speed without recompiling.
+    G4double dsbDecayNs = 2.0;
+    if (const char* d = std::getenv("RADICAL_DSB_DECAY_NS")) {
+        double v = std::atof(d);
+        if (v > 0.) dsbDecayNs = v;
+    }
+    lMPT->AddConstProperty("SCINTILLATIONYIELD",        10000./MeV * scintScale);
     lMPT->AddConstProperty("RESOLUTIONSCALE",           1.0);
-    lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 60.*ns);
+    lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", dsbDecayNs*ns);
     lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
-    luag->SetMaterialPropertiesTable(lMPT);
+    dsb1->SetMaterialPropertiesTable(lMPT);
 
     // --- Tyvek: add RINDEX so optical boundary physics activates at Tyvek faces.
     //     n ≈ 1.50 (HDPE). Reflectivity 98% is set via G4LogicalSkinSurface below.
