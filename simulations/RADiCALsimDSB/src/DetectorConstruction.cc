@@ -106,21 +106,33 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     aMPT->AddProperty("RINDEX", phE, aRI);
     air->SetMaterialPropertiesTable(aMPT);
 
-    // --- DSB1: fast polysiloxane scintillating WLS. Emits green ~520–540 nm
-    //     (~2.3–2.4 eV). The defining feature vs LuAG:Ce is the FAST decay
-    //     (~2 ns vs 60 ns) -> sharper leading edge -> the ~27 ps timing the
-    //     RADiCAL paper reports. RINDEX ~1.50 (organic), lower density than LuAG.
-    //     NOTE: yield (~10000 ph/MeV) and decay (2 ns) are literature estimates;
-    //     tune SCINTILLATIONTIMECONSTANT1 / SCINTILLATIONYIELD to the DSB1
-    //     datasheet to dial in the absolute σ_t. ---
+    // --- DSB1: fast polysiloxane WLS. Measured properties (RADiCAL):
+    //       absorption peak  λ = 425 nm (2.917 eV)  — matches LYSO ~420 nm emission
+    //       emission peak    λ = 495 nm (2.505 eV)
+    //       fluorescence decay τ = 3.5 ns
+    //     The FAST 3.5 ns decay (vs LuAG:Ce's 60 ns) is what gives the sharp
+    //     leading edge behind the RADiCAL paper's ~27 ps σ_t. RINDEX ~1.50.
+    //     NOTE: the sim models the fiber as a self-scintillator (light ∝ dE/dx in
+    //     the fiber), so the 425 nm WLS *absorption* band is documented here but
+    //     only becomes functional once LYSO 420 nm optical photons are propagated
+    //     into the fiber (a future upgrade). Emission spectrum + decay ARE used. ---
     std::vector<G4double> lRI  = {1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
     std::vector<G4double> lABS = {1.*m, 1.*m, 1.*m, 1.*m, 1.*m, 1.*m};
-    // emission spectrum (relative), peaked ~2.3–2.4 eV
-    std::vector<G4double> lEM  = {0.05, 0.35, 1.00, 0.60, 0.10, 0.02};
+    // emission spectrum (relative), peaked at 495 nm (2.505 eV ≈ the 2.48 eV grid
+    // point); Stokes-shifted to the long-wavelength side of the 425 nm absorption.
+    // grid:  1.55   2.07   2.48   2.76   3.10   3.54  eV
+    //  (nm)   800    599    500    449    400    350
+    std::vector<G4double> lEM  = {0.08, 0.45, 1.00, 0.20, 0.02, 0.00};
+    // WLS absorption band, strong at 425 nm (2.917 eV ≈ 2.76–3.10 grid). Provided
+    // for the true-WLS path (needs G4OpWLS + LYSO optical light); short length at
+    // 425 nm, transparent to its own 495 nm emission (good Stokes separation).
+    std::vector<G4double> lWLSABS = {5.*m, 5.*m, 5.*m, 2.*mm, 2.*mm, 5.*mm};
     auto lMPT = new G4MaterialPropertiesTable();
     lMPT->AddProperty("RINDEX",                 phE, lRI);
     lMPT->AddProperty("ABSLENGTH",              phE, lABS);
     lMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, lEM);
+    lMPT->AddProperty("WLSABSLENGTH",           phE, lWLSABS);
+    lMPT->AddProperty("WLSCOMPONENT",           phE, lEM);
     // DSB1 light yield, with an optional speed/statistics knob.
     // RADICAL_SCINT_YIELD scales the nominal 10000 ph/MeV (default 1.0). Cutting
     // it (e.g. 0.1, 0.01) tracks proportionally fewer scintillation photons ->
@@ -130,9 +142,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         double v = std::atof(s);
         if (v > 0.) scintScale = v;
     }
-    // RADICAL_DSB_DECAY_NS overrides the decay constant (default 2.0 ns) so you
-    // can sweep σ_t vs scintillator speed without recompiling.
-    G4double dsbDecayNs = 2.0;
+    // RADICAL_DSB_DECAY_NS overrides the decay constant (default 3.5 ns, measured)
+    // so you can sweep σ_t vs scintillator speed without recompiling.
+    G4double dsbDecayNs = 3.5;
     if (const char* d = std::getenv("RADICAL_DSB_DECAY_NS")) {
         double v = std::atof(d);
         if (v > 0.) dsbDecayNs = v;
@@ -141,6 +153,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     lMPT->AddConstProperty("RESOLUTIONSCALE",           1.0);
     lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", dsbDecayNs*ns);
     lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
+    lMPT->AddConstProperty("WLSTIMECONSTANT",            dsbDecayNs*ns);
     dsb1->SetMaterialPropertiesTable(lMPT);
 
     // --- Tyvek: add RINDEX so optical boundary physics activates at Tyvek faces.
