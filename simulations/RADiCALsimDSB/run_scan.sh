@@ -166,7 +166,8 @@ for E in "${ENERGIES[@]}"; do
     [ -f "$OUT" ] && continue
     CHUNKS=( tmprun_${TAG}_E${E}_c*.root )
     if [ ! -e "${CHUNKS[0]}" ]; then
-        echo "!! ${E} GeV: no chunk outputs — check logs in $OUTDIR/"
+        echo "!! ${E} GeV: no chunk outputs. First chunk log ($OUTDIR/log_E${E}_c0.log):"
+        tail -15 "$OUTDIR/log_E${E}_c0.log" 2>/dev/null | sed 's/^/     /'
         any_failed=1; continue
     fi
     "$HADD" -f "$OUT" "${CHUNKS[@]}" > "$OUTDIR/log_E${E}_merge.log" 2>&1
