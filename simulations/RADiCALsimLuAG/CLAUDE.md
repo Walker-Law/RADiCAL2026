@@ -1,5 +1,12 @@
 # RADiCALsimLuAG — Claude/AI Reference Guide
 
+> **VARIANT: LuAG:Ce timing WLS.** This is the slow-scintillator copy of the sim —
+> the corner timing fiber is **LuAG:Ce** (Lu₃Al₅O₁₂:Ce, 60 ns decay), which gives a
+> ~52 ps σ_t floor set by the slow decay, not photostatistics. The sibling
+> `simulations/RADiCALsimDSB/` is the identical geometry with the fast **DSB1**
+> fiber (~2 ns decay) that chases the paper's ~27 ps. Only the corner WLS material
+> differs. This dir keeps the LuAG-era `build/` with the existing scan results.
+
 > Read this first. It captures everything needed to work on this project without
 > re-deriving context. Keep it updated when geometry, materials, or workflow change.
 
