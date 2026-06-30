@@ -101,7 +101,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
 
   // ---------- timing resolution curve ----------
   TCanvas* c2=new TCanvas("c2","tres",800,600);
-  TGraphErrors* gt=new TGraphErrors(N,E,tRes,zero,tResErr);
+  TGraphErrors* gt=new TGraphErrors(nGood,EAll,tResAll,zero,tResErrAll);
   gt->SetName("TimingResolution");
   gt->SetTitle("Timing resolution (downstream #minus upstream);E_{beam} (GeV);#sigma_{t} (ps)");
   gt->SetMarkerStyle(21); gt->SetMarkerColor(kGreen+2); gt->SetLineColor(kGreen+2);
