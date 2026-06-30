@@ -110,10 +110,42 @@ encoded (WLSABSLENGTH/WLSCOMPONENT) but only functional once LYSO 420 nm optical
 light is propagated into it; emission + decay are used now. Density/yield are
 literature estimates. Decay overridable via `RADICAL_DSB_DECAY_NS` (default 3.5).
 
+### Material properties — verification pass (June 2026)
+Cross-checked every material against the RADiCAL paper (arXiv:2401.01747 HTML)
+and manufacturer/literature datasheets. Code = what's actually compiled in;
+✓ = matches a real source; ~ = within published spread; "no MPT" = material has
+no `SetMaterialPropertiesTable` call, so it produces **zero** optical photons
+regardless of these numbers (only its `density`+composition feed the dE/dx shower).
+
+| Material | In sim | Verified value | Source | Optically active? |
+|----------|--------|-----------------|--------|---------------------|
+| LYSO:Ce | ρ=7.1 g/cm³ ✓ | 7.1 g/cm³ | Saint-Gobain/Luxium datasheet | **No** — no MPT |
+| LYSO:Ce | composition tightened (71.45/4.03/6.37/18.15%) | computed from Lu1.8Y0.2SiO5 (M=440.82) | stoichiometry | — |
+| LYSO:Ce | (not modeled) | 33200 ph/MeV, 36 ns decay, 420 nm emission | Luxium datasheet | n/a — not in sim |
+| Quartz (fused SiO2) | RINDEX 1.455–1.472 ✓ | 1.453–1.476 (350–800nm) | Malitson Sellmeier eq. | Yes |
+| Tyvek | reflectivity 0.98 ✓ | 98% diffuse | coded `REFLECTIVITY` prop, standard detector-wrap spec | surface only |
+| EJ309 | ρ=0.959 g/cm³ ✓ | 0.959 g/cm³ | Eljen datasheet | **No** — no MPT |
+| EJ309 | (not modeled) | ~11500 ph/MeV, 3.5 ns decay, 424 nm emission | Eljen datasheet / NIM papers | n/a — not in sim |
+| **DSB1** | absorption 425nm ✓, emission 495nm ✓, decay 3.5ns ✓ | **identical** | arXiv:2401.01747 (this paper, directly) | Yes |
+| DSB1 | ρ=1.05 g/cm³, yield 10000 ph/MeV | **not published** — estimate | none found | Yes (estimate) |
+| Capillary geometry | OD 1.15mm, bore 0.475mm(r), fiber 0.45mm(r) | OD 1150μm, bore 950μm, fiber 900μm | arXiv:2401.01747 (this paper) | — |
+
+**Biggest open uncertainty: DSB1 density and light yield are not in any public
+source** (the paper gives only the 3 optical constants above — already exact in
+the code). Treat `RADICAL_SCINT_YIELD` as a free knob until a real measured
+yield is available from the collaboration.
+
+**Architectural note:** LYSO and EJ309 carry zero optical photons in this sim —
+"LYSO light" and "EJ309 yield" histograms are dE/dx energy deposits, not photon
+counts. Only the corner DSB1 fiber does real optical-photon transport (Cherenkov
+in quartz + DSB1's own scintillation/self-emission). A true WLS chain (LYSO light
+→ absorbed by DSB1's 425nm band → re-emitted at 495nm) is wired but inert
+(WLSABSLENGTH/WLSCOMPONENT) since LYSO has no RINDEX/photon source yet.
+
 ### Visualization (for inspection)
 Housing + all tiles + quartz tubes = **wireframe** w/ `SetForceAuxEdgeVisible(true)`.
 LYSO=blue, W=red, Tyvek=white. The two ACTIVE scoring volumes are kept **solid**:
-EJ309 bore=green, LuAG:Ce fibers=orange — so they pop against the wireframe lattice.
+EJ309 bore=green, DSB1 fibers=orange — so they pop against the wireframe lattice.
 
 ## Scoring & histograms (RunAction.cc → radical_output.root)
 
