@@ -184,7 +184,12 @@ done
 echo ""
 echo "SCAN COMPLETE $(date '+%H:%M:%S')  total $(printf '%dh%02dm' $(( ELAPSED/3600 )) $(( (ELAPSED%3600)/60 )))"
 ls -lh "$OUTDIR"/optical_E*GeV.root 2>/dev/null || echo "(no output files found)"
-[ "$any_failed" -eq 1 ] && echo "WARNING: one or more energies failed"
+
+if [ "$any_failed" -eq 1 ]; then
+    echo "WARNING: one or more energies failed to produce output — skipping analysis."
+    echo "Fix the cause above and re-run (already-merged energies are skipped automatically)."
+    exit 1
+fi
 
 if [ -n "$ROOTEXE" ] && [ -x "$ROOTEXE" ]; then
     echo "--- building resolution curves ---"
