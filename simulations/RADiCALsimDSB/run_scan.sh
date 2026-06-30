@@ -31,6 +31,28 @@ OPTICAL=${2:-0}
 TAG=$([ "$OPTICAL" = "1" ] && echo optical || echo energy)
 OUTDIR="$(pwd)/scan/${TAG}_scan_${NEVT}"
 BINARY="$(pwd)/radical"
+
+# Pre-flight: refuse to launch hundreds of chunks against a missing/broken
+# binary. Without this, every chunk fails instantly, the scan "finishes" in
+# seconds, and the failure only surfaces hours later when merge/analysis runs.
+if [ ! -x "$BINARY" ]; then
+    echo "FATAL: $BINARY not found or not executable. Build it first:" >&2
+    echo "  cd build && source ../setup_env.sh && cmake .. -DCMAKE_PREFIX_PATH=\$CONDA_PREFIX -DCMAKE_C_COMPILER=\$CC -DCMAKE_CXX_COMPILER=\$CXX && make -j\$(nproc)" >&2
+    exit 1
+fi
+PREFLIGHT_DIR=$(mktemp -d /tmp/radical_preflight_XXXXXX)
+printf '/run/numberOfThreads 1\n/run/initialize\n/run/beamOn 2\n' > "$PREFLIGHT_DIR/run.mac"
+( cd "$PREFLIGHT_DIR" && RADICAL_OPTICAL=${2:-0} RADICAL_BEAM_ENERGY_GEV=5 "$BINARY" run.mac ) \
+    > "$PREFLIGHT_DIR/preflight.log" 2>&1
+if [ ! -f "$PREFLIGHT_DIR/radical_output.root" ]; then
+    echo "FATAL: pre-flight smoke test failed — binary ran but produced no output." >&2
+    echo "  See: $PREFLIGHT_DIR/preflight.log" >&2
+    tail -20 "$PREFLIGHT_DIR/preflight.log" >&2
+    exit 1
+fi
+echo "Pre-flight OK: $BINARY runs and produces output."
+rm -rf "$PREFLIGHT_DIR"
+
 TOTAL_CORES=$(nproc 2>/dev/null || echo 512)
 CHUNKS_PER_E=$(( TOTAL_CORES / ${#ENERGIES[@]} ))
 [ "$CHUNKS_PER_E" -lt 1 ] && CHUNKS_PER_E=1
