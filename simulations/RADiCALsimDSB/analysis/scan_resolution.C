@@ -85,7 +85,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
 
   // ---------- energy resolution curve ----------
   TCanvas* c1=new TCanvas("c1","eres",800,600);
-  TGraphErrors* gr=new TGraphErrors(N,E,eRes,zero,eResErr);
+  TGraphErrors* gr=new TGraphErrors(nGood,EAll,eResAll,zero,eResErrAll);
   gr->SetName("EnergyResolution");
   gr->SetTitle("Energy resolution;E_{beam} (GeV);#sigma/E (%)");
   gr->SetMarkerStyle(20); gr->SetMarkerColor(kBlue+1); gr->SetLineColor(kBlue+1);
