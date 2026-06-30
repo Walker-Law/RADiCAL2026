@@ -90,7 +90,8 @@ Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.2032mm)** = `stackZ` **12
 - **Center (energy):** `centerHoleR`=0.45mm. EJ309 bore (r=0.20mm) + quartz tube.
   `eCap_outR = centerHoleR` so the tube fully fills the hole (no air gap).
 - **4 corners (timing):** `cornerHoleR`=0.65mm. Capillary OD=1.15mm (0.575mm r), bore=0.475mm.
-  **LuAG:Ce WLS fiber** (r=0.45mm, **15mm length**) at shower max + quartz upstream/downstream rods.
+  **DSB1 WLS fiber** (r=0.45mm, **15mm length**) at shower max + quartz upstream/downstream rods.
+  Geometry verified against arXiv:2401.01747 HTML: OD=1150μm, bore=950μm, fiber diam=900μm — exact match.
   Corner positions: ±3.5mm from tile center (= 3.5mm from each edge in 14mm tile).
   Photodetectors `PD_Upstream`/`PD_Downstream` (Si, copy#=corner) at the two ends.
 - WLS segmentation: `upstreamLen = showerMaxDepth - wlsLen/2 = 40.4 - 7.5 = 32.9 mm`.
