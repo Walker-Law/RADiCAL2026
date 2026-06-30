@@ -1,0 +1,24 @@
+# vis_optical.mac — visualize one event with optical photons
+# Run: RADICAL_OPTICAL=1 ./radical vis_optical.mac
+
+/vis/open OGL 1000x700
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 70 20
+/vis/viewer/zoom 1.4
+/vis/viewer/set/background 0.02 0.02 0.08
+
+# Draw smooth trajectories, keep all tracks from the event
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate 1
+
+# Color tracks by particle type
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set e-        1.0 0.3 0.3   # electrons: red
+/vis/modeling/trajectories/drawByParticleID-0/set e+        0.3 1.0 0.3   # positrons: green
+/vis/modeling/trajectories/drawByParticleID-0/set gamma     1.0 1.0 0.0   # gammas: yellow
+/vis/modeling/trajectories/drawByParticleID-0/set opticalphoton  0.0 0.6 1.0   # optical: bright blue
+/vis/modeling/trajectories/drawByParticleID-0/setDefault    0.6 0.6 0.6   # everything else: grey
+
+# Fire a single event
+/run/initialize
+/run/beamOn 1
