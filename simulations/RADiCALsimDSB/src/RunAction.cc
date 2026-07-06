@@ -165,6 +165,12 @@ RunAction::RunAction() {
                  "Detected Cherenkov photons per event;N_{p.e.};Events",
                  300, 0., 60000.);
 
+    // H1[28]: shower-max slice energy (LYSO layers 8-10, the WLS window) —
+    // sim analog of the paper's Fig 17 (right) SiPM-sum energy estimator.
+    am->CreateH1("EShowerMax",
+                 "LYSO energy in shower-max slice (layers 8-10);E (GeV);Events",
+                 2000, 0., 10.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
