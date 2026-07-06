@@ -51,8 +51,18 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TF1* gT=coreFit(hT,2.5,4);
     // (DW−UP)/2 corner trick: σ_t = σ(ΔT)/2 (dividing by 2 gives physical timing resolution)
     double muT=gT->GetParameter(1)*1000, sgT=gT->GetParameter(2)*500, sgTerr=gT->GetParError(2)*500;
-    printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f\n",
-           E[i],muE,sgE,eResI,muT,sgT);
+    // scint-only timing (new files only): same corner trick, Cherenkov excluded
+    double sgTS=-1;
+    TH1D* hTS=(TH1D*)f->Get("DeltaT_Scint");
+    if(hTS && hTS->GetEntries()>50){
+      TF1* gTS=coreFit(hTS,2.5,4);
+      sgTS=gTS->GetParameter(2)*500;
+      ES[nGoodS]=E[i]; tResS[nGoodS]=sgTS; tResSErr[nGoodS]=gTS->GetParError(2)*500;
+      nGoodS++;
+    }
+    printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s\n",
+           E[i],muE,sgE,eResI,muT,sgT,
+           sgTS>0?Form("(scint-only: %.2f)",sgTS):"");
     // --- longitudinal profile overlay (normalized to unit area) ---
     TH1D* hL=(TH1D*)f->Get("ShowerProfile"); hL=(TH1D*)hL->Clone(Form("L%d",i));
     if(hL->Integral()>0) hL->Scale(1.0/hL->Integral());
