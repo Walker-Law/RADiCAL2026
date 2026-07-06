@@ -10,6 +10,38 @@
 > Read this first. It captures everything needed to work on this project without
 > re-deriving context. Keep it updated when geometry, materials, or workflow change.
 
+## CURRENT STATE (July 2026) — timing puzzle SOLVED, validation run in flight
+
+**Key finding:** the sim's ~46-52 ps σ_t floor (vs paper's 17.5 ps) was **Cherenkov
+light born in the SOLID quartz rods** (real device: thin-wall hollow capillary,
+negligible Cherenkov). Prompt Cherenkov forms the leading edge and imprints
+shower-depth fluctuations on ΔT; not common-mode, so the (DW−UP)/2 trick can't
+cancel it. Proof: photons are now tagged by creation process — scint-only timing
+gives **90.1 ps/√E ⊕ 17.1 ps vs paper's 256 ps/√E ⊕ 17.5 ps** (constant term
+matches to 0.4 ps). Stochastic differs because sim detects ~373 pe/MeV-in-fiber
+vs paper's ~25 npe/MeV → `RADICAL_SCINT_YIELD=0.07` scales it to match.
+New histograms: H1[24] DeltaT_Scint, H1[25] DeltaT_CFD_Scint, H1[26] PhotonsScint,
+H1[27] PhotonsCher, H1[28] EShowerMax (LYSO layers 8-10 = WLS window slice —
+the analog of paper Fig 17 right, ~10% σ/E; full-module ECombined is 2.7% and
+fiber dE/dx is ~95%, neither comparable to Fig 17).
+
+**In flight on curiosity** (launched July 2026): 20k evt/E, 7 energies,
+`MAXSTEP=5000 TMAX=50 SCINT_YIELD=0.07` → `dsb_20k_paper.log`, ~10 hr. Expect:
+scint-only σ_t curve ≈ paper's 256/√E ⊕ 17.5, and showermax_resolution.png vs
+paper Fig 17 overlay. Sync from Mac:
+`rsync -avz -e "ssh -p 10022" wlaw@172.16.17.188:~/RADiCAL2026/simulations/RADiCALsimDSB/build/scan/optical_scan_20000/ ~/Research/simulations/RADiCALsimDSB/build/scan/optical_scan_20000/`
+then `root -l -b -q 'analysis/scan_resolution.C("build/scan/optical_scan_20000","optical")'`.
+
+**Workflow guardrails added to run_scan.sh:** pre-flight smoke test (catches
+missing binary / wrong conda env — must be `conda activate g4` on curiosity, NOT
+base), inline chunk-log dump on merge failure, exit-before-analysis on any failed
+energy, RADICAL_ENERGIES env override, no default step cap.
+
+**Remaining gap to full fidelity:** LYSO is optically dark; true chain
+(LYSO 420nm → DSB1 425nm absorption → 495nm re-emission via G4OpWLS) is wired in
+the material (WLSABSLENGTH/WLSCOMPONENT) but inert until LYSO gets an optical MPT
+with scaled yield. That's the next upgrade if scint-only isn't close enough.
+
 ## What this is
 
 Geant4 (v11.4.0, FTFP_BERT) replication of the **RADiCAL** (Radiation-hard
