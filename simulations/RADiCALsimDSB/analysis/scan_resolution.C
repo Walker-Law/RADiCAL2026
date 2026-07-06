@@ -139,7 +139,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     t.DrawLatex(0.40,0.74,Form("scint-only: %.1f ps/#sqrt{E} #oplus %.1f ps",
                 fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1))));
     t.SetTextColor(kBlack);
-    gtS->Write(); // no-op unless a file is open; persisted properly below
+    gTimingScint=gtS;   // persisted alongside the other curves below
   }
   c2->SaveAs(Form("%s/timing_resolution_curve.png",out));
 
