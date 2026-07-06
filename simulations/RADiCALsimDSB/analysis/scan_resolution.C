@@ -62,6 +62,17 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       ES[nGoodS]=E[i]; tResS[nGoodS]=sgTS; tResSErr[nGoodS]=gTS->GetParError(2)*500;
       nGoodS++;
     }
+    // shower-max slice resolution (paper Fig 17 analog; new files only)
+    TH1D* hSM=(TH1D*)f->Get("EShowerMax");
+    if(hSM && hSM->GetEntries()>50){
+      TF1* gSM=coreFit(hSM,2.0,4);
+      double muSM=gSM->GetParameter(1), sgSM=gSM->GetParameter(2);
+      if(muSM>0){
+        ESM[nGoodSM]=E[i]; smRes[nGoodSM]=100.*sgSM/muSM;
+        smResErr[nGoodSM]=100.*gSM->GetParError(2)/muSM;
+        nGoodSM++;
+      }
+    }
     printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s\n",
            E[i],muE,sgE,eResI,muT,sgT,
            sgTS>0?Form("(scint-only: %.2f)",sgTS):"");
