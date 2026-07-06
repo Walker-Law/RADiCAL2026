@@ -202,6 +202,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   gr->Write();
   gt->Write();
   if(gTimingScint) gTimingScint->Write();
+  if(gSM) gSM->Write();
   // also store the raw scan points as a tidy TTree for quick inspection
   TTree* tr = new TTree("scan","resolution scan points");
   double bE,bSE,bST; tr->Branch("E",&bE); tr->Branch("sigmaE_pct",&bSE); tr->Branch("sigmaT_ps",&bST);
