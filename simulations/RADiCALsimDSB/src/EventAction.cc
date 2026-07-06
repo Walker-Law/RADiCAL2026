@@ -31,6 +31,8 @@ EventAction::EventAction() {
     fEdepPbGlass = 0.;
     fTphUp.fill(kBigTime); fTphDown.fill(kBigTime);
     fNphUp.fill(0);        fNphDown.fill(0);
+    fTphUpS.fill(kBigTime); fTphDownS.fill(kBigTime);
+    fNphScint = 0; fNphCher = 0;
 }
 EventAction::~EventAction() {}
 
