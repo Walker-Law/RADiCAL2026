@@ -30,9 +30,14 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
         if (postVol) {
             const G4String& pn = postVol->GetLogicalVolume()->GetName();
             if (pn == "PD_Upstream" || pn == "PD_Downstream") {
+                // Tag by creation process: real SiPM signal = WLS/scint band;
+                // Cherenkov from the solid quartz rods is a sim-only contaminant.
+                const G4VProcess* cp = track->GetCreatorProcess();
+                const bool isCher = cp && cp->GetProcessName() == "Cerenkov";
                 fEventAction->RecordPhoton(postVol->GetCopyNo(),
                                            pn == "PD_Upstream",
-                                           step->GetPostStepPoint()->GetGlobalTime());
+                                           step->GetPostStepPoint()->GetGlobalTime(),
+                                           isCher);
                 track->SetTrackStatus(fStopAndKill);
                 return;
             }
