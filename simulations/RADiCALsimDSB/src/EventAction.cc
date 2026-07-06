@@ -120,6 +120,17 @@ void EventAction::EndOfEventAction(const G4Event*) {
 
     G4double cog = (cogDenom > 0.) ? cogNumer / cogDenom : 0.;  // in layer units
 
+    // Shower-max slice energy — the sim analog of the paper's Fig 17 (right):
+    // LYSO deposit in the layers the 15 mm WLS window covers (8-10, centers
+    // 36.0/40.4/44.8 mm, window 32.9-47.9 mm). The real SiPM amplitude is LYSO
+    // light from this slab collected via the WLS fibers, so its resolution is
+    // set by this slice's fluctuations — NOT by full-module containment (H1[20])
+    // and NOT by dE/dx in the thin fibers (H1[13], ~95% RMS/mean).
+    {
+        G4double eSM = fEdepLYSO[8] + fEdepLYSO[9] + fEdepLYSO[10];
+        if (eSM > 0.) am->FillH1(28, eSM / GeV);
+    }
+
     // RMS of longitudinal distribution
     if (cogDenom > 0.) {
         for (G4int i = 0; i < 29; i++) {
