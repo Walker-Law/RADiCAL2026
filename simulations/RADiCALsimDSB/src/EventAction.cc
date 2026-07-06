@@ -282,6 +282,25 @@ void EventAction::EndOfEventAction(const G4Event*) {
     }
 
     // =========================================================================
+    // 6d. SCINTILLATION-ONLY TIMING (Cherenkov excluded)
+    //   Emulates the real WLS-band SiPM signal: in the physical device the
+    //   quartz sections are thin-wall hollow capillaries (negligible Cherenkov)
+    //   and the SiPM sees DSB1's 495 nm re-emission. In this sim the rods are
+    //   solid quartz, so prompt Cherenkov dominates the leading edge and sets
+    //   an artificial ~45-50 ps floor tied to shower-depth fluctuations.
+    // =========================================================================
+    for (G4int c = 0; c < 4; c++) {
+        if (fTphUpS[c] < kBigTime && fTphDownS[c] < kBigTime)
+            am->FillH1(24, (fTphDownS[c] - fTphUpS[c]) / ns);
+        G4double fw = -1.;
+        G4double tUpS = pulseCFD(fPhTUpS[c],   &fw);
+        G4double tDnS = pulseCFD(fPhTDownS[c], &fw);
+        if (tUpS > 0. && tDnS > 0.) am->FillH1(25, (tDnS - tUpS) / 1.0);
+    }
+    if (fNphScint > 0) am->FillH1(26, fNphScint);
+    if (fNphCher  > 0) am->FillH1(27, fNphCher);
+
+    // =========================================================================
     // 7. CERN TEST-BEAM LINE OBSERVABLES
     //    Trigger counters, MCP timing reference (t0), Pb-glass tail catcher.
     // =========================================================================
