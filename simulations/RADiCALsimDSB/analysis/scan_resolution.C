@@ -121,10 +121,9 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   TF1* ft=new TF1("ft","sqrt([0]*[0]/x+[1]*[1])",4,130);
   ft->SetParameters(20,5); ft->SetParNames("stoch","const");
   ft->SetLineColor(kRed); gt->Fit(ft,"RQ");
-  gt->Draw("AP"); ft->Draw("same");
-  t.DrawLatex(0.40,0.82,Form("#sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
-              fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
-  // Overlay scint-only curve when the new histograms are present
+  // Scint-only graph + fit (new files only), prepared before drawing so the
+  // axes can be ranged over BOTH graphs — otherwise the lower scint-only
+  // points fall outside the all-photon auto-range and vanish from the plot.
   TF1* ftS=nullptr;
   if(nGoodS>=3){
     double zeroS[N]={0};
@@ -135,12 +134,25 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     ftS=new TF1("ftS","sqrt([0]*[0]/x+[1]*[1])",4,130);
     ftS->SetParameters(20,5); ftS->SetLineColor(kAzure+2); ftS->SetLineStyle(2);
     gtS->Fit(ftS,"RQ");
-    gtS->Draw("P same"); ftS->Draw("same");
-    t.SetTextColor(kAzure+2);
-    t.DrawLatex(0.40,0.74,Form("scint-only: %.1f ps/#sqrt{E} #oplus %.1f ps",
-                fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1))));
-    t.SetTextColor(kBlack);
     gTimingScint=gtS;   // persisted alongside the other curves below
+  }
+  TMultiGraph* mgT=new TMultiGraph();
+  mgT->Add(gt,"P");
+  if(gTimingScint) mgT->Add(gTimingScint,"P");
+  mgT->SetTitle("Timing resolution (downstream #minus upstream);E_{beam} (GeV);#sigma_{t} (ps)");
+  mgT->Draw("A");
+  mgT->SetMinimum(0.);
+  ft->Draw("same");
+  if(ftS) ftS->Draw("same");
+  t.DrawLatex(0.40,0.84,Form("all light: #sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
+              fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
+  if(ftS){
+    t.SetTextColor(kAzure+2);
+    t.DrawLatex(0.40,0.77,Form("scint-only: %.1f ps/#sqrt{E} #oplus %.1f ps",
+                fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1))));
+    t.SetTextColor(kGray+2);
+    t.DrawLatex(0.40,0.70,"paper: 256 ps/#sqrt{E} #oplus 17.5 ps");
+    t.SetTextColor(kBlack);
   }
   c2->SaveAs(Form("%s/timing_resolution_curve.png",out));
 
