@@ -49,14 +49,23 @@ public:
 
     // ── Optical-photon timing readout ───────────────────────────────────────
     // Quantum efficiency of the end photodetectors (bialkali/SiPM-like).
+    // isCherenkov tags the photon's creation process: the real SiPM signal is
+    // WLS (scintillation-band) light, so scint-only timing is scored in
+    // parallel with the all-photon timing to separate the two populations.
     static constexpr G4double kQE = 0.20;
-    void RecordPhoton(G4int corner, bool isUpstream, G4double t) {
+    void RecordPhoton(G4int corner, bool isUpstream, G4double t, bool isCherenkov) {
         if (corner < 0 || corner >= 4) return;
         if (G4UniformRand() > kQE) return;            // apply QE
         if (isUpstream) { fNphUp[corner]++;   if (t < fTphUp[corner])   fTphUp[corner]   = t;
                           if (fPhTUp[corner].size()   < kMaxStore) fPhTUp[corner].push_back(t); }
         else            { fNphDown[corner]++; if (t < fTphDown[corner]) fTphDown[corner] = t;
                           if (fPhTDown[corner].size() < kMaxStore) fPhTDown[corner].push_back(t); }
+        if (isCherenkov) { fNphCher++; return; }
+        fNphScint++;
+        if (isUpstream) { if (t < fTphUpS[corner])   fTphUpS[corner]   = t;
+                          if (fPhTUpS[corner].size()   < kMaxStore) fPhTUpS[corner].push_back(t); }
+        else            { if (t < fTphDownS[corner]) fTphDownS[corner] = t;
+                          if (fPhTDownS[corner].size() < kMaxStore) fPhTDownS[corner].push_back(t); }
     }
 
 private:
