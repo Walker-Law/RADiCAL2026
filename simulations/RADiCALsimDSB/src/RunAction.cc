@@ -142,6 +142,29 @@ RunAction::RunAction() {
                  "Emulated pulse FWHM;FWHM (ns);Pulses",
                  200, 0., 40.);
 
+    // ── Creation-process-tagged timing (scintillation vs Cherenkov) ──────────
+    // In the real device the SiPM signal is DSB1 WLS light (495 nm re-emission);
+    // Cherenkov from the thin hollow capillary wall is negligible. In this sim
+    // the rods are SOLID quartz, so prompt Cherenkov born along the full ~110 mm
+    // rod length dominates the leading edge and imprints the shower's
+    // longitudinal fluctuations onto ΔT (~45-50 ps floor). Scoring timing from
+    // scintillation-origin photons only emulates the real WLS-band readout.
+    // H1[24]: first-photon ΔT, scintillation-origin photons only
+    am->CreateH1("DeltaT_Scint",
+                 "First-photon #DeltaT, scintillation only (downstream #minus upstream);#DeltaT (ns);Corners",
+                 4000, -0.2, 0.6);
+    // H1[25]: waveform CFD ΔT, scintillation-origin photons only
+    am->CreateH1("DeltaT_CFD_Scint",
+                 "Waveform CFD #DeltaT, scintillation only;#DeltaT (ns);Corners",
+                 800, -4., 4.);
+    // H1[26]/H1[27]: detected photons per event by creation process
+    am->CreateH1("PhotonsScint",
+                 "Detected scintillation photons per event;N_{p.e.};Events",
+                 300, 0., 60000.);
+    am->CreateH1("PhotonsCher",
+                 "Detected Cherenkov photons per event;N_{p.e.};Events",
+                 300, 0., 60000.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
