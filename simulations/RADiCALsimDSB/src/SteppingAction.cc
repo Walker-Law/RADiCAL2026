@@ -5,6 +5,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4VProcess.hh"
 #include <cstdlib>
 
 // Optical-photon transport caps (read once from the environment). A Cherenkov
