@@ -123,6 +123,24 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   gt->Draw("AP"); ft->Draw("same");
   t.DrawLatex(0.40,0.82,Form("#sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
               fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
+  // Overlay scint-only curve when the new histograms are present
+  TF1* ftS=nullptr;
+  if(nGoodS>=3){
+    double zeroS[N]={0};
+    TGraphErrors* gtS=new TGraphErrors(nGoodS,ES,tResS,zeroS,tResSErr);
+    gtS->SetName("TimingResolutionScint");
+    gtS->SetMarkerStyle(20); gtS->SetMarkerColor(kAzure+2); gtS->SetLineColor(kAzure+2);
+    gtS->SetMarkerSize(1.3);
+    ftS=new TF1("ftS","sqrt([0]*[0]/x+[1]*[1])",4,130);
+    ftS->SetParameters(20,5); ftS->SetLineColor(kAzure+2); ftS->SetLineStyle(2);
+    gtS->Fit(ftS,"RQ");
+    gtS->Draw("P same"); ftS->Draw("same");
+    t.SetTextColor(kAzure+2);
+    t.DrawLatex(0.40,0.74,Form("scint-only: %.1f ps/#sqrt{E} #oplus %.1f ps",
+                fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1))));
+    t.SetTextColor(kBlack);
+    gtS->Write(); // no-op unless a file is open; persisted properly below
+  }
   c2->SaveAs(Form("%s/timing_resolution_curve.png",out));
 
   // ---------- persist curves as ROOT objects (refreshed every scan) ----------
