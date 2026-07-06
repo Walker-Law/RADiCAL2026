@@ -25,6 +25,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
 
   double eResAll[N],eResErrAll[N], tResAll[N],tResErrAll[N], EAll[N];
   double tResS[N],tResSErr[N], ES[N]; int nGoodS=0;   // scint-only timing (if present)
+  TGraphErrors* gTimingScint=nullptr;
   TCanvas* cL=new TCanvas("cL","long",800,600);
   TLegend* leg=new TLegend(0.62,0.55,0.88,0.88);
   int cols[N]={kRed+1,kOrange+1,kGreen+2,kSpring+4,kAzure+2,kBlue+1,kMagenta+1,kViolet+2};
