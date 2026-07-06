@@ -168,6 +168,34 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   }
   c2->SaveAs(Form("%s/timing_resolution_curve.png",out));
 
+  // ---------- shower-max slice resolution vs paper Fig 17 (right) ----------
+  TGraphErrors* gSM=nullptr;
+  if(nGoodSM>=3){
+    TCanvas* c3=new TCanvas("c3","smres",800,600);
+    double zeroSM[N]={0};
+    gSM=new TGraphErrors(nGoodSM,ESM,smRes,zeroSM,smResErr);
+    gSM->SetName("ShowerMaxResolution");
+    gSM->SetTitle("Shower-max slice energy resolution (LYSO layers 8-10);E_{beam} (GeV);#sigma_{E}/E (%)");
+    gSM->SetMarkerStyle(20); gSM->SetMarkerColor(kBlue+1); gSM->SetLineColor(kBlue+1);
+    gSM->SetMarkerSize(1.3);
+    TF1* fsm=new TF1("fsm","sqrt([0]*[0]+[1]*[1]/x+[2]*[2]/(x*x))",4,130);
+    fsm->SetParameters(9,50,30); fsm->SetLineColor(kRed);
+    gSM->Fit(fsm,"RQ");
+    gSM->Draw("AP"); fsm->Draw("same");
+    // paper Fig 17 fit for reference
+    TF1* fpap=new TF1("fpap","sqrt(9.31*9.31+52.04*52.04/x+31.62*31.62/(x*x))",4,160);
+    fpap->SetLineColor(kGray+2); fpap->SetLineStyle(2); fpap->Draw("same");
+    TLatex tt; tt.SetNDC(); tt.SetTextSize(0.035);
+    tt.DrawLatex(0.35,0.84,Form("sim: %.2f%% #oplus %.1f%%/#sqrt{E} #oplus %.1f%%/E",
+                 fabs(fsm->GetParameter(0)),fabs(fsm->GetParameter(1)),fabs(fsm->GetParameter(2))));
+    tt.SetTextColor(kGray+2);
+    tt.DrawLatex(0.35,0.77,"paper Fig 17: 9.31% #oplus 52.04%/#sqrt{E} #oplus 31.62%/E");
+    tt.SetTextColor(kBlack);
+    c3->SaveAs(Form("%s/showermax_resolution.png",out));
+    printf("\n  Shower-max slice res: %.2f%% (+) %.1f%%/sqrt(E) (+) %.1f%%/E   [paper Fig 17: 9.31 (+) 52.04 (+) 31.62]\n",
+           fabs(fsm->GetParameter(0)),fabs(fsm->GetParameter(1)),fabs(fsm->GetParameter(2)));
+  }
+
   // ---------- persist curves as ROOT objects (refreshed every scan) ----------
   // gr/gt carry their fitted TF1 in their function list, so the fits are saved too.
   TFile* fo = new TFile(Form("%s/resolution_curves.root",dir),"RECREATE");
