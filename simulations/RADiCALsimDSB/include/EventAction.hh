@@ -96,6 +96,11 @@ private:
     // mirroring the CERN test-beam analysis). Capped to bound memory.
     static constexpr size_t kMaxStore = 60000;
     std::array<std::vector<G4double>, 4> fPhTUp, fPhTDown;
+
+    // Scintillation-origin-only parallels (Cherenkov excluded) + process counts
+    std::array<G4double, 4> fTphUpS, fTphDownS;
+    std::array<std::vector<G4double>, 4> fPhTUpS, fPhTDownS;
+    G4int fNphScint, fNphCher;
 };
 
 #endif
