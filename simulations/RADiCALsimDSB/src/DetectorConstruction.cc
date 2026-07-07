@@ -93,9 +93,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     dsb1->AddElement(H,   8.1*perCent);
 
     // =========================================================================
-    // 1b. OPTICAL PROPERTIES  (only quartz, DSB1, and air get tables, so
-    //     optical photons are produced/propagated only in the timing capillary
-    //     system + surrounding air — keeps photon counts tractable.)
+    // 1b. OPTICAL PROPERTIES  (quartz, DSB1, air, Tyvek, and — as of July 2026 —
+    //     LYSO carry tables. LYSO's yield is heavily scaled down via
+    //     RADICAL_LYSO_SCINT_SCALE to keep photon counts tractable; the OpWLS
+    //     re-emission population in the fiber is the realistic signal path.)
     //
     //   Photon energy grid: ~350–800 nm (1.55–3.54 eV).
     // =========================================================================
