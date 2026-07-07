@@ -180,11 +180,13 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   TMultiGraph* mgT=new TMultiGraph();
   mgT->Add(gt,"P");
   if(gTimingScint) mgT->Add(gTimingScint,"P");
+  if(gTimingWls)   mgT->Add(gTimingWls,"P");
   mgT->SetTitle("Timing resolution (downstream #minus upstream);E_{beam} (GeV);#sigma_{t} (ps)");
   mgT->Draw("A");
   mgT->SetMinimum(0.);
   ft->Draw("same");
   if(ftS) ftS->Draw("same");
+  if(ftW) ftW->Draw("same");
   fpaperT->Draw("same");
   t.DrawLatex(0.40,0.84,Form("all light: #sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
               fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
@@ -192,6 +194,12 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     t.SetTextColor(kAzure+2);
     t.DrawLatex(0.40,0.77,Form("scint-only: %.1f ps/#sqrt{E} #oplus %.1f ps",
                 fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1))));
+    t.SetTextColor(kBlack);
+  }
+  if(ftW){
+    t.SetTextColor(kMagenta+1);
+    t.DrawLatex(0.40,0.63,Form("WLS chain: %.1f ps/#sqrt{E} #oplus %.1f ps",
+                fabs(ftW->GetParameter(0)),fabs(ftW->GetParameter(1))));
     t.SetTextColor(kBlack);
   }
   t.SetTextColor(kGray+2);
