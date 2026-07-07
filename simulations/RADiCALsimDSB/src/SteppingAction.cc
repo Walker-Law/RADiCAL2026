@@ -30,14 +30,25 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
         if (postVol) {
             const G4String& pn = postVol->GetLogicalVolume()->GetName();
             if (pn == "PD_Upstream" || pn == "PD_Downstream") {
-                // Tag by creation process: real SiPM signal = WLS/scint band;
-                // Cherenkov from the solid quartz rods is a sim-only contaminant.
+                // Tag by creation process:
+                //   0 = Cherenkov (solid-rod contaminant; real hollow capillary
+                //       has almost none)
+                //   1 = Scintillation (DSB1 fiber self-scint from direct dE/dx)
+                //   2 = OpWLS (LYSO 420 nm light absorbed + re-emitted at 495 nm
+                //       by DSB1 — THE realistic RADiCAL signal path; also
+                //       includes quartz Cherenkov that got WLS-shifted, which
+                //       the real fiber shifts too)
                 const G4VProcess* cp = track->GetCreatorProcess();
-                const bool isCher = cp && cp->GetProcessName() == "Cerenkov";
+                G4int cat = 1;
+                if (cp) {
+                    const G4String& pname = cp->GetProcessName();
+                    if      (pname == "Cerenkov") cat = 0;
+                    else if (pname == "OpWLS")    cat = 2;
+                }
                 fEventAction->RecordPhoton(postVol->GetCopyNo(),
                                            pn == "PD_Upstream",
                                            step->GetPostStepPoint()->GetGlobalTime(),
-                                           isCher);
+                                           cat);
                 track->SetTrackStatus(fStopAndKill);
                 return;
             }
