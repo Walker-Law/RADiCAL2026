@@ -49,23 +49,28 @@ public:
 
     // ── Optical-photon timing readout ───────────────────────────────────────
     // Quantum efficiency of the end photodetectors (bialkali/SiPM-like).
-    // isCherenkov tags the photon's creation process: the real SiPM signal is
-    // WLS (scintillation-band) light, so scint-only timing is scored in
-    // parallel with the all-photon timing to separate the two populations.
+    // cat = creation-process category: 0 Cherenkov, 1 fiber self-scint,
+    // 2 OpWLS (LYSO light re-emitted by DSB1 — the realistic signal path).
+    // "Scint" population = cat 1+2 (everything non-Cherenkov, i.e. what the
+    // real WLS-band SiPM sees); "WLS" population = cat 2 only.
     static constexpr G4double kQE = 0.20;
-    void RecordPhoton(G4int corner, bool isUpstream, G4double t, bool isCherenkov) {
+    void RecordPhoton(G4int corner, bool isUpstream, G4double t, G4int cat) {
         if (corner < 0 || corner >= 4) return;
         if (G4UniformRand() > kQE) return;            // apply QE
         if (isUpstream) { fNphUp[corner]++;   if (t < fTphUp[corner])   fTphUp[corner]   = t;
                           if (fPhTUp[corner].size()   < kMaxStore) fPhTUp[corner].push_back(t); }
         else            { fNphDown[corner]++; if (t < fTphDown[corner]) fTphDown[corner] = t;
                           if (fPhTDown[corner].size() < kMaxStore) fPhTDown[corner].push_back(t); }
-        if (isCherenkov) { fNphCher++; return; }
+        if (cat == 0) { fNphCher++; return; }
         fNphScint++;
         if (isUpstream) { if (t < fTphUpS[corner])   fTphUpS[corner]   = t;
                           if (fPhTUpS[corner].size()   < kMaxStore) fPhTUpS[corner].push_back(t); }
         else            { if (t < fTphDownS[corner]) fTphDownS[corner] = t;
                           if (fPhTDownS[corner].size() < kMaxStore) fPhTDownS[corner].push_back(t); }
+        if (cat != 2) return;
+        fNphWls++;
+        if (isUpstream) { if (t < fTphUpW[corner])   fTphUpW[corner]   = t; }
+        else            { if (t < fTphDownW[corner]) fTphDownW[corner] = t; }
     }
 
 private:
