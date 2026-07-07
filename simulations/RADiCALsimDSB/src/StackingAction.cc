@@ -16,12 +16,18 @@ static bool keepLysoCher() {
     return v;
 }
 
+G4int StackingAction::MaxOpt() {
+    static G4int v = (std::getenv("RADICAL_MAX_OPT_PHOTONS")
+                       ? std::atoi(std::getenv("RADICAL_MAX_OPT_PHOTONS")) : 4000000);
+    return v;
+}
+
 void StackingAction::PrepareNewEvent() { fNopt = 0; }
 
 G4ClassificationOfNewTrack
 StackingAction::ClassifyNewTrack(const G4Track* track) {
     if (track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()) {
-        if (++fNopt > kMaxOpt) return fKill;   // drop photons beyond the budget
+        if (++fNopt > MaxOpt()) return fKill;   // drop photons beyond the budget
         if (!keepLysoCher()) {
             const G4VProcess* cp = track->GetCreatorProcess();
             if (cp && cp->GetProcessName() == "Cerenkov") {
