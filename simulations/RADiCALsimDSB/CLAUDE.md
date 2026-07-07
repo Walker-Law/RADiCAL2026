@@ -37,10 +37,19 @@ missing binary / wrong conda env — must be `conda activate g4` on curiosity, N
 base), inline chunk-log dump on merge failure, exit-before-analysis on any failed
 energy, RADICAL_ENERGIES env override, no default step cap.
 
-**Remaining gap to full fidelity:** LYSO is optically dark; true chain
-(LYSO 420nm → DSB1 425nm absorption → 495nm re-emission via G4OpWLS) is wired in
-the material (WLSABSLENGTH/WLSCOMPONENT) but inert until LYSO gets an optical MPT
-with scaled yield. That's the next upgrade if scint-only isn't close enough.
+**LYSO OPTICALLY ACTIVE (July 2026):** full realistic chain now implemented —
+LYSO 420 nm scint (33200 ph/MeV × `RADICAL_LYSO_SCINT_SCALE`, default 1e-3;
+36 ns decay, n=1.81) → DSB1 425 nm WLS absorption → 495 nm OpWLS re-emission →
+PDs. Detected photons are tagged 3 ways at the PD: Cherenkov / fiber self-scint
+/ OpWLS (H1[29] DeltaT_WLS + H1[30] PhotonsWLS = the realistic-chain estimator;
+"scint" bucket = self-scint + OpWLS). LYSO-born Cherenkov is killed in
+StackingAction (real ratio ~0.1% of scint; would unphysically dominate at scaled
+yield — `RADICAL_KEEP_LYSO_CHER=1` to keep). Photostatistics extrapolation:
+emission-jitter part of σ_t scales as √scale; geometric floors don't.
+NOTE (yield-scaling lesson from the 20k `SCINT_YIELD=0.07` run): scaling yields
+down re-introduces first-photon counting jitter that inflates the fitted
+"constant" term (52.7 ps vs 17.1 ps unscaled) — compare populations at matched
+statistics, don't chase the paper's stochastic term with global yield knobs.
 
 ## What this is
 
