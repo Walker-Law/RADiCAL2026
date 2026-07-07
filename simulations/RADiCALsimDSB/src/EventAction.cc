@@ -315,6 +315,16 @@ void EventAction::EndOfEventAction(const G4Event*) {
     if (fNphScint > 0) am->FillH1(26, fNphScint);
     if (fNphCher  > 0) am->FillH1(27, fNphCher);
 
+    // 6e. WLS-ONLY TIMING — the realistic RADiCAL chain (LYSO 420 nm light
+    //     absorbed by DSB1, re-emitted at 495 nm, creator process "OpWLS").
+    //     First-photon ΔT per corner; population is small at scaled LYSO yield,
+    //     so photostatistics extrapolate as sqrt(RADICAL_LYSO_SCINT_SCALE).
+    for (G4int c = 0; c < 4; c++) {
+        if (fTphUpW[c] < kBigTime && fTphDownW[c] < kBigTime)
+            am->FillH1(29, (fTphDownW[c] - fTphUpW[c]) / ns);
+    }
+    if (fNphWls > 0) am->FillH1(30, fNphWls);
+
     // =========================================================================
     // 7. CERN TEST-BEAM LINE OBSERVABLES
     //    Trigger counters, MCP timing reference (t0), Pb-glass tail catcher.
