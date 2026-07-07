@@ -106,6 +106,10 @@ private:
     std::array<G4double, 4> fTphUpS, fTphDownS;
     std::array<std::vector<G4double>, 4> fPhTUpS, fPhTDownS;
     G4int fNphScint, fNphCher;
+
+    // OpWLS-only (LYSO->DSB1 re-emission, the realistic chain): first times + count
+    std::array<G4double, 4> fTphUpW, fTphDownW;
+    G4int fNphWls;
 };
 
 #endif
