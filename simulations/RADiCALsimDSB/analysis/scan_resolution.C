@@ -241,6 +241,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   gr->Write();
   gt->Write();
   if(gTimingScint) gTimingScint->Write();
+  if(gTimingWls)   gTimingWls->Write();
   if(gSM) gSM->Write();
   // also store the raw scan points as a tidy TTree for quick inspection
   TTree* tr = new TTree("scan","resolution scan points");
