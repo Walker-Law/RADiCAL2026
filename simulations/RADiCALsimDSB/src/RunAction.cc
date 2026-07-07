@@ -171,6 +171,15 @@ RunAction::RunAction() {
                  "LYSO energy in shower-max slice (layers 8-10);E (GeV);Events",
                  2000, 0., 10.);
 
+    // H1[29]/H1[30]: OpWLS-only — LYSO scint absorbed + re-emitted by DSB1,
+    // the realistic RADiCAL signal path (needs LYSO optical + scaled yield).
+    am->CreateH1("DeltaT_WLS",
+                 "First-photon #DeltaT, WLS-shifted LYSO light only;#DeltaT (ns);Corners",
+                 4000, -0.2, 0.6);
+    am->CreateH1("PhotonsWLS",
+                 "Detected WLS-shifted photons per event;N_{p.e.};Events",
+                 300, 0., 6000.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
