@@ -148,6 +148,10 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     gtS->Fit(ftS,"RQ");
     gTimingScint=gtS;   // persisted alongside the other curves below
   }
+  // Paper's measured fit (arXiv:2401.01747 abstract): sigma_t = 256/sqrt(E) (+) 17.5 ps
+  TF1* fpaperT=new TF1("fpaperT","sqrt(256.*256./x+17.5*17.5)",4,160);
+  fpaperT->SetLineColor(kGray+2); fpaperT->SetLineStyle(2); fpaperT->SetLineWidth(2);
+
   TMultiGraph* mgT=new TMultiGraph();
   mgT->Add(gt,"P");
   if(gTimingScint) mgT->Add(gTimingScint,"P");
@@ -156,16 +160,18 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   mgT->SetMinimum(0.);
   ft->Draw("same");
   if(ftS) ftS->Draw("same");
+  fpaperT->Draw("same");
   t.DrawLatex(0.40,0.84,Form("all light: #sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
               fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
   if(ftS){
     t.SetTextColor(kAzure+2);
     t.DrawLatex(0.40,0.77,Form("scint-only: %.1f ps/#sqrt{E} #oplus %.1f ps",
                 fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1))));
-    t.SetTextColor(kGray+2);
-    t.DrawLatex(0.40,0.70,"paper: 256 ps/#sqrt{E} #oplus 17.5 ps");
     t.SetTextColor(kBlack);
   }
+  t.SetTextColor(kGray+2);
+  t.DrawLatex(0.40,0.70,"paper (arXiv:2401.01747): 256 ps/#sqrt{E} #oplus 17.5 ps");
+  t.SetTextColor(kBlack);
   c2->SaveAs(Form("%s/timing_resolution_curve.png",out));
 
   // ---------- shower-max slice resolution vs paper Fig 17 (right) ----------
