@@ -166,6 +166,39 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     lMPT->AddConstProperty("WLSTIMECONSTANT",            dsbDecayNs*ns);
     dsb1->SetMaterialPropertiesTable(lMPT);
 
+    // --- LYSO:Ce: OPTICALLY ACTIVE (realistic signal chain). Luxium datasheet:
+    //     33200 ph/MeV, 36 ns decay, 420 nm emission peak, n = 1.81. Its 420 nm
+    //     light lands in DSB1's 425 nm WLSABSLENGTH band -> absorbed in the
+    //     fiber -> re-emitted at 495 nm by G4OpWLS (creator process "OpWLS") ->
+    //     guided to the PDs. That OpWLS population IS the real RADiCAL signal.
+    //     Full yield = ~5e8 photons/event at 120 GeV — intractable, so the
+    //     yield is scaled by RADICAL_LYSO_SCINT_SCALE (default 1e-3 ->
+    //     33.2 ph/MeV). Photostatistics extrapolate: the emission-jitter part
+    //     of sigma_t scales as sqrt(scale); geometric floors do not.
+    //     Cherenkov born in LYSO is killed in StackingAction (real device:
+    //     ~0.1% of scint light; at scaled yield it would unphysically dominate
+    //     — RADICAL_KEEP_LYSO_CHER=1 to keep it).
+    G4double lysoScale = 1e-3;
+    if (const char* ls = std::getenv("RADICAL_LYSO_SCINT_SCALE")) {
+        double v = std::atof(ls);
+        if (v > 0.) lysoScale = v;
+    }
+    std::vector<G4double> yRI (6, 1.81);
+    std::vector<G4double> yABS(6, 40.*cm);   // bulk attenuation (lit. estimate)
+    // emission spectrum peaked at 420 nm (between the 449/400 nm grid points)
+    std::vector<G4double> yEM  = {0.00, 0.02, 0.25, 0.70, 0.80, 0.00};
+    auto yMPT = new G4MaterialPropertiesTable();
+    yMPT->AddProperty("RINDEX",                  phE, yRI);
+    yMPT->AddProperty("ABSLENGTH",               phE, yABS);
+    yMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, yEM);
+    yMPT->AddConstProperty("SCINTILLATIONYIELD",         33200./MeV * lysoScale);
+    yMPT->AddConstProperty("RESOLUTIONSCALE",            1.0);
+    yMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 36.*ns);
+    yMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
+    lyso->SetMaterialPropertiesTable(yMPT);
+    G4cout << "[RADiCAL] LYSO optical: ON, yield scale " << lysoScale << " -> "
+           << 33200.*lysoScale << " ph/MeV (RADICAL_LYSO_SCINT_SCALE)" << G4endl;
+
     // --- Tyvek: add RINDEX so optical boundary physics activates at Tyvek faces.
     //     n ≈ 1.50 (HDPE). Reflectivity 98% is set via G4LogicalSkinSurface below.
     std::vector<G4double> tvRI = {1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
