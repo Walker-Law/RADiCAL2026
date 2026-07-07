@@ -10,6 +10,15 @@
 // per-event cost while preserving timing: prompt (Cherenkov/early-scint) photons
 // are created first and survive the cap; only the late scintillation tail — which
 // does not affect the leading-edge downstream/upstream ΔT — is discarded.
+//
+// SIZING (July 2026, post LYSO-optical-activation): with LYSO scintillating at
+// 33200 ph/MeV * RADICAL_LYSO_SCINT_SCALE (default 1e-3), full-stack raw photon
+// production alone reaches ~460k/event at 120 GeV — dangerously close to a
+// 500k budget. Hitting the cap truncates events non-uniformly across energy,
+// which showed up as a physically impossible UPTURN in sigma_t at high E (more
+// energy -> worse timing) because high-E events were silently light-starved.
+// Default raised accordingly; override with RADICAL_MAX_OPT_PHOTONS if you
+// change RADICAL_LYSO_SCINT_SCALE and need to rescale the budget with it.
 class StackingAction : public G4UserStackingAction {
 public:
     StackingAction() = default;
@@ -20,7 +29,7 @@ public:
 
 private:
     G4int fNopt = 0;
-    static const G4int kMaxOpt = 500000;   // optical photons / event budget
+    static G4int MaxOpt();
 };
 
 #endif
