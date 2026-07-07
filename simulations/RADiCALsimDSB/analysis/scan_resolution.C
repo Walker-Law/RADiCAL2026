@@ -160,6 +160,19 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     gtS->Fit(ftS,"RQ");
     gTimingScint=gtS;   // persisted alongside the other curves below
   }
+  // WLS-only graph + fit (LYSO-optical runs only)
+  TF1* ftW=nullptr;
+  if(nGoodW>=3){
+    double zeroW[N]={0};
+    TGraphErrors* gtW=new TGraphErrors(nGoodW,EW,tResW,zeroW,tResWErr);
+    gtW->SetName("TimingResolutionWLS");
+    gtW->SetMarkerStyle(22); gtW->SetMarkerColor(kMagenta+1); gtW->SetLineColor(kMagenta+1);
+    gtW->SetMarkerSize(1.4);
+    ftW=new TF1("ftW","sqrt([0]*[0]/x+[1]*[1])",4,130);
+    ftW->SetParameters(100,15); ftW->SetLineColor(kMagenta+1); ftW->SetLineStyle(3);
+    gtW->Fit(ftW,"RQ");
+    gTimingWls=gtW;
+  }
   // Paper's measured fit (arXiv:2401.01747 abstract): sigma_t = 256/sqrt(E) (+) 17.5 ps
   TF1* fpaperT=new TF1("fpaperT","sqrt(256.*256./x+17.5*17.5)",4,160);
   fpaperT->SetLineColor(kGray+2); fpaperT->SetLineStyle(2); fpaperT->SetLineWidth(2);
