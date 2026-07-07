@@ -52,11 +52,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // LYSO:Ce — Lu1.8Y0.2SiO5:Ce, density 7.1 g/cm3 (Saint-Gobain/Luxium datasheet,
     // verified). Mass fractions computed from the molecular formula (M=440.82):
     // Lu 71.45%, Y 4.03%, Si 6.37%, O 18.15% (Ce dopant <0.2 mol%, omitted).
-    // NOT optically active in this sim — no SCINTILLATIONYIELD/RINDEX table is set
-    // on `lyso`, so LYSO produces zero scintillation/Cherenkov photons here; all
-    // "LYSO light" histograms (H1[1] TotalLYSO etc.) are raw energy deposit (GeV),
-    // not photon counts. Real LYSO:Ce (verified): ~33200 ph/MeV, 36 ns decay,
-    // 420 nm emission peak (matches DSB1's 425 nm absorption peak by design).
+    // OPTICALLY ACTIVE as of July 2026 (see section 1b): 33200 ph/MeV (scaled by
+    // RADICAL_LYSO_SCINT_SCALE), 36 ns decay, 420 nm emission, n=1.81 — feeding
+    // DSB1's 425 nm WLS absorption band. Energy histograms (H1[1] TotalLYSO etc.)
+    // remain raw dE/dx energy deposits, independent of the optical yield scale.
     G4Material* lyso = new G4Material("LYSO", 7.1*g/cm3, 4);
     lyso->AddElement(Lu, 71.45*perCent);
     lyso->AddElement(Y,   4.03*perCent);
