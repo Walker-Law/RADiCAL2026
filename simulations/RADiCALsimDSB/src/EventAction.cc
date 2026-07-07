@@ -33,6 +33,8 @@ EventAction::EventAction() {
     fNphUp.fill(0);        fNphDown.fill(0);
     fTphUpS.fill(kBigTime); fTphDownS.fill(kBigTime);
     fNphScint = 0; fNphCher = 0;
+    fTphUpW.fill(kBigTime); fTphDownW.fill(kBigTime);
+    fNphWls = 0;
 }
 EventAction::~EventAction() {}
 
