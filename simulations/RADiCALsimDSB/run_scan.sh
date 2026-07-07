@@ -29,7 +29,10 @@ fi
 NEVT=${1:-1000}
 OPTICAL=${2:-0}
 TAG=$([ "$OPTICAL" = "1" ] && echo optical || echo energy)
-OUTDIR="$(pwd)/scan/${TAG}_scan_${NEVT}"
+# RADICAL_RUN_TAG appends a descriptive suffix (e.g. "lysowls") so distinct
+# physics configs land in separate dirs instead of colliding/SKIP-ing each
+# other under the same optical_scan_<NEVT> name.
+OUTDIR="$(pwd)/scan/${TAG}_scan_${NEVT}${RADICAL_RUN_TAG:+_$RADICAL_RUN_TAG}"
 BINARY="$(pwd)/radical"
 
 # Pre-flight: refuse to launch hundreds of chunks against a missing/broken
