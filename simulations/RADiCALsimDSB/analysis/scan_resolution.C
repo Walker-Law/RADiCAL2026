@@ -254,5 +254,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   printf("  Timing res:  %.1f ps/sqrt(E) (+) %.1f ps\n",fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1)));
   if(ftS) printf("  Timing res (scint-only, Cherenkov excluded): %.1f ps/sqrt(E) (+) %.1f ps   [paper: 256 ps/sqrt(E) (+) 17.5 ps]\n",
                  fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1)));
+  if(ftW) printf("  Timing res (WLS chain, LYSO->DSB1 re-emission): %.1f ps/sqrt(E) (+) %.1f ps   [paper: 256 ps/sqrt(E) (+) 17.5 ps]\n",
+                 fabs(ftW->GetParameter(0)),fabs(ftW->GetParameter(1)));
   printf("  Saved 3 curve PNGs to %s/  and  %s/resolution_curves.root\n\n",out,dir);
 }
