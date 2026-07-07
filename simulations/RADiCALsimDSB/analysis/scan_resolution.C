@@ -75,9 +75,19 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
         nGoodSM++;
       }
     }
-    printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s\n",
+    // WLS-only timing (realistic LYSO->DSB1 chain; needs LYSO-optical run)
+    double sgTW=-1;
+    TH1D* hTW=(TH1D*)f->Get("DeltaT_WLS");
+    if(hTW && hTW->GetEntries()>50){
+      TF1* gTW=coreFit(hTW,2.5,4);
+      sgTW=gTW->GetParameter(2)*500;
+      EW[nGoodW]=E[i]; tResW[nGoodW]=sgTW; tResWErr[nGoodW]=gTW->GetParError(2)*500;
+      nGoodW++;
+    }
+    printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s%s\n",
            E[i],muE,sgE,eResI,muT,sgT,
-           sgTS>0?Form("(scint-only: %.2f)",sgTS):"");
+           sgTS>0?Form("(scint: %.2f) ",sgTS):"",
+           sgTW>0?Form("(WLS: %.2f)",sgTW):"");
     // --- longitudinal profile overlay (normalized to unit area) ---
     TH1D* hL=(TH1D*)f->Get("ShowerProfile"); hL=(TH1D*)hL->Clone(Form("L%d",i));
     if(hL->Integral()>0) hL->Scale(1.0/hL->Integral());
