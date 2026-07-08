@@ -429,6 +429,7 @@ t_WLS−t_MCP =0.81ns (geom 0.79ns), Pb-glass ≈5.3 GeV leakage. All physical.
 | `analysis/plot_testbeam.C` | `root -l -b -q 'analysis/plot_testbeam.C("build/radical_output.root",120)'` | 4 PNGs in build/plots/ |
 | `analysis/scan_resolution.C` | `root -l -b -q analysis/scan_resolution.C` | build/scan/resolution_curves.root + PNGs |
 | `analysis/compare_data.C` | `root -l -b -q analysis/compare_data.C` | prints σ_t table (sim vs data) |
+| `analysis/compare_sim_data.C` | `root -l -b -q 'analysis/compare_sim_data.C("build/scan/optical_scan_<N>")'` | sim (data-matched H1[31-33]) vs test-beam + paper overlay PNGs |
 | `analysis/compare_graphs.C` | `root -l -b -q analysis/compare_graphs.C` | build/plots/datacomp/sigma_vs_E.png |
 | `analysis/fix_titles.C` | one-time patch | replaces "front/back" → "upstream/downstream" in ROOT files |
 
