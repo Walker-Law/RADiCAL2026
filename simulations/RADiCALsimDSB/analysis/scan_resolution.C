@@ -163,7 +163,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   gt->SetMarkerSize(1.3);
   TF1* ft=new TF1("ft","sqrt([0]*[0]/x+[1]*[1])",4,130);
   ft->SetParameters(20,5); ft->SetParNames("stoch","const");
-  ft->SetLineColor(kRed); gt->Fit(ft,"RQ");
+  ft->SetLineColor(kGreen+2); gt->Fit(ft,"RQ");
   // Scint-only graph + fit (new files only), prepared before drawing so the
   // axes can be ranged over BOTH graphs — otherwise the lower scint-only
   // points fall outside the all-photon auto-range and vanish from the plot.
