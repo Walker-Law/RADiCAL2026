@@ -180,6 +180,30 @@ RunAction::RunAction() {
                  "Detected WLS-shifted photons per event;N_{p.e.};Events",
                  300, 0., 6000.);
 
+    // ── H1[31-33]: DATA-MATCHED ESTIMATORS (direct test-beam comparison) ──────
+    // Constructed identically to RADiCAL/Analysis so sim and real data land on
+    // the same axes: per-event 4-corner average, 5% CFD, MCP-free (DW−UP)/2 for
+    // timing; fiber-light sum (sum_lg analog) with containment veto for energy.
+
+    // H1[31]: 4-corner-averaged 5% CFD ΔT, ALL detected light. σ_t = σ(ΔT)/2.
+    // Same range/binning as H1[22] so per-corner vs 4-corner can be overlaid.
+    am->CreateH1("DeltaT_CFD_4c",
+                 "Data-matched #DeltaT (4-corner mean, 5% CFD, all light);#DeltaT (ns);Events",
+                 800, -4., 4.);
+
+    // H1[32]: same, SCINTILLATION-origin only — the physical WLS-band SiPM analog
+    // (solid-rod Cherenkov excluded). This is the headline sim#minusdata number.
+    am->CreateH1("DeltaT_CFD_4c_Scint",
+                 "Data-matched #DeltaT (4-corner mean, 5% CFD, scint only);#DeltaT (ns);Events",
+                 800, -4., 4.);
+
+    // H1[33]: fiber-light energy = scint N_{p.e.} with containment veto — the
+    // sum_lg analog (light-based, Pb-glass as veto not add-back). Fine binning
+    // (10 p.e./bin) so the core fit resolves the peak at any LYSO yield scale.
+    am->CreateH1("Npe_Scint_veto",
+                 "Data-matched fiber-light energy (scint N_{p.e.}, veto);N_{p.e.};Events",
+                 6000, 0., 60000.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
