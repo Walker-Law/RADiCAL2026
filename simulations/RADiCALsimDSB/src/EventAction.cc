@@ -19,6 +19,18 @@ static bool gTimingOn() {
     return on;
 }
 
+// Datasheet DRS4 timing jitter [ns], added independently to each readout
+// channel's CFD crossing time for the H1[34] data-matched estimator. Default
+// 25 ps = DT5742/DRS4 single-channel timing accuracy after cell + voltage
+// calibration (Ritt, DRS4 chip; CAEN DT5742 uses DRS4). Tunable/disable via
+// RADICAL_DRS4_JITTER_PS (0 → H1[34] equals the ideal H1[32]).
+static G4double drs4JitterNs() {
+    static const G4double v = (std::getenv("RADICAL_DRS4_JITTER_PS")
+                               ? std::atof(std::getenv("RADICAL_DRS4_JITTER_PS"))
+                               : 25.0) * 1.0e-3;   // ps → ns
+    return v;
+}
+
 // ── DRS4 uncalibrated-timebase model (datasheet-grounded) ───────────────────
 // CAEN DT5742 uses the PSI DRS4 chip. On the NOMINAL (uncalibrated) time axis
 // that the RADiCAL test-beam data was written with, the effective cell width
