@@ -207,8 +207,10 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   if(ftS) ftS->Draw("same");
   if(ftW) ftW->Draw("same");
   fpaperT->Draw("same");
+  t.SetTextColor(kGreen+2);
   t.DrawLatex(0.40,0.84,Form("all light: #sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
               fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
+  t.SetTextColor(kBlack);
   if(ftS){
     t.SetTextColor(kAzure+2);
     t.DrawLatex(0.40,0.77,Form("scint-only: %.1f ps/#sqrt{E} #oplus %.1f ps",
