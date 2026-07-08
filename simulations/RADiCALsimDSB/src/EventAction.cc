@@ -19,6 +19,25 @@ static bool gTimingOn() {
     return on;
 }
 
+// ── DRS4 uncalibrated-timebase model (datasheet-grounded) ───────────────────
+// CAEN DT5742 uses the PSI DRS4 chip. On the NOMINAL (uncalibrated) time axis
+// that the RADiCAL test-beam data was written with, the effective cell width
+// deviates from the nominal 0.2 ns (5 GS/s) by up to ±100 ps (PSI DRS4 manual;
+// integral nonlinearity ~0.4 ns). Within one DRS4 readout group all channels
+// share the stop cell, so the common accumulated error CANCELS in the (DW−UP)
+// corner difference; the residual is the differential width error over the ~1
+// cell separating the down- and up-edge crossings. We model that residual per
+// corner as Gaussian with σ = σ_cell·√(|ΔT|/0.2 ns) — it vanishes as ΔT→0 (both
+// edges in the same cell → full cancellation) and grows with edge separation.
+// σ_cell = per-cell width RMS in ps via RADICAL_DRS4_CELL_PS; default 50 ps
+// (≈ half the ±100 ps datasheet max, i.e. a plausible RMS). Set 0 to disable.
+// This is a grounded approximation, NOT a free tune to the data's 35 ps floor.
+static G4double drs4CellSigmaNs() {
+    static const G4double v = (std::getenv("RADICAL_DRS4_CELL_PS")
+                               ? std::atof(std::getenv("RADICAL_DRS4_CELL_PS")) : 50.0) * 1e-3;
+    return v;
+}
+
 EventAction::EventAction() {
     fEdepLYSO.fill(0.);
     fEdepW.fill(0.);
