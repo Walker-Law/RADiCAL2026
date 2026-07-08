@@ -226,32 +226,61 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   t.SetTextColor(kBlack);
   c2->SaveAs(Form("%s/timing_resolution_curve.png",out));
 
-  // ---------- shower-max slice resolution vs paper Fig 17 (right) ----------
+  // ---------- shower-max resolution vs paper Fig 17 (right) ----------
+  // Two estimators: dE/dx (no photon stats, diagnostic only) and photon-COUNT
+  // (PhotonsWLS — the real apples-to-apples analog of the paper's SiPM-sum).
   TGraphErrors* gSM=nullptr;
-  if(nGoodSM>=3){
+  TGraphErrors* gPE=nullptr;
+  TF1* fsm=nullptr;
+  TF1* fpe=nullptr;
+  if(nGoodSM>=3 || nGoodPE>=3){
     TCanvas* c3=new TCanvas("c3","smres",800,600);
-    double zeroSM[N]={0};
-    gSM=new TGraphErrors(nGoodSM,ESM,smRes,zeroSM,smResErr);
-    gSM->SetName("ShowerMaxResolution");
-    gSM->SetTitle("Shower-max slice energy resolution (LYSO layers 8-10);E_{beam} (GeV);#sigma_{E}/E (%)");
-    gSM->SetMarkerStyle(20); gSM->SetMarkerColor(kBlue+1); gSM->SetLineColor(kBlue+1);
-    gSM->SetMarkerSize(1.3);
-    TF1* fsm=new TF1("fsm","sqrt([0]*[0]+[1]*[1]/x+[2]*[2]/(x*x))",4,130);
-    fsm->SetParameters(9,50,30); fsm->SetLineColor(kRed);
-    gSM->Fit(fsm,"RQ");
-    gSM->Draw("AP"); fsm->Draw("same");
+    TMultiGraph* mgSM=new TMultiGraph();
+    if(nGoodSM>=3){
+      double zeroSM[N]={0};
+      gSM=new TGraphErrors(nGoodSM,ESM,smRes,zeroSM,smResErr);
+      gSM->SetName("ShowerMaxResolution_dEdx");
+      gSM->SetMarkerStyle(20); gSM->SetMarkerColor(kBlue+1); gSM->SetLineColor(kBlue+1);
+      gSM->SetMarkerSize(1.3);
+      fsm=new TF1("fsm","sqrt([0]*[0]+[1]*[1]/x+[2]*[2]/(x*x))",4,130);
+      fsm->SetParameters(9,50,30); fsm->SetLineColor(kBlue+1);
+      gSM->Fit(fsm,"RQ");
+      mgSM->Add(gSM,"P");
+    }
+    if(nGoodPE>=3){
+      double zeroPE[N]={0};
+      gPE=new TGraphErrors(nGoodPE,EPE,peRes,zeroPE,peResErr);
+      gPE->SetName("ShowerMaxResolution_PhotonCount");
+      gPE->SetMarkerStyle(21); gPE->SetMarkerColor(kMagenta+1); gPE->SetLineColor(kMagenta+1);
+      gPE->SetMarkerSize(1.3);
+      fpe=new TF1("fpe","sqrt([0]*[0]+[1]*[1]/x+[2]*[2]/(x*x))",4,130);
+      fpe->SetParameters(9,50,30); fpe->SetLineColor(kMagenta+1); fpe->SetLineStyle(2);
+      gPE->Fit(fpe,"RQ");
+      mgSM->Add(gPE,"P");
+    }
+    mgSM->SetTitle("Shower-max energy resolution;E_{beam} (GeV);#sigma/mean (%)");
+    mgSM->Draw("A");
+    if(fsm) fsm->Draw("same");
+    if(fpe) fpe->Draw("same");
     // paper Fig 17 fit for reference
     TF1* fpap=new TF1("fpap","sqrt(9.31*9.31+52.04*52.04/x+31.62*31.62/(x*x))",4,160);
-    fpap->SetLineColor(kGray+2); fpap->SetLineStyle(2); fpap->Draw("same");
-    TLatex tt; tt.SetNDC(); tt.SetTextSize(0.035);
-    tt.DrawLatex(0.35,0.84,Form("sim: %.2f%% #oplus %.1f%%/#sqrt{E} #oplus %.1f%%/E",
-                 fabs(fsm->GetParameter(0)),fabs(fsm->GetParameter(1)),fabs(fsm->GetParameter(2))));
+    fpap->SetLineColor(kGray+2); fpap->SetLineStyle(3); fpap->Draw("same");
+    TLatex tt; tt.SetNDC(); tt.SetTextSize(0.032);
+    double yy=0.86;
+    if(fsm){ tt.SetTextColor(kBlue+1);
+      tt.DrawLatex(0.35,yy,Form("sim (dE/dx, no photon stats): %.2f #oplus %.1f/#sqrt{E} #oplus %.1f/E",
+                   fabs(fsm->GetParameter(0)),fabs(fsm->GetParameter(1)),fabs(fsm->GetParameter(2)))); yy-=0.06; }
+    if(fpe){ tt.SetTextColor(kMagenta+1);
+      tt.DrawLatex(0.35,yy,Form("sim (photon count, real analog): %.2f #oplus %.1f/#sqrt{E} #oplus %.1f/E",
+                   fabs(fpe->GetParameter(0)),fabs(fpe->GetParameter(1)),fabs(fpe->GetParameter(2)))); yy-=0.06; }
     tt.SetTextColor(kGray+2);
-    tt.DrawLatex(0.35,0.77,"paper Fig 17: 9.31% #oplus 52.04%/#sqrt{E} #oplus 31.62%/E");
+    tt.DrawLatex(0.35,yy,"paper Fig 17: 9.31 #oplus 52.04/#sqrt{E} #oplus 31.62/E");
     tt.SetTextColor(kBlack);
     c3->SaveAs(Form("%s/showermax_resolution.png",out));
-    printf("\n  Shower-max slice res: %.2f%% (+) %.1f%%/sqrt(E) (+) %.1f%%/E   [paper Fig 17: 9.31 (+) 52.04 (+) 31.62]\n",
+    if(fsm) printf("\n  Shower-max res (dE/dx):        %.2f%% (+) %.1f%%/sqrt(E) (+) %.1f%%/E   [paper: 9.31 (+) 52.04 (+) 31.62]\n",
            fabs(fsm->GetParameter(0)),fabs(fsm->GetParameter(1)),fabs(fsm->GetParameter(2)));
+    if(fpe) printf("  Shower-max res (photon count): %.2f%% (+) %.1f%%/sqrt(E) (+) %.1f%%/E   [paper: 9.31 (+) 52.04 (+) 31.62]\n",
+           fabs(fpe->GetParameter(0)),fabs(fpe->GetParameter(1)),fabs(fpe->GetParameter(2)));
   }
 
   // ---------- persist curves as ROOT objects (refreshed every scan) ----------
