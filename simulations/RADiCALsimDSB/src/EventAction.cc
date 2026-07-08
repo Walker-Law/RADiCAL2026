@@ -282,19 +282,26 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // =========================================================================
     // 6c. WAVEFORM-EMULATED TIMING (data-identical estimator)
     //   Pulse built from ALL detected photon times, digitized DRS4-style, then
-    //   50% CFD — the same estimator as the CERN test-beam waveform analysis.
-    //   H1[22] = ΔT_CFD (downstream − upstream), H1[23] = pulse FWHM check.
+    //   5% CFD — the same estimator as the CERN test-beam waveform analysis.
+    //   H1[22] = per-corner ΔT_CFD (downstream − upstream), H1[23] = pulse FWHM.
+    //   H1[31] = the DATA-MATCHED estimator: the 4 corners are averaged PER EVENT
+    //   before differencing, exactly like test-beam Method A
+    //   (RADiCAL/Analysis/timingEnergyBins.C: mean{DW} − mean{UP}). This √4
+    //   per-event averaging is why H1[31] < H1[22]; analysis reports σ_t=σ/2.
     // =========================================================================
+    G4double sumDT = 0.; G4int nDT = 0;   // per-event 4-corner accumulator (all light)
     for (G4int c = 0; c < 4; c++) {
         G4double fwUp = -1., fwDn = -1.;
         G4double tUp = pulseCFD(fPhTUp[c],   &fwUp);
         G4double tDn = pulseCFD(fPhTDown[c], &fwDn);
         if (tUp > 0. && tDn > 0.) {
-            am->FillH1(22, (tDn - tUp) / 1.0);   // already in ns
+            am->FillH1(22, (tDn - tUp) / 1.0);   // already in ns (per-corner)
+            sumDT += (tDn - tUp); ++nDT;         // accumulate for the 4-corner mean
             if (fwUp > 0.) am->FillH1(23, fwUp);
             if (fwDn > 0.) am->FillH1(23, fwDn);
         }
     }
+    if (nDT > 0) am->FillH1(31, sumDT / nDT);    // H1[31] data-matched, all light
 
     // =========================================================================
     // 6d. SCINTILLATION-ONLY TIMING (Cherenkov excluded)
@@ -303,15 +310,22 @@ void EventAction::EndOfEventAction(const G4Event*) {
     //   and the SiPM sees DSB1's 495 nm re-emission. In this sim the rods are
     //   solid quartz, so prompt Cherenkov dominates the leading edge and sets
     //   an artificial ~45-50 ps floor tied to shower-depth fluctuations.
+    //   H1[32] = data-matched (4-corner mean per event, 5% CFD) scint-only —
+    //   the closest apples-to-apples analog of the real detector's σ_t.
     // =========================================================================
+    G4double sumDTS = 0.; G4int nDTS = 0;   // per-event 4-corner accumulator (scint only)
     for (G4int c = 0; c < 4; c++) {
         if (fTphUpS[c] < kBigTime && fTphDownS[c] < kBigTime)
             am->FillH1(24, (fTphDownS[c] - fTphUpS[c]) / ns);
         G4double fw = -1.;
         G4double tUpS = pulseCFD(fPhTUpS[c],   &fw);
         G4double tDnS = pulseCFD(fPhTDownS[c], &fw);
-        if (tUpS > 0. && tDnS > 0.) am->FillH1(25, (tDnS - tUpS) / 1.0);
+        if (tUpS > 0. && tDnS > 0.) {
+            am->FillH1(25, (tDnS - tUpS) / 1.0);   // per-corner
+            sumDTS += (tDnS - tUpS); ++nDTS;       // accumulate for the 4-corner mean
+        }
     }
+    if (nDTS > 0) am->FillH1(32, sumDTS / nDTS);   // H1[32] data-matched, scint only
     if (fNphScint > 0) am->FillH1(26, fNphScint);
     if (fNphCher  > 0) am->FillH1(27, fNphCher);
 
