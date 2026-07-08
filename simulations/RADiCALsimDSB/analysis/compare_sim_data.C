@@ -80,6 +80,8 @@ void compare_sim_data(const char* dir = "build/scan", const char* prefix = "radi
       if (h->GetEntries() > 50) {
         TF1* pre = coreFit(h, 2.0, 3); double s = pre->GetParameter(2);
         double bw = h->GetBinWidth(1); int rb = TMath::Max(1, (int)std::round((s/5.)/bw));
+        int nb = h->GetNbinsX();
+        while (rb > 1 && nb % rb != 0) --rb;   // snap to an exact divisor (no Rebin warning)
         if (rb > 1) h->Rebin(rb); delete pre;
         TF1* g = coreFit(h, 2.0, 4);
         double mu = g->GetParameter(1), sg = g->GetParameter(2);
