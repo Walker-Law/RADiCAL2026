@@ -383,6 +383,18 @@ void EventAction::EndOfEventAction(const G4Event*) {
     bool inAcceptance = (eModuleReco > fEdepPbGlass);
     if (eComb > 0. && inAcceptance) am->FillH1(20, eComb / GeV);   // H1[20]
 
+    // ── DATA-MATCHED ENERGY (H1[33]) — fiber-light sum, containment-veto style ──
+    //   Test-beam energy = Σ of the 8 corner-fiber LIGHT peaks (sum_lg,
+    //   RADiCAL/Analysis/processRun.C) with a Pb-glass CONTAINMENT VETO (reject
+    //   sum_pb > 0.30·sum_lg) — the OPPOSITE of H1[20]'s tail-catcher ADD-BACK.
+    //   Sim analog of sum_lg = detected scintillation-origin fiber light
+    //   (fNphScint). The data's halo/pion veto is largely inert on the clean sim
+    //   beam, so we reuse the beam-acceptance cut (module reco > Pb-glass) as the
+    //   veto. CAVEAT: N_pe carries the LYSO-yield scaling (RADICAL_LYSO_SCINT_SCALE),
+    //   so σ/mean has a photostatistics floor set by that yield — trust the
+    //   absolute σ/E only at a realistic yield; the trend vs E is robust.
+    if (fNphScint > 0 && inAcceptance) am->FillH1(33, fNphScint);
+
     // ── Optional per-event timing diagnostic (RADICAL_TIMING=1) ──────────────
     if (gTimingOn()) {
         auto dt = std::chrono::duration<double>(
