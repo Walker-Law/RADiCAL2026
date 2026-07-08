@@ -49,7 +49,7 @@ static bool sigmaT(TFile* f, const char* hn, double& st, double& ste) {
   return st > 0;
 }
 
-void compare_sim_data(const char* dir = "build/scan", const char* prefix = "radical") {
+void compare_sim_data(const char* dir = "build/scan", const char* prefix = "optical") {
   gStyle->SetOptStat(0); gStyle->SetOptFit(0);
   gStyle->SetPadGridX(1); gStyle->SetPadGridY(1);
   const int N = 8; double E[N] = {5, 10, 20, 25, 50, 100, 120, 150};
