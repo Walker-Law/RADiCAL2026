@@ -12,6 +12,21 @@
 
 ## CURRENT STATE (July 2026) — timing puzzle SOLVED, validation run in flight
 
+**UPDATE (July 8 2026) — data-matched estimators added for direct test-beam
+comparison.** Three new histograms mirror the `RADiCAL/` data pipeline's
+construction so sim and real data land on the same axes: **H1[31] DeltaT_CFD_4c**
+(per-event **4-corner-averaged** 5% CFD ΔT, all light) and **H1[32]
+DeltaT_CFD_4c_Scint** (same, scint-only — the headline sim↔data timing number)
+replicate test-beam Method A `(mean{DW}−mean{UP})/2` from
+`RADiCAL/Analysis/timingEnergyBins.C`. The old per-corner H1[6]/H1[22]/H1[25]
+lack the √4 per-event averaging, so they overstate σ_t by ~2×. **H1[33]
+Npe_Scint_veto** is the fiber-light `sum_lg` energy analog (Pb-glass as *veto*,
+not the ECombined *add-back*). Overlay vs data+paper: `analysis/compare_sim_data.C`.
+The full comparison needs a fresh OPTICAL scan with the rebuilt binary (the
+in-flight 20k run predates these histograms). Systematic method diff:
+`DATA_VS_SIM_SYSTEMATICS.md`. Still idealized (no DRS4 cell/noise/saturation) —
+sim σ_t is the light-limited floor; the data's ~35 ps constant term is electronics.
+
 **Key finding:** the sim's ~46-52 ps σ_t floor (vs paper's 17.5 ps) was **Cherenkov
 light born in the SOLID quartz rods** (real device: thin-wall hollow capillary,
 negligible Cherenkov). Prompt Cherenkov forms the leading edge and imprints
