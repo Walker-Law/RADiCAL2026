@@ -56,7 +56,9 @@ fi
 echo "Pre-flight OK: $BINARY runs and produces output."
 rm -rf "$PREFLIGHT_DIR"
 
-TOTAL_CORES=$(nproc 2>/dev/null || echo 512)
+# RADICAL_MAX_CORES caps usage below the full machine (e.g. shared/SLURM nodes,
+# or to leave headroom for other users) — default uses everything nproc reports.
+TOTAL_CORES=${RADICAL_MAX_CORES:-$(nproc 2>/dev/null || echo 512)}
 CHUNKS_PER_E=$(( TOTAL_CORES / ${#ENERGIES[@]} ))
 [ "$CHUNKS_PER_E" -lt 1 ] && CHUNKS_PER_E=1
 EVT_PER_CHUNK=$(( (NEVT + CHUNKS_PER_E - 1) / CHUNKS_PER_E ))
