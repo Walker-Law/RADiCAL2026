@@ -197,8 +197,8 @@ fi
 if [ -n "$ROOTEXE" ] && [ -x "$ROOTEXE" ]; then
     echo "--- building resolution curves ---"
     cd ..
-    "$ROOTEXE" -l -b -q "analysis/scan_resolution.C(\"build/scan/${TAG}_scan_${NEVT}\",\"optical\")"
-    echo "Resolution curves -> build/scan/${TAG}_scan_${NEVT}/resolution_curves.root"
+    "$ROOTEXE" -l -b -q "analysis/scan_resolution.C(\"build/scan/${TAG}_scan_${NEVT}${RADICAL_RUN_TAG:+_$RADICAL_RUN_TAG}\",\"optical\")"
+    echo "Resolution curves -> build/scan/${TAG}_scan_${NEVT}${RADICAL_RUN_TAG:+_$RADICAL_RUN_TAG}/resolution_curves.root"
 else
     echo "root not found — run make_plots.sh after activating ROOT (conda activate hep)"
 fi
