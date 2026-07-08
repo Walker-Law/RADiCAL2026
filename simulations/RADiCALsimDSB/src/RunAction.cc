@@ -204,6 +204,14 @@ RunAction::RunAction() {
                  "Data-matched fiber-light energy (scint N_{p.e.}, veto);N_{p.e.};Events",
                  6000, 0., 60000.);
 
+    // H1[34]: same as H1[32] (4-corner, 5% CFD, scint) but with the datasheet
+    // DRS4 UNCALIBRATED-cell timebase residual added (RADICAL_DRS4_CELL_PS, PSI
+    // DRS4 ±100 ps/cell). This is the honest data-comparison timing: sim light
+    // physics + the DRS4 electronics term the real detector carries. σ_t=σ(ΔT)/2.
+    am->CreateH1("DeltaT_CFD_4c_Scint_DRS4",
+                 "Data-matched #DeltaT (4-corner, 5% CFD, scint, uncalib DRS4);#DeltaT (ns);Events",
+                 800, -4., 4.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
