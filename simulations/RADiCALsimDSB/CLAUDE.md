@@ -24,8 +24,20 @@ Npe_Scint_veto** is the fiber-light `sum_lg` energy analog (Pb-glass as *veto*,
 not the ECombined *add-back*). Overlay vs data+paper: `analysis/compare_sim_data.C`.
 The full comparison needs a fresh OPTICAL scan with the rebuilt binary (the
 in-flight 20k run predates these histograms). Systematic method diff:
-`DATA_VS_SIM_SYSTEMATICS.md`. Still idealized (no DRS4 cell/noise/saturation) —
-sim σ_t is the light-limited floor; the data's ~35 ps constant term is electronics.
+`DATA_VS_SIM_SYSTEMATICS.md`.
+
+**H1[34] DeltaT_CFD_4c_Scint_DRS4** = H1[32] + a **datasheet-grounded DRS4
+uncalibrated-timebase** residual — the honest data-comparison timing. CAEN DT5742
+/ PSI DRS4 nominal (uncalibrated) axis: cell width deviates from 0.2 ns by up to
+±100 ps. Within a DRS4 group the common accumulated error cancels in (DW−UP); the
+residual is the differential width error over the ~1 cell between the down/up
+crossings, modeled per corner as Gaussian σ = σ_cell·√(|ΔT|/0.2 ns).
+`RADICAL_DRS4_CELL_PS` sets σ_cell (per-cell RMS, ps; default **50**, ≈ half the
+±100 ps max; set 0 → H1[34]==H1[32]). This is a grounded approximation, NOT tuned
+to the data's 35 ps floor — it is expected to UNDER-shoot 35 ps, quantifying how
+much of the real floor is DRS4 timebase vs amplifier/system. Electronic noise
+(~0.5 mV) + 1 Vpp saturation + 12-bit quant are second-order for the 5% CFD
+leading edge and not yet added (would need a photons→mV gain calibration).
 
 **Key finding:** the sim's ~46-52 ps σ_t floor (vs paper's 17.5 ps) was **Cherenkov
 light born in the SOLID quartz rods** (real device: thin-wall hollow capillary,
