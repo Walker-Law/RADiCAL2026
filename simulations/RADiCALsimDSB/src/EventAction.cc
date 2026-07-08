@@ -332,7 +332,8 @@ void EventAction::EndOfEventAction(const G4Event*) {
     //   H1[32] = data-matched (4-corner mean per event, 5% CFD) scint-only —
     //   the closest apples-to-apples analog of the real detector's σ_t.
     // =========================================================================
-    G4double sumDTS = 0.; G4int nDTS = 0;   // per-event 4-corner accumulator (scint only)
+    G4double sumDTS = 0., sumDTS_drs4 = 0.; G4int nDTS = 0;  // 4-corner accumulators (scint)
+    const G4double sCell = drs4CellSigmaNs();
     for (G4int c = 0; c < 4; c++) {
         if (fTphUpS[c] < kBigTime && fTphDownS[c] < kBigTime)
             am->FillH1(24, (fTphDownS[c] - fTphUpS[c]) / ns);
@@ -340,11 +341,19 @@ void EventAction::EndOfEventAction(const G4Event*) {
         G4double tUpS = pulseCFD(fPhTUpS[c],   &fw);
         G4double tDnS = pulseCFD(fPhTDownS[c], &fw);
         if (tUpS > 0. && tDnS > 0.) {
-            am->FillH1(25, (tDnS - tUpS) / 1.0);   // per-corner
-            sumDTS += (tDnS - tUpS); ++nDTS;       // accumulate for the 4-corner mean
+            G4double dtc = tDnS - tUpS;
+            am->FillH1(25, dtc / 1.0);         // per-corner
+            sumDTS += dtc; ++nDTS;             // clean 4-corner mean (H1[32])
+            // datasheet DRS4 uncalibrated-cell residual (differential, per corner)
+            G4double ec = (sCell > 0.)
+                ? G4RandGauss::shoot(0., sCell * std::sqrt(std::fabs(dtc) / 0.2)) : 0.;
+            sumDTS_drs4 += (dtc + ec);         // DRS4-processed 4-corner mean (H1[34])
         }
     }
-    if (nDTS > 0) am->FillH1(32, sumDTS / nDTS);   // H1[32] data-matched, scint only
+    if (nDTS > 0) {
+        am->FillH1(32, sumDTS      / nDTS);    // H1[32] data-matched, scint, ideal DRS4
+        am->FillH1(34, sumDTS_drs4 / nDTS);    // H1[34] data-matched, scint, uncalibrated DRS4
+    }
     if (fNphScint > 0) am->FillH1(26, fNphScint);
     if (fNphCher  > 0) am->FillH1(27, fNphCher);
 
