@@ -65,7 +65,9 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       ES[nGoodS]=E[i]; tResS[nGoodS]=sgTS; tResSErr[nGoodS]=gTS->GetParError(2)*500;
       nGoodS++;
     }
-    // shower-max slice resolution (paper Fig 17 analog; new files only)
+    // shower-max slice resolution — dE/dx version (pure calorimetric, NO photon
+    // statistics; structurally cannot reproduce the paper's light-yield-limited
+    // Fig 17 curve, kept for reference/diagnostic only).
     TH1D* hSM=(TH1D*)f->Get("EShowerMax");
     if(hSM && hSM->GetEntries()>50){
       TF1* gSM=coreFit(hSM,2.0,4);
@@ -74,6 +76,22 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
         ESM[nGoodSM]=E[i]; smRes[nGoodSM]=100.*sgSM/muSM;
         smResErr[nGoodSM]=100.*gSM->GetParError(2)/muSM;
         nGoodSM++;
+      }
+    }
+    // shower-max resolution — PHOTON-COUNT version (the real Fig 17 analog).
+    // PhotonsWLS is inherently shower-max-localized: only LYSO light that
+    // reaches the DSB1 fiber's fixed z-window gets WLS-shifted, so this carries
+    // the same photon-counting noise that dominates the paper's real SiPM-sum
+    // estimator. sigma/mean(N_pe) ~ sigma_E/E since N_pe is proportional to
+    // collected light -> collected energy for a linear chain.
+    TH1D* hPE=(TH1D*)f->Get("PhotonsWLS");
+    if(hPE && hPE->GetEntries()>50){
+      TF1* gPE=coreFit(hPE,2.0,4);
+      double muPE=gPE->GetParameter(1), sgPE=gPE->GetParameter(2);
+      if(muPE>0){
+        EPE[nGoodPE]=E[i]; peRes[nGoodPE]=100.*sgPE/muPE;
+        peResErr[nGoodPE]=100.*gPE->GetParError(2)/muPE;
+        nGoodPE++;
       }
     }
     // WLS-only timing (realistic LYSO->DSB1 chain; needs LYSO-optical run)
