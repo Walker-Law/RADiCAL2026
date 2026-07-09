@@ -308,19 +308,30 @@ void EventAction::EndOfEventAction(const G4Event*) {
     //   (RADiCAL/Analysis/timingEnergyBins.C: mean{DW} − mean{UP}). This √4
     //   per-event averaging is why H1[31] < H1[22]; analysis reports σ_t=σ/2.
     // =========================================================================
-    G4double sumDT = 0.; G4int nDT = 0;   // per-event 4-corner accumulator (all light)
+    G4double sumDT = 0., sumDT_drs4 = 0.; G4int nDT = 0;   // 4-corner accumulators (all light)
+    const G4double sCellA = drs4CellSigmaNs();
     for (G4int c = 0; c < 4; c++) {
         G4double fwUp = -1., fwDn = -1.;
         G4double tUp = pulseCFD(fPhTUp[c],   &fwUp);
         G4double tDn = pulseCFD(fPhTDown[c], &fwDn);
         if (tUp > 0. && tDn > 0.) {
-            am->FillH1(22, (tDn - tUp) / 1.0);   // already in ns (per-corner)
-            sumDT += (tDn - tUp); ++nDT;         // accumulate for the 4-corner mean
+            G4double dtc = tDn - tUp;
+            am->FillH1(22, dtc / 1.0);           // already in ns (per-corner)
+            sumDT += dtc; ++nDT;                 // accumulate for the 4-corner mean
+            // datasheet DRS4 uncalibrated-cell residual (same model as H1[34]):
+            // ALL light + DRS4 is the physically faithful headline once the WLS
+            // yield is realistic (real capillary is solid -> Cherenkov is real).
+            G4double ec = (sCellA > 0.)
+                ? G4RandGauss::shoot(0., sCellA * std::sqrt(std::fabs(dtc) / 0.2)) : 0.;
+            sumDT_drs4 += (dtc + ec);
             if (fwUp > 0.) am->FillH1(23, fwUp);
             if (fwDn > 0.) am->FillH1(23, fwDn);
         }
     }
-    if (nDT > 0) am->FillH1(31, sumDT / nDT);    // H1[31] data-matched, all light
+    if (nDT > 0) {
+        am->FillH1(31, sumDT      / nDT);    // H1[31] data-matched, all light, ideal DRS4
+        am->FillH1(35, sumDT_drs4 / nDT);    // H1[35] all light + datasheet DRS4 (faithful headline)
+    }
 
     // =========================================================================
     // 6d. SCINTILLATION-ONLY TIMING (Cherenkov excluded)
