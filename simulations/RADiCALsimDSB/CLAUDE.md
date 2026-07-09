@@ -39,14 +39,28 @@ much of the real floor is DRS4 timebase vs amplifier/system. Electronic noise
 (~0.5 mV) + 1 Vpp saturation + 12-bit quant are second-order for the 5% CFD
 leading edge and not yet added (would need a photons→mV gain calibration).
 
-**Key finding:** the sim's ~46-52 ps σ_t floor (vs paper's 17.5 ps) was **Cherenkov
-light born in the SOLID quartz rods** (real device: thin-wall hollow capillary,
-negligible Cherenkov). Prompt Cherenkov forms the leading edge and imprints
-shower-depth fluctuations on ΔT; not common-mode, so the (DW−UP)/2 trick can't
-cancel it. Proof: photons are now tagged by creation process — scint-only timing
-gives **90.1 ps/√E ⊕ 17.1 ps vs paper's 256 ps/√E ⊕ 17.5 ps** (constant term
-matches to 0.4 ps). Stochastic differs because sim detects ~373 pe/MeV-in-fiber
-vs paper's ~25 npe/MeV → `RADICAL_SCINT_YIELD=0.07` scales it to match.
+**CORRECTION (2026-07-09, per Walker): the real RADiCAL capillary is SOLID and DOES
+produce Cherenkov — it is NOT a thin-wall hollow capillary.** The sim already models
+solid quartz rods (`DetectorConstruction.cc:472-486`: upstream/downstream are solid
+quartz `G4Tubs`, no air bore), so the geometry needs no change. The real mechanism
+for the all-light floor is the **light-yield ratio, not the geometry**: the sim
+scales LYSO/WLS scint down 1000× (`RADICAL_LYSO_SCINT_SCALE=1e-3`) while quartz
+Cherenkov runs at the full physical rate, **inverting the real ~1000:1
+scint:Cherenkov ratio** (`StackingAction.cc:8-11`). In the real detector the WLS
+light overwhelms Cherenkov, so the CFD leading edge is WLS-set → good timing. So
+Cherenkov IS real and the SiPM DOES see it; scint-only is a tractable **proxy** for
+the WLS-dominated regime, not evidence Cherenkov is absent. Faithful headline =
+all-light at realistic yield; all-light at scaled yield is misleading. **Open test:**
+raise `RADICAL_LYSO_SCINT_SCALE` and confirm all-light σ_t converges to the WLS value.
+
+**Key finding (reframed):** the sim's ~46-52 ps all-light σ_t floor (vs paper's 17.5
+ps) is prompt quartz-rod Cherenkov **dominating the leading edge because WLS is
+suppressed 1000×**. Prompt Cherenkov born along the whole rod imprints shower-depth
+fluctuations on ΔT; not common-mode, so (DW−UP)/2 can't cancel it. Process-tagged
+scoring — scint-only timing gives **90.1 ps/√E ⊕ 17.1 ps vs paper's 256 ps/√E ⊕ 17.5
+ps** (constant term matches to 0.4 ps), i.e. the WLS-dominated value the real device
+achieves. Stochastic differs because sim detects ~373 pe/MeV-in-fiber vs paper's ~25
+npe/MeV → `RADICAL_SCINT_YIELD=0.07` scales it to match.
 New histograms: H1[24] DeltaT_Scint, H1[25] DeltaT_CFD_Scint, H1[26] PhotonsScint,
 H1[27] PhotonsCher, H1[28] EShowerMax (LYSO layers 8-10 = WLS window slice —
 the analog of paper Fig 17 right, ~10% σ/E; full-module ECombined is 2.7% and
