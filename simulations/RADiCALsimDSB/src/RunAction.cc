@@ -212,6 +212,16 @@ RunAction::RunAction() {
                  "Data-matched #DeltaT (4-corner, 5% CFD, scint, uncalib DRS4);#DeltaT (ns);Events",
                  800, -4., 4.);
 
+    // H1[35]: ALL light (Cherenkov included) + datasheet DRS4 — the physically
+    // FAITHFUL headline (2026-07-09 correction: the real capillary is SOLID, so
+    // the SiPM does see quartz Cherenkov). Only meaningful when the WLS yield is
+    // realistic enough that scint dominates the leading edge as in the real
+    // device (raise RADICAL_LYSO_SCINT_SCALE); at the default 1e-3 scale
+    // Cherenkov is over-weighted 1000x and this histogram overstates σ_t.
+    am->CreateH1("DeltaT_CFD_4c_DRS4",
+                 "Faithful #DeltaT (4-corner, 5% CFD, all light, uncalib DRS4);#DeltaT (ns);Events",
+                 800, -4., 4.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
