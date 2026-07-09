@@ -152,6 +152,7 @@ void compare_sim_data(const char* dir = "build/scan", const char* prefix = "opti
     TGraphErrors* gE = new TGraphErrors(nE, Ee, eR, z, eRe); gE->SetName("sim_eres");
     gE->SetMarkerStyle(21); gE->SetMarkerSize(1.4); gE->SetMarkerColor(kRed+1); gE->SetLineColor(kRed+1);
     gE->SetTitle("Fiber-light energy resolution: sim vs test beam;E_{beam} (GeV);#sigma/E (%)");
+    gE->SetMinimum(0.);   // keep the 11-19% DATA band on-canvas (auto-range hid it)
     gE->Draw("AP");
     TBox* band = new TBox(4, kDataEresLo, 160, kDataEresHi);
     band->SetFillColorAlpha(kGray,0.35); band->SetLineColor(kGray+1); band->Draw("same");
