@@ -106,9 +106,11 @@ void compare_sim_data(const char* dir = "build/scan", const char* prefix = "opti
   double z[N] = {0};
   TMultiGraph* mg = new TMultiGraph();
 
-  TGraphErrors *gD=nullptr, *gS=nullptr, *gA=nullptr;
-  if (nD) { gD = new TGraphErrors(nD, Ed, tD, z, tDe); gD->SetName("sim_drs4");
-    gD->SetMarkerStyle(20); gD->SetMarkerSize(1.5); gD->SetMarkerColor(kRed+1); gD->SetLineColor(kRed+1); mg->Add(gD,"P"); }
+  TGraphErrors *gH=nullptr, *gD=nullptr, *gS=nullptr, *gA=nullptr;
+  if (nH) { gH = new TGraphErrors(nH, Eh, tH, z, tHe); gH->SetName("sim_all_drs4");
+    gH->SetMarkerStyle(20); gH->SetMarkerSize(1.5); gH->SetMarkerColor(kRed+1); gH->SetLineColor(kRed+1); mg->Add(gH,"P"); }
+  if (nD) { gD = new TGraphErrors(nD, Ed, tD, z, tDe); gD->SetName("sim_scint_drs4");
+    gD->SetMarkerStyle(22); gD->SetMarkerSize(1.4); gD->SetMarkerColor(kMagenta+1); gD->SetLineColor(kMagenta+1); mg->Add(gD,"P"); }
   if (nS) { gS = new TGraphErrors(nS, Es, tS, z, tSe); gS->SetName("sim_scint");
     gS->SetMarkerStyle(24); gS->SetMarkerSize(1.3); gS->SetMarkerColor(kAzure+2); gS->SetLineColor(kAzure+2); mg->Add(gS,"P"); }
   if (nA) { gA = new TGraphErrors(nA, Ea, tA, z, tAe); gA->SetName("sim_all");
@@ -116,6 +118,10 @@ void compare_sim_data(const char* dir = "build/scan", const char* prefix = "opti
 
   mg->SetTitle("Timing resolution: sim (data-matched) vs test beam;E_{beam} (GeV);#sigma_{t} (ps)");
   mg->Draw("A"); mg->SetMinimum(0.);
+  // Fixed y-range: unstable all-light core fits at low E (Cherenkov-broadened,
+  // non-Gaussian at scaled yield) otherwise stretch the axis and squash the
+  // 20-40 ps region where the actual comparison lives.
+  mg->SetMaximum(120.);
 
   TF1* fData = new TF1("fData","sqrt([0]*[0]/x+[1]*[1])",4,160);
   fData->SetParameters(kDataA,kDataB); fData->SetLineColor(kBlack); fData->SetLineWidth(2); fData->Draw("same");
