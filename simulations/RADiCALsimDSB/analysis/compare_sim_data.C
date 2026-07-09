@@ -128,14 +128,17 @@ void compare_sim_data(const char* dir = "build/scan", const char* prefix = "opti
   TF1* fPap = new TF1("fPap","sqrt([0]*[0]/x+[1]*[1])",4,160);
   fPap->SetParameters(kPapA,kPapB); fPap->SetLineColor(kGray+2); fPap->SetLineStyle(2); fPap->SetLineWidth(2); fPap->Draw("same");
 
-  TF1 *fD=nullptr, *fS=nullptr;
+  TF1 *fH=nullptr, *fD=nullptr, *fS=nullptr;
+  if (nH >= 3) { fH = new TF1("fH","sqrt([0]*[0]/x+[1]*[1])",4,160);
+    fH->SetParameters(60,30); fH->SetLineColor(kRed+1); fH->SetLineStyle(1); gH->Fit(fH,"RQ"); fH->Draw("same"); }
   if (nD >= 3) { fD = new TF1("fD","sqrt([0]*[0]/x+[1]*[1])",4,160);
-    fD->SetParameters(60,30); fD->SetLineColor(kRed+1); fD->SetLineStyle(1); gD->Fit(fD,"RQ"); fD->Draw("same"); }
+    fD->SetParameters(60,30); fD->SetLineColor(kMagenta+1); fD->SetLineStyle(7); gD->Fit(fD,"RQ"); fD->Draw("same"); }
   if (nS >= 3) { fS = new TF1("fS","sqrt([0]*[0]/x+[1]*[1])",4,160);
     fS->SetParameters(60,15); fS->SetLineColor(kAzure+2); fS->SetLineStyle(3); gS->Fit(fS,"RQ"); fS->Draw("same"); }
 
-  TLegend* L = new TLegend(0.40,0.62,0.88,0.88); L->SetFillStyle(0); L->SetBorderSize(0);
-  if (gD) L->AddEntry(gD,"sim: scint + datasheet DRS4 (headline)","p");
+  TLegend* L = new TLegend(0.36,0.58,0.88,0.88); L->SetFillStyle(0); L->SetBorderSize(0);
+  if (gH) L->AddEntry(gH,"sim: ALL light + DRS4 (faithful; needs realistic yield)","p");
+  if (gD) L->AddEntry(gD,"sim: scint + DRS4 (WLS-regime proxy)","p");
   if (gS) L->AddEntry(gS,"sim: scint, ideal DRS4 (light floor)","p");
   if (gA) L->AddEntry(gA,"sim: all light, ideal DRS4 (ref)","p");
   L->AddEntry(fData,Form("DATA (test beam): %.0f/#sqrt{E} #oplus %.1f ps",kDataA,kDataB),"l");
