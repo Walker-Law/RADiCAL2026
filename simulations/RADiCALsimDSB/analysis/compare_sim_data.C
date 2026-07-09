@@ -87,15 +87,16 @@ void compare_sim_data(const char* dir = "build/scan", const char* prefix = "opti
         if (mu > 0) { eres = 100*sg/mu; Ee[nE]=E[i]; eR[nE]=eres; eRe[nE]=100*g->GetParError(2)/mu; nE++; }
       }
     }
-    printf("  %5.0f      %8s      %8s %8s        %8s\n", E[i],
-           sD>0?Form("%.1f",sD):"--", sS>0?Form("%.1f",sS):"--",
-           sA>0?Form("%.1f",sA):"--", eres>0?Form("%.2f",eres):"--");
+    printf("  %5.0f    %8s      %8s      %8s %8s        %8s\n", E[i],
+           sH>0?Form("%.1f",sH):"--", sD>0?Form("%.1f",sD):"--",
+           sS>0?Form("%.1f",sS):"--", sA>0?Form("%.1f",sA):"--",
+           eres>0?Form("%.2f",eres):"--");
     f->Close();
   }
 
-  if (nD == 0 && nS == 0 && nA == 0) {
+  if (nH == 0 && nD == 0 && nS == 0 && nA == 0) {
     printf("\n  No data-matched histograms found in %s.\n"
-           "  Run an OPTICAL scan with a binary built after the H1[31-34] change:\n"
+           "  Run an OPTICAL scan with a binary built after the H1[31-35] change:\n"
            "    RADICAL_OPTICAL=1 bash run_scan.sh <NEVT> 1\n\n", dir);
     return;
   }
