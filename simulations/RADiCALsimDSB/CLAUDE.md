@@ -53,6 +53,23 @@ the WLS-dominated regime, not evidence Cherenkov is absent. Faithful headline =
 all-light at realistic yield; all-light at scaled yield is misleading. **Open test:**
 raise `RADICAL_LYSO_SCINT_SCALE` and confirm all-light σ_t converges to the WLS value.
 
+**YIELD-SWEEP POSTMORTEM + Cherenkov-thinning knob (2026-07-09).** The
+LYSO-yield sweep (3e-3/1e-2/3e-2, 2 energies, 2000 evt) was INVALIDATED above
+3e-3 by `RADICAL_MAX_OPT_PHOTONS` (StackingAction, default 4M/event): at 150 GeV
+generated photons hit ~6.8M (1e-2) and ~20M (3e-2), so stacking silently killed
+the excess — detected N_pe SATURATED (~6k/evt, energy-independent), OpWLS froze
+at ~2810, scale-independent Cherenkov/self-scint fell 4-5×, and σ_t blew up
+(~199 ps artifacts). Diagnostic signature to watch for: N_scint NOT scaling with
+the yield knob + energy-independent N_pe saturation. Data parked in
+`build/scan/yield_sweep_2000/` (only 3e-3 is valid; shows no convergence — 10:1
+detected scint:cher still lets PROMPT Cherenkov set the 5% CFD edge; real ratio
+is ~1000:1). **Consequence:** scaling WLS *up* is intractable (20M photons/evt);
+instead use the new `RADICAL_QUARTZ_CHER_KEEP` knob (StackingAction, default
+1.0): binomial thinning of quartz/fiber Cherenkov at stacking ≡ reducing
+Cherenkov yield, restoring the REAL ratio at LOWER cost. KEEP=0.01 ≈ real
+~860:1. Also fixed: kill decisions now precede the budget increment (LYSO
+Cherenkov no longer wastes ~15% of the budget).
+
 **Key finding (reframed):** the sim's ~46-52 ps all-light σ_t floor (vs paper's 17.5
 ps) is prompt quartz-rod Cherenkov **dominating the leading edge because WLS is
 suppressed 1000×**. Prompt Cherenkov born along the whole rod imprints shower-depth
