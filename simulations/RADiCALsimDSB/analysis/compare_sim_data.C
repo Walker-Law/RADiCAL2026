@@ -55,19 +55,21 @@ void compare_sim_data(const char* dir = "build/scan", const char* prefix = "opti
   const int N = 8; double E[N] = {5, 10, 20, 25, 50, 100, 120, 150};
   const char* out = "build/plots";
 
-  double Ed[N], tD[N], tDe[N]; int nD = 0;   // scint + datasheet DRS4 (headline)
+  double Eh[N], tH[N], tHe[N]; int nH = 0;   // ALL light + DRS4 (faithful headline; needs realistic yield)
+  double Ed[N], tD[N], tDe[N]; int nD = 0;   // scint + datasheet DRS4 (WLS-regime proxy)
   double Es[N], tS[N], tSe[N]; int nS = 0;   // scint, ideal DRS4 (light floor)
   double Ea[N], tA[N], tAe[N]; int nA = 0;   // all light, ideal DRS4 (reference)
   double Ee[N], eR[N], eRe[N]; int nE = 0;   // fiber-light sigma/E
 
-  printf("\n  E(GeV)  sigma_t DRS4(ps)  scint(ps)  all(ps)   sigma/E light(%%)\n");
-  printf("  ------------------------------------------------------------------\n");
+  printf("\n  E(GeV)  all+DRS4(ps)  scint+DRS4(ps)  scint(ps)  all(ps)   sigma/E light(%%)\n");
+  printf("  --------------------------------------------------------------------------\n");
 
   for (int i = 0; i < N; i++) {
     TFile* f = TFile::Open(Form("%s/%s_E%.0fGeV.root", dir, prefix, E[i]));
     if (!f || f->IsZombie()) { printf("  %5.0f   -- file not found --\n", E[i]); continue; }
 
-    double sD=-1,sDe=0, sS=-1,sSe=0, sA=-1,sAe=0;
+    double sH=-1,sHe=0, sD=-1,sDe=0, sS=-1,sSe=0, sA=-1,sAe=0;
+    if (sigmaT(f, "DeltaT_CFD_4c_DRS4",       sH, sHe)) { Eh[nH]=E[i]; tH[nH]=sH; tHe[nH]=sHe; nH++; }
     if (sigmaT(f, "DeltaT_CFD_4c_Scint_DRS4", sD, sDe)) { Ed[nD]=E[i]; tD[nD]=sD; tDe[nD]=sDe; nD++; }
     if (sigmaT(f, "DeltaT_CFD_4c_Scint",      sS, sSe)) { Es[nS]=E[i]; tS[nS]=sS; tSe[nS]=sSe; nS++; }
     if (sigmaT(f, "DeltaT_CFD_4c",            sA, sAe)) { Ea[nA]=E[i]; tA[nA]=sA; tAe[nA]=sAe; nA++; }
