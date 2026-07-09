@@ -168,7 +168,9 @@ void compare_sim_data(const char* dir = "build/scan", const char* prefix = "opti
 
   // ================= summary =================
   printf("\n  ---- fits (sigma_t = a/sqrt(E) (+) b) ----\n");
-  if (fD) printf("  sim scint + datasheet DRS4:  %.1f/sqrt(E) (+) %.1f ps   <- headline\n",
+  if (fH) printf("  sim ALL light + DRS4:        %.1f/sqrt(E) (+) %.1f ps   <- faithful headline (at realistic yield)\n",
+                 fabs(fH->GetParameter(0)), fabs(fH->GetParameter(1)));
+  if (fD) printf("  sim scint + datasheet DRS4:  %.1f/sqrt(E) (+) %.1f ps   (WLS-regime proxy)\n",
                  fabs(fD->GetParameter(0)), fabs(fD->GetParameter(1)));
   if (fS) printf("  sim scint, ideal DRS4:       %.1f/sqrt(E) (+) %.1f ps   (light floor)\n",
                  fabs(fS->GetParameter(0)), fabs(fS->GetParameter(1)));
