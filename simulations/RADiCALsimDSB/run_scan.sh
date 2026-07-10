@@ -109,9 +109,17 @@ export OUTDIR EVT_PER_CHUNK TS BINARY TAG OPTICAL
 # Launch all chunks for all (not-yet-done) energies simultaneously
 pids=()
 for E in "${ENERGIES[@]}"; do
-    if [ -f "$OUTDIR/optical_E${E}GeV.root" ]; then
-        echo "[$(date '+%H:%M:%S')] SKIP ${E} GeV (already exists)"
-        continue
+    EXIST="$OUTDIR/optical_E${E}GeV.root"
+    # Only skip if the existing file is a REAL merge (>10 KB). Empty 787-byte
+    # hadd shells from a killed/failed prior run must NOT count as done.
+    if [ -f "$EXIST" ]; then
+        sz=$(stat -c%s "$EXIST" 2>/dev/null || stat -f%z "$EXIST" 2>/dev/null || echo 0)
+        if [ "$sz" -gt 10240 ]; then
+            echo "[$(date '+%H:%M:%S')] SKIP ${E} GeV (valid file, $(( sz/1024 )) KB)"
+            continue
+        fi
+        echo "[$(date '+%H:%M:%S')] REDO ${E} GeV (stale/empty file, $sz bytes — removing)"
+        rm -f "$EXIST"
     fi
     rm -f tmprun_${TAG}_E${E}_c*.root
     for (( C=0; C<CHUNKS_PER_E; C++ )); do
