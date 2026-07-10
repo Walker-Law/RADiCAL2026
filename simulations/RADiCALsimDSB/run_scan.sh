@@ -159,16 +159,23 @@ monitor() {
             done=$(( done + n ))
             parts="$parts ${E}:${n}"
         done
+        # Event-level progress: each chunk logs a "--> Event N" line every 10
+        # events (/run/printProgress 10), so ~10 x (line count) events are done.
+        # This gives a live ETA long before any whole chunk completes.
+        local ev
+        ev=$(grep -sc -- "--> Event" "$OUTDIR"/log_E*_c*.log 2>/dev/null \
+             | awk -F: '{s+=$NF} END{print (s+0)*10}')
         local elapsed=$(( $(date +%s) - START_T ))
         local pct=0
-        [ "$TOTAL_CHUNKS" -gt 0 ] && pct=$(( done * 100 / TOTAL_CHUNKS ))
+        [ "$EVTARGET" -gt 0 ] && pct=$(( ev * 100 / EVTARGET ))
+        [ "$pct" -gt 100 ] && pct=100
         local eta="--"
-        if [ "$done" -gt 0 ]; then
-            local rem=$(( elapsed * (TOTAL_CHUNKS - done) / done ))
+        if [ "$ev" -gt 0 ] && [ "$ev" -lt "$EVTARGET" ]; then
+            local rem=$(( elapsed * (EVTARGET - ev) / ev ))
             eta=$(printf '%dh%02dm' $(( rem/3600 )) $(( (rem%3600)/60 )))
         fi
-        printf "[%s] %3d%% (%d/%d chunks done)  elapsed %dh%02dm  ETA %s | per-E done:%s\n" \
-            "$(date '+%H:%M:%S')" "$pct" "$done" "$TOTAL_CHUNKS" \
+        printf "[%s] %3d%% (~%d/%d events, %d/%d chunks)  elapsed %dh%02dm  ETA %s | chunks done:%s\n" \
+            "$(date '+%H:%M:%S')" "$pct" "$ev" "$EVTARGET" "$done" "$TOTAL_CHUNKS" \
             $(( elapsed/3600 )) $(( (elapsed%3600)/60 )) "$eta" "$parts"
     done
 }
