@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Energy/timing scan — embarrassingly parallel over events on all cores.
 #
-# Each energy is split into CHUNKS_PER_E single-thread processes that run
+# Each energy is split into cost-weighted (∝E) single-thread processes that run
 # simultaneously, each in its own /tmp dir (local disk). Per-chunk ROOT files
 # are hadd-merged per energy at the end. No Geant4 MT merge bottleneck.
 #
