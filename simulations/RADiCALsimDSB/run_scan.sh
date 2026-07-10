@@ -59,9 +59,17 @@ rm -rf "$PREFLIGHT_DIR"
 # RADICAL_MAX_CORES caps usage below the full machine (e.g. shared/SLURM nodes,
 # or to leave headroom for other users) — default uses everything nproc reports.
 TOTAL_CORES=${RADICAL_MAX_CORES:-$(nproc 2>/dev/null || echo 512)}
-CHUNKS_PER_E=$(( TOTAL_CORES / ${#ENERGIES[@]} ))
-[ "$CHUNKS_PER_E" -lt 1 ] && CHUNKS_PER_E=1
-EVT_PER_CHUNK=$(( (NEVT + CHUNKS_PER_E - 1) / CHUNKS_PER_E ))
+# COST-WEIGHTED chunk allocation: optical per-event CPU cost scales ~linearly
+# with beam energy, so an equal core split leaves the low-E cores idle for
+# hours while 120 GeV grinds alone. Give each energy chunks ∝ E: every energy
+# then finishes at ~the same wall time ≈ (total cost)/(total cores).
+ESUM=0
+for E in "${ENERGIES[@]}"; do ESUM=$(( ESUM + E )); done
+chunksFor() {  # chunksFor <E> -> chunk count for that energy
+    local c=$(( TOTAL_CORES * $1 / ESUM ))
+    [ "$c" -lt 4 ] && c=4
+    echo "$c"
+}
 TS=$(date +%s)
 START_T=$(date +%s)
 
