@@ -184,12 +184,17 @@ for E in "${ENERGIES[@]}"; do
         any_failed=1; continue
     fi
     "$HADD" -f "$OUT" "${CHUNKS[@]}" > "$OUTDIR/log_E${E}_merge.log" 2>&1
-    if [ -f "$OUT" ]; then
-        sz=$(stat -c%s "$OUT" 2>/dev/null || stat -f%z "$OUT" 2>/dev/null || echo 0)
+    sz=$([ -f "$OUT" ] && (stat -c%s "$OUT" 2>/dev/null || stat -f%z "$OUT" 2>/dev/null) || echo 0)
+    # A real merge is hundreds of KB; a failed hadd leaves a ~787-byte empty
+    # shell. Require >10 KB before calling it OK and deleting the chunks —
+    # otherwise keep the chunks so a re-run can retry the merge.
+    if [ "$sz" -gt 10240 ]; then
         echo "[$(date '+%H:%M:%S')] ${E} GeV OK  (${#CHUNKS[@]} chunks, $(( sz/1024 )) KB) -> $OUT"
         rm -f tmprun_${TAG}_E${E}_c*.root
     else
-        echo "!! ${E} GeV merge failed — see $OUTDIR/log_E${E}_merge.log"
+        echo "!! ${E} GeV merge FAILED ($sz bytes) — chunks kept. Tail of merge log:"
+        tail -8 "$OUTDIR/log_E${E}_merge.log" 2>/dev/null | sed 's/^/     /'
+        rm -f "$OUT"   # remove the empty shell so it can't masquerade as done
         any_failed=1
     fi
 done
