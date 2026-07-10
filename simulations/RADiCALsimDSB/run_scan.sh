@@ -90,32 +90,39 @@ export RADICAL_OPTICAL=$OPTICAL
 mkdir -p "$OUTDIR" "$(pwd)/plots"
 
 echo "Scan: NEVT=$NEVT/energy   optical=$([ "$OPTICAL" = 1 ] && echo ON || echo OFF)   tag=$TAG"
-echo "  ${#ENERGIES[@]} energies x $CHUNKS_PER_E chunks x $EVT_PER_CHUNK events = $(( ${#ENERGIES[@]} * CHUNKS_PER_E )) simultaneous processes"
+echo "  cost-weighted chunks (∝E, $TOTAL_CORES cores):"
+for E in "${ENERGIES[@]}"; do
+    c=$(chunksFor "$E"); n=$(( (NEVT + c - 1) / c ))
+    echo "    ${E} GeV: $c chunks x $n events"
+done
 echo "  output -> $OUTDIR"
 [ "$OPTICAL" = "1" ] && echo "  optical photon step cap -> ${RADICAL_OPT_MAXSTEP:-NONE (unlimited)}   time cut -> ${RADICAL_OPT_TMAX:-NONE} ns"
 echo "  hadd   -> ${HADD:-<none found>}"
 echo "------------------------------------------------------------"
 
-# One chunk: EVT_PER_CHUNK events single-threaded in /tmp, result moved back.
+# One chunk: $3 events single-threaded in /tmp, result moved back.
+# /run/printProgress makes Geant4 log a line every 10 events, so the monitor
+# can report REAL event-level progress instead of only whole-chunk completions.
 run_chunk() {
-    local E=$1 C=$2
+    local E=$1 C=$2 NEV=$3
     local OUTF="$(pwd)/tmprun_${TAG}_E${E}_c${C}.root"
     local LOG="$OUTDIR/log_E${E}_c${C}.log"
     local TMPD
     TMPD=$(mktemp -d /tmp/radical_E${E}_c${C}_XXXXXX)
     local SEED1=$(( (E * 100003 + C * 17 + TS) % 900000000 + 1 ))
     local SEED2=$(( (E * 7919   + C * 31337 + TS * 3) % 900000000 + 1 ))
-    printf '/random/setSeeds %d %d\n/run/numberOfThreads 1\n/run/initialize\n/run/beamOn %d\n' \
-        "$SEED1" "$SEED2" "$EVT_PER_CHUNK" > "$TMPD/run.mac"
+    printf '/random/setSeeds %d %d\n/run/numberOfThreads 1\n/run/initialize\n/run/printProgress 10\n/run/beamOn %d\n' \
+        "$SEED1" "$SEED2" "$NEV" > "$TMPD/run.mac"
     ( cd "$TMPD" && RADICAL_OPTICAL=$OPTICAL RADICAL_BEAM_ENERGY_GEV=$E "$BINARY" run.mac ) > "$LOG" 2>&1
     [ -f "$TMPD/radical_output.root" ] && mv -f "$TMPD/radical_output.root" "$OUTF"
     rm -rf "$TMPD"
 }
 export -f run_chunk
-export OUTDIR EVT_PER_CHUNK TS BINARY TAG OPTICAL
+export OUTDIR TS BINARY TAG OPTICAL
 
 # Launch all chunks for all (not-yet-done) energies simultaneously
 pids=()
+EVTARGET=0
 for E in "${ENERGIES[@]}"; do
     EXIST="$OUTDIR/optical_E${E}GeV.root"
     # Only skip if the existing file is a REAL merge (>10 KB). Empty 787-byte
@@ -129,14 +136,16 @@ for E in "${ENERGIES[@]}"; do
         echo "[$(date '+%H:%M:%S')] REDO ${E} GeV (stale/empty file, $sz bytes — removing)"
         rm -f "$EXIST"
     fi
-    rm -f tmprun_${TAG}_E${E}_c*.root
-    for (( C=0; C<CHUNKS_PER_E; C++ )); do
-        run_chunk "$E" "$C" &
+    rm -f "$OUTDIR"/log_E${E}_c*.log tmprun_${TAG}_E${E}_c*.root
+    c=$(chunksFor "$E"); n=$(( (NEVT + c - 1) / c ))
+    EVTARGET=$(( EVTARGET + c * n ))
+    for (( C=0; C<c; C++ )); do
+        run_chunk "$E" "$C" "$n" &
         pids+=($!)
     done
 done
 TOTAL_CHUNKS=${#pids[@]}
-echo "[$(date '+%H:%M:%S')] $TOTAL_CHUNKS chunks launched — monitoring..."
+echo "[$(date '+%H:%M:%S')] $TOTAL_CHUNKS chunks launched ($EVTARGET events total) — monitoring..."
 
 # Progress monitor: count completed chunk files every 30 s.
 monitor() {
