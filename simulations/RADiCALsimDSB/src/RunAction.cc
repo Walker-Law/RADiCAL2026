@@ -224,6 +224,19 @@ RunAction::RunAction() {
                  "Faithful #DeltaT (4-corner, 5% CFD, all light, uncalib DRS4);#DeltaT (ns);Events",
                  800, -4., 4.);
 
+    // ── Dual-gain SiPM readout (high gain = timing, low gain = energy) ───────
+    // Appended at the END (H1[36]/H1[37]) so it does not shift the data-matched
+    // block's indices above (whose fills hardcode 31-35).
+    // H1[36]: LOW-GAIN energy = summed SiPM fired-pixel count over all corners
+    // (pixel-saturated, linear electronics) — the realistic energy proxy.
+    am->CreateH1("EnergyLowGain",
+                 "Low-gain energy signal (SiPM fired pixels, all corners);N_{fired};Events",
+                 400, 0., 120000.);
+    // H1[37]: HIGH-GAIN timing = fixed-threshold leading-edge #DeltaT (dn - up).
+    am->CreateH1("DeltaT_HighGain",
+                 "High-gain fixed-threshold #DeltaT (downstream #minus upstream);#DeltaT (ns);Corners",
+                 4000, -0.2, 0.6);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
