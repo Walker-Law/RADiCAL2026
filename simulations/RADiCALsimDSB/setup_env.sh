@@ -7,6 +7,15 @@
 # Auto-detects the Geant4 installation via geant4-config, then falls back
 # to the hardcoded local Mac path if geant4-config is not in PATH.
 
+# If the Geant4 data env is ALREADY valid (e.g. `conda activate g4` exported the
+# paths), do nothing. Never overwrite a working environment — this is what broke
+# runs launched from the g4 env: the script clobbered a correct G4ENSDFSTATEDATA
+# with a wrong fallback path. Safe no-op when the file it needs already resolves.
+if [ -n "${G4ENSDFSTATEDATA:-}" ] && [ -f "$G4ENSDFSTATEDATA/ENSDFSTATE.dat" ]; then
+    echo "Geant4 data env already valid (G4ENSDFSTATEDATA=$G4ENSDFSTATEDATA) — keeping it."
+    return 0 2>/dev/null || exit 0
+fi
+
 # Find geant4-config: PATH first, then the known conda env location — so the
 # sim runs correctly even from the `base` env (previously that silently fell
 # through to the Mac fallback below and died with "ENSDFSTATE.dat is not found").
