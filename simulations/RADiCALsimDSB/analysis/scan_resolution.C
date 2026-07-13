@@ -363,5 +363,15 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
                  fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1)));
   if(ftW) printf("  Timing res (WLS chain, LYSO->DSB1 re-emission): %.1f ps/sqrt(E) (+) %.1f ps   [paper: 256 ps/sqrt(E) (+) 17.5 ps]\n",
                  fabs(ftW->GetParameter(0)),fabs(ftW->GetParameter(1)));
+  if(ftHG) printf("  Timing res (DUAL-GAIN high-gain, fixed threshold): %.1f ps/sqrt(E) (+) %.1f ps\n",
+                 fabs(ftHG->GetParameter(0)),fabs(ftHG->GetParameter(1)));
+  // Dual-gain low-gain energy: resolution + SiPM-saturation linearity check
+  if(nGoodLG>=3){
+    printf("  DUAL-GAIN low-gain energy (SiPM fired-pixel sum):\n");
+    for(int i=0;i<nGoodLG;i++)
+      printf("     mean N_fired=%.0f   sigma/mean=%.1f%%\n", eLGmean[i], eLG[i]);
+    // linearity: mean N_fired per GeV should be flat if unsaturated, fall if saturating
+    printf("     (falling N_fired/GeV at high E = SiPM pixel saturation setting in)\n");
+  }
   printf("  Saved 3 curve PNGs to %s/  and  %s/resolution_curves.root\n\n",out,dir);
 }
