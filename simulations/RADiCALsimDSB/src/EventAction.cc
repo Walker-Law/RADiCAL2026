@@ -444,9 +444,9 @@ void EventAction::EndOfEventAction(const G4Event*) {
             // high-gain TIMING: fixed-threshold leading edge, downstream - upstream
             G4double tHGu = leadingEdgeFixed(fPhTUpS[c],   thrHG);
             G4double tHGd = leadingEdgeFixed(fPhTDownS[c], thrHG);
-            if (tHGu > 0. && tHGd > 0.) am->FillH1(32, tHGd - tHGu);   // ns
+            if (tHGu > 0. && tHGd > 0.) am->FillH1(37, tHGd - tHGu);   // H1[37] high-gain ΔT
         }
-        if (eLowGain > 0.) am->FillH1(31, eLowGain);
+        if (eLowGain > 0.) am->FillH1(36, eLowGain);   // H1[36] low-gain energy
     }
 
     // =========================================================================
