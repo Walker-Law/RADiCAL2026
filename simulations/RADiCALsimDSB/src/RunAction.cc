@@ -176,9 +176,11 @@ RunAction::RunAction() {
     am->CreateH1("DeltaT_WLS",
                  "First-photon #DeltaT, WLS-shifted LYSO light only;#DeltaT (ns);Corners",
                  4000, -0.2, 0.6);
+    // Range sized for LYSO yield scales up to ~2e-2 (at 5e-3, 120 GeV gives
+    // ~7.5k WLS pe/event; a 6000 cap would silently clip the mean via overflow).
     am->CreateH1("PhotonsWLS",
                  "Detected WLS-shifted photons per event;N_{p.e.};Events",
-                 300, 0., 6000.);
+                 400, 0., 40000.);
 
     // ── H1[31-33]: DATA-MATCHED ESTIMATORS (direct test-beam comparison) ──────
     // Constructed identically to RADiCAL/Analysis so sim and real data land on
