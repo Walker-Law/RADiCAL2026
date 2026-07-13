@@ -427,9 +427,11 @@ void EventAction::EndOfEventAction(const G4Event*) {
     if (fNphWls > 0) am->FillH1(30, fNphWls);
 
     // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
-    //   Both channels see the SAME photons (the scintillation/WLS stream —
-    //   Cherenkov excluded, the real signal path), each through its own SiPM
-    //   pixel-saturation, then split by gain:
+    //   Both channels use the scint/WLS stream (Cherenkov excluded). NOTE: the
+    //   real solid capillary DOES carry Cherenkov; excluding it here is the
+    //   standard proxy for the WLS-dominated regime, since the suppressed LYSO
+    //   yield over-weights Cherenkov ~1000x vs reality (see StackingAction.cc).
+    //   Each channel applies its own response, split by gain:
     //     HIGH GAIN -> TIMING: fixed-threshold leading edge. Big amplification
     //       puts a low fixed threshold on the steep early edge -> sharp t_ref.
     //     LOW  GAIN -> ENERGY: integrate the signal = SiPM fired-pixel count
