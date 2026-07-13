@@ -254,25 +254,32 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   ft->Draw("same");
   if(ftS) ftS->Draw("same");
   if(ftW) ftW->Draw("same");
+  if(ftHG) ftHG->Draw("same");
   fpaperT->Draw("same");
   t.SetTextColor(kGreen+2);
-  t.DrawLatex(0.40,0.84,Form("all light: #sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
+  t.DrawLatex(0.40,0.86,Form("all light: #sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
               fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
   t.SetTextColor(kBlack);
   if(ftS){
     t.SetTextColor(kAzure+2);
-    t.DrawLatex(0.40,0.77,Form("scint-only: %.1f ps/#sqrt{E} #oplus %.1f ps",
+    t.DrawLatex(0.40,0.79,Form("scint-only (5%% CFD): %.1f ps/#sqrt{E} #oplus %.1f ps",
                 fabs(ftS->GetParameter(0)),fabs(ftS->GetParameter(1))));
     t.SetTextColor(kBlack);
   }
   if(ftW){
     t.SetTextColor(kMagenta+1);
-    t.DrawLatex(0.40,0.63,Form("WLS chain: %.1f ps/#sqrt{E} #oplus %.1f ps",
+    t.DrawLatex(0.40,0.65,Form("WLS chain: %.1f ps/#sqrt{E} #oplus %.1f ps",
                 fabs(ftW->GetParameter(0)),fabs(ftW->GetParameter(1))));
     t.SetTextColor(kBlack);
   }
+  if(ftHG){
+    t.SetTextColor(kOrange+7);
+    t.DrawLatex(0.40,0.58,Form("high-gain (fixed thr): %.1f ps/#sqrt{E} #oplus %.1f ps",
+                fabs(ftHG->GetParameter(0)),fabs(ftHG->GetParameter(1))));
+    t.SetTextColor(kBlack);
+  }
   t.SetTextColor(kGray+2);
-  t.DrawLatex(0.40,0.70,"paper (arXiv:2401.01747): 256 ps/#sqrt{E} #oplus 17.5 ps");
+  t.DrawLatex(0.40,0.72,"paper (arXiv:2401.01747): 256 ps/#sqrt{E} #oplus 17.5 ps");
   t.SetTextColor(kBlack);
   c2->SaveAs(Form("%s/timing_resolution_curve.png",out));
 
