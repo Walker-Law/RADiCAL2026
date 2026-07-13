@@ -426,6 +426,29 @@ void EventAction::EndOfEventAction(const G4Event*) {
     }
     if (fNphWls > 0) am->FillH1(30, fNphWls);
 
+    // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
+    //   Both channels see the SAME photons (the scintillation/WLS stream —
+    //   Cherenkov excluded, the real signal path), each through its own SiPM
+    //   pixel-saturation, then split by gain:
+    //     HIGH GAIN -> TIMING: fixed-threshold leading edge. Big amplification
+    //       puts a low fixed threshold on the steep early edge -> sharp t_ref.
+    //     LOW  GAIN -> ENERGY: integrate the signal = SiPM fired-pixel count
+    //       (saturated), linear electronics, no clip -> full dynamic range.
+    {
+        const G4double thrHG = envD("RADICAL_HG_THRESH_PE", 2.5);   // pe
+        G4double eLowGain = 0.;
+        for (G4int c = 0; c < 4; c++) {
+            // low-gain ENERGY: integrated charge ~ fired pixels (both ends)
+            eLowGain += sipmNfired((G4double)fPhTUpS[c].size());
+            eLowGain += sipmNfired((G4double)fPhTDownS[c].size());
+            // high-gain TIMING: fixed-threshold leading edge, downstream - upstream
+            G4double tHGu = leadingEdgeFixed(fPhTUpS[c],   thrHG);
+            G4double tHGd = leadingEdgeFixed(fPhTDownS[c], thrHG);
+            if (tHGu > 0. && tHGd > 0.) am->FillH1(32, tHGd - tHGu);   // ns
+        }
+        if (eLowGain > 0.) am->FillH1(31, eLowGain);
+    }
+
     // =========================================================================
     // 7. CERN TEST-BEAM LINE OBSERVABLES
     //    Trigger counters, MCP timing reference (t0), Pb-glass tail catcher.
