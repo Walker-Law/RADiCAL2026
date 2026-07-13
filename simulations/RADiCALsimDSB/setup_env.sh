@@ -17,10 +17,19 @@ fi
 
 if [ -n "$G4CONFIG" ]; then
     G4INSTALL=$("$G4CONFIG" --prefix)
-    # geant4-config --sh-setup exports all G4*DATA paths for this installation
-    eval "$("$G4CONFIG" --sh-setup)"
-    # Also source geant4.sh for library paths / LD_LIBRARY_PATH
+    # Library paths / LD_LIBRARY_PATH (harmless if absent).
+    eval "$("$G4CONFIG" --sh-setup)" 2>/dev/null
     [ -f "$G4INSTALL/bin/geant4.sh" ] && source "$G4INSTALL/bin/geant4.sh" 2>/dev/null
+    # Export every dataset env var from the AUTHORITATIVE source: --datasets.
+    # conda-forge Geant4 sets these via activation scripts, NOT --sh-setup, so
+    # from the `base` env they were unset -> "G4ENSDFSTATEDATA must be set".
+    # Format per line:  <dataset-name>  <ENV_VAR>  <path>
+    eval "$("$G4CONFIG" --datasets 2>/dev/null \
+            | awk '$2 ~ /^G4[A-Z]+DATA$/ && NF>=3 {print "export "$2"=\""$NF"\""}')"
+    if [ -z "${G4ENSDFSTATEDATA:-}" ]; then
+        echo "WARNING: G4ENSDFSTATEDATA still unset after --datasets parse." >&2
+        echo "         Run '$G4CONFIG --datasets' and check the column format." >&2
+    fi
     echo "Geant4 environment loaded via $G4CONFIG from $G4INSTALL"
 else
     # Fallback: hardcoded local Mac installation
