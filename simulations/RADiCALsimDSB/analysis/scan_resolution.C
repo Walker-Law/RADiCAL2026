@@ -106,10 +106,30 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       EW[nGoodW]=E[i]; tResW[nGoodW]=sgTW; tResWErr[nGoodW]=gTW->GetParError(2)*500;
       nGoodW++;
     }
-    printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s%s\n",
+    // Dual-gain: HIGH-GAIN timing (fixed-threshold leading edge; dual-gain runs)
+    double sgTHG=-1;
+    TH1D* hHG=(TH1D*)f->Get("DeltaT_HighGain");
+    if(hHG && hHG->GetEntries()>50){
+      TF1* gHG=coreFit(hHG,2.5,4);
+      sgTHG=gHG->GetParameter(2)*500;
+      EHG[nGoodHG]=E[i]; tResHG[nGoodHG]=sgTHG; tResHGErr[nGoodHG]=gHG->GetParError(2)*500;
+      nGoodHG++;
+    }
+    // Dual-gain: LOW-GAIN energy resolution (SiPM fired-pixel count, saturated)
+    double eresLG=-1;
+    TH1D* hLG=(TH1D*)f->Get("EnergyLowGain");
+    if(hLG && hLG->GetEntries()>50){
+      TF1* gLG=coreFit(hLG,2.0,4);
+      double muLG=gLG->GetParameter(1), sgLG=gLG->GetParameter(2);
+      if(muLG>0){ eresLG=100.*sgLG/muLG;
+        eLG[nGoodLG]=eresLG; eLGmean[nGoodLG]=muLG; nGoodLG++; }
+    }
+    printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s%s%s%s\n",
            E[i],muE,sgE,eResI,muT,sgT,
            sgTS>0?Form("(scint: %.2f) ",sgTS):"",
-           sgTW>0?Form("(WLS: %.2f)",sgTW):"");
+           sgTW>0?Form("(WLS: %.2f) ",sgTW):"",
+           sgTHG>0?Form("(HG-t: %.2f) ",sgTHG):"",
+           eresLG>0?Form("(LG-E: %.1f%%)",eresLG):"");
     // --- longitudinal profile overlay (normalized to unit area) ---
     TH1D* hL=(TH1D*)f->Get("ShowerProfile"); hL=(TH1D*)hL->Clone(Form("L%d",i));
     if(hL->Integral()>0) hL->Scale(1.0/hL->Integral());
