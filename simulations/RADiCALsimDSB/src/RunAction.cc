@@ -182,18 +182,7 @@ RunAction::RunAction() {
                  "Detected WLS-shifted photons per event;N_{p.e.};Events",
                  400, 0., 40000.);
 
-    // ── Dual-gain SiPM readout (high gain = timing, low gain = energy) ───────
-    // H1[31]: LOW-GAIN energy signal = summed SiPM fired-pixel count over all
-    // corners (pixel-saturated, linear electronics). The realistic energy proxy.
-    am->CreateH1("EnergyLowGain",
-                 "Low-gain energy signal (SiPM fired pixels, all corners);N_{fired};Events",
-                 400, 0., 120000.);
-    // H1[32]: HIGH-GAIN timing = fixed-threshold leading-edge #DeltaT (dn - up).
-    am->CreateH1("DeltaT_HighGain",
-                 "High-gain fixed-threshold #DeltaT (downstream #minus upstream);#DeltaT (ns);Corners",
-                 4000, -0.2, 0.6);
-
-    // ── H1[31-33]: DATA-MATCHED ESTIMATORS (direct test-beam comparison) ──────
+    // ── H1[31-35]: DATA-MATCHED ESTIMATORS (direct test-beam comparison) ──────
     // Constructed identically to RADiCAL/Analysis so sim and real data land on
     // the same axes: per-event 4-corner average, 5% CFD, MCP-free (DW−UP)/2 for
     // timing; fiber-light sum (sum_lg analog) with containment veto for energy.
