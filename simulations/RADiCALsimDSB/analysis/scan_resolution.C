@@ -225,6 +225,20 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     gtW->Fit(ftW,"RQ");
     gTimingWls=gtW;
   }
+  // High-gain timing graph + fit (dual-gain runs only): fixed-threshold leading
+  // edge should give a SHARPER timing reference than the 5% CFD "all light".
+  TF1* ftHG=nullptr;
+  if(nGoodHG>=3){
+    double zeroHG[N]={0};
+    TGraphErrors* gtHG=new TGraphErrors(nGoodHG,EHG,tResHG,zeroHG,tResHGErr);
+    gtHG->SetName("TimingResolutionHighGain");
+    gtHG->SetMarkerStyle(33); gtHG->SetMarkerColor(kOrange+7); gtHG->SetLineColor(kOrange+7);
+    gtHG->SetMarkerSize(1.7);
+    ftHG=new TF1("ftHG","sqrt([0]*[0]/x+[1]*[1])",4,130);
+    ftHG->SetParameters(100,15); ftHG->SetLineColor(kOrange+7); ftHG->SetLineStyle(5);
+    gtHG->Fit(ftHG,"RQ");
+    gTimingHG=gtHG;
+  }
   // Paper's measured fit (arXiv:2401.01747 abstract): sigma_t = 256/sqrt(E) (+) 17.5 ps
   TF1* fpaperT=new TF1("fpaperT","sqrt(256.*256./x+17.5*17.5)",4,160);
   fpaperT->SetLineColor(kGray+2); fpaperT->SetLineStyle(2); fpaperT->SetLineWidth(2);
