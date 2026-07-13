@@ -28,6 +28,9 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   TGraphErrors* gTimingScint=nullptr;
   double tResW[N],tResWErr[N], EW[N]; int nGoodW=0;   // WLS-only timing (if present)
   TGraphErrors* gTimingWls=nullptr;
+  double tResHG[N],tResHGErr[N], EHG[N]; int nGoodHG=0;  // high-gain timing (dual-gain)
+  TGraphErrors* gTimingHG=nullptr;
+  double eLG[N],eLGmean[N]; int nGoodLG=0;               // low-gain energy res + mean
   double smRes[N],smResErr[N], ESM[N]; int nGoodSM=0; // shower-max slice res (dE/dx, if present)
   double peRes[N],peResErr[N], EPE[N]; int nGoodPE=0; // shower-max res (photon-COUNT based, if present)
   TCanvas* cL=new TCanvas("cL","long",800,600);
