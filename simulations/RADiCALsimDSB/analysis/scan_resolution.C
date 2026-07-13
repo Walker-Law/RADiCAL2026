@@ -118,10 +118,20 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     // Longo / gamma-distribution fit: dE/dt ∝ t^(α-1)·exp(−βt)
     // Bin centers: 0.5..28.5 (29 bins, [0,29]).  Peak at t_max = (α-1)/β ≈ [1]/[2].
     TF1* fL=new TF1(Form("fL%d",i),"[0]*TMath::Power(x,[1])*TMath::Exp(-[2]*x)",0.5,28.5);
-    double tmax0=2.5*TMath::Log(E[i])+1.0, b0=0.65;
-    fL->SetParameters(hL->GetMaximum(), tmax0*b0, b0);
-    fL->SetParLimits(0,1e-6,10.); fL->SetParLimits(1,0.1,20.); fL->SetParLimits(2,0.01,5.);
-    hL->Fit(fL,"RQ0");  // Q=quiet, 0=don't draw automatically
+    // Method-of-moments seed from the histogram's OWN mean/variance. For a gamma
+    // distribution mean=α/β and var=α/β², so β=mean/var and α=mean²/var. A fixed
+    // seed (old code) let 25 GeV converge to a spurious high-α/high-β minimum;
+    // seeding from moments puts every energy on the same physical branch.
+    double hMean=hL->GetMean(), hVar=hL->GetRMS()*hL->GetRMS();
+    double b0=(hVar>1e-6)? hMean/hVar : 0.5;          // beta
+    double a0=(hVar>1e-6)? hMean*hMean/hVar : 5.0;    // alpha
+    if(a0<1.05) a0=1.05;                              // keep α-1>0 for the power law
+    double tmax0=(a0-1.0)/b0;
+    double peak0=TMath::Power(tmax0,a0-1.0)*TMath::Exp(-(a0-1.0));
+    double norm0=(peak0>0)? hL->GetMaximum()/peak0 : hL->GetMaximum();
+    fL->SetParameters(norm0, a0-1.0, b0);             // [1]=α-1, [2]=β
+    fL->SetParLimits(0,1e-9,100.); fL->SetParLimits(1,0.1,20.); fL->SetParLimits(2,0.01,5.);
+    hL->Fit(fL,"RQ0M");  // Q=quiet, 0=don't draw, M=improve (escape local minima)
     fL->SetLineColor(cols[i]); fL->SetLineStyle(1); fL->SetLineWidth(2);
     fL->Draw("same");
     printf("  Longo fit E=%.0f GeV: alpha=%.2f  beta=%.3f  t_max=%.1f layers\n",
