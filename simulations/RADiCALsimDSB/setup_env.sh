@@ -7,13 +7,21 @@
 # Auto-detects the Geant4 installation via geant4-config, then falls back
 # to the hardcoded local Mac path if geant4-config is not in PATH.
 
-if command -v geant4-config >/dev/null 2>&1; then
-    G4INSTALL=$(geant4-config --prefix)
+# Find geant4-config: PATH first, then the known conda env location — so the
+# sim runs correctly even from the `base` env (previously that silently fell
+# through to the Mac fallback below and died with "ENSDFSTATE.dat is not found").
+G4CONFIG=$(command -v geant4-config 2>/dev/null)
+if [ -z "$G4CONFIG" ] && [ -x "$HOME/miniforge3/envs/g4/bin/geant4-config" ]; then
+    G4CONFIG="$HOME/miniforge3/envs/g4/bin/geant4-config"
+fi
+
+if [ -n "$G4CONFIG" ]; then
+    G4INSTALL=$("$G4CONFIG" --prefix)
     # geant4-config --sh-setup exports all G4*DATA paths for this installation
-    eval "$(geant4-config --sh-setup)"
+    eval "$("$G4CONFIG" --sh-setup)"
     # Also source geant4.sh for library paths / LD_LIBRARY_PATH
     [ -f "$G4INSTALL/bin/geant4.sh" ] && source "$G4INSTALL/bin/geant4.sh" 2>/dev/null
-    echo "Geant4 environment loaded via geant4-config from $G4INSTALL"
+    echo "Geant4 environment loaded via $G4CONFIG from $G4INSTALL"
 else
     # Fallback: hardcoded local Mac installation
     G4INSTALL=/Users/macro-2/Research/geant4-install
