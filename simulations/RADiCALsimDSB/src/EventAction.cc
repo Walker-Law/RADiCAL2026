@@ -118,6 +118,54 @@ static G4double pulseCFD(const std::vector<G4double>& tns, G4double* fwhmOut) {
     return t0 + (s + (v2 > v1 ? (thr - v1) / (v2 - v1) : 0.)) * dt;
 }
 
+// ── Dual-gain SiPM readout (emulates the experiment's high/low gain channels) ─
+static G4double envD(const char* k, G4double dflt) {
+    const char* s = std::getenv(k); return s ? std::atof(s) : dflt;
+}
+
+// SiPM pixel saturation: a SiPM has a FINITE number of microcells (pixels), so
+// the fired-pixel count saturates as N_fired = Npix*(1 - exp(-Ndet/Npix)).
+// Linear at Ndet << Npix, saturates to Npix at Ndet >> Npix. This is the sensor
+// nonlinearity the low-gain energy channel must live with (and why a single
+// linear "photon count" over-reads the true energy at high light). Npix<=0
+// disables it. Default 14400 ~ an HDR2-class few-mm SiPM (e.g. 10 um pitch).
+static G4double sipmNfired(G4double nDet) {
+    static G4double npix = envD("RADICAL_SIPM_NPIX", 14400.);
+    if (npix <= 0.) return nDet;
+    return npix * (1. - std::exp(-nDet / npix));
+}
+
+// High-gain leading-edge timing: the SPR-sum pulse (normalized to unit peak per
+// photon) crossing an ABSOLUTE threshold of thrPE photoelectrons. High gain =
+// a small fixed threshold sitting low on the steep early leading edge -> the
+// sharpest timing reference (the paper's "fixed threshold on the high-gain
+// signal"). Unlike 5% CFD (scale-invariant), a fixed threshold rewards high
+// gain: more light -> steeper rise through the threshold -> less time jitter.
+// Returns crossing time (ns) or -1 if the pulse never reaches thrPE.
+static G4double leadingEdgeFixed(const std::vector<G4double>& tns, G4double thrPE) {
+    if (tns.empty()) return -1.;
+    const G4double tauR = 1.0, tauF = 3.0, dt = 0.2;      // ns, same SPR as pulseCFD
+    const G4double sprNorm = 1.0 / 0.472;                 // single-photon peak -> 1
+    G4double t0 = *std::min_element(tns.begin(), tns.end());
+    const int NS = 500;
+    static G4ThreadLocal std::vector<G4double> wf;
+    wf.assign(NS, 0.);
+    for (G4double tp : tns) {
+        int s0 = (int)((tp - t0) / dt) + 1;
+        for (int s = s0; s < NS; s++) {
+            G4double td = t0 + s * dt - tp;
+            wf[s] += sprNorm * (1. - std::exp(-td / tauR)) * std::exp(-td / tauF);
+        }
+    }
+    for (int s = 1; s < NS; s++) {                        // first upward crossing
+        if (wf[s] >= thrPE) {
+            G4double v1 = wf[s - 1], v2 = wf[s];
+            return t0 + (s - 1 + (v2 > v1 ? (thrPE - v1) / (v2 - v1) : 0.)) * dt;
+        }
+    }
+    return -1.;
+}
+
 void EventAction::EndOfEventAction(const G4Event*) {
     auto am = G4AnalysisManager::Instance();
 
