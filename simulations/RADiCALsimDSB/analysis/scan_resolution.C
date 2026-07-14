@@ -135,10 +135,9 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     double eresLG=-1;
     TH1D* hLG=(TH1D*)f->Get("EnergyLowGain");
     if(hLG && hLG->GetEntries()>50){
-      TF1* gLG=coreFit(hLG,2.0,4);
-      double muLG=gLG->GetParameter(1), sgLG=gLG->GetParameter(2);
-      if(muLG>0){ eresLG=100.*sgLG/muLG;
-        eLG[nGoodLG]=eresLG; eLGmean[nGoodLG]=muLG; nGoodLG++; }
+      double rLG, eLGe; robustRes(hLG, rLG, eLGe);   // RMS-fallback for skewed spectra
+      if(rLG>0 && hLG->GetMean()>0){ eresLG=rLG;
+        eLG[nGoodLG]=eresLG; eLGmean[nGoodLG]=hLG->GetMean(); nGoodLG++; }
     }
     printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s%s%s%s\n",
            E[i],muE,sgE,eResI,muT,sgT,
