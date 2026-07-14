@@ -106,11 +106,10 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     // collected light -> collected energy for a linear chain.
     TH1D* hPE=(TH1D*)f->Get("PhotonsWLS");
     if(hPE && hPE->GetEntries()>50){
-      TF1* gPE=coreFit(hPE,2.0,4);
-      double muPE=gPE->GetParameter(1), sgPE=gPE->GetParameter(2);
-      if(muPE>0){
-        EPE[nGoodPE]=E[i]; peRes[nGoodPE]=100.*sgPE/muPE;
-        peResErr[nGoodPE]=100.*gPE->GetParError(2)/muPE;
+      double rPE, ePE; robustRes(hPE, rPE, ePE);   // RMS-fallback for skewed spectra
+      if(rPE>0){
+        EPE[nGoodPE]=E[i]; peRes[nGoodPE]=rPE;
+        peResErr[nGoodPE]=ePE;
         nGoodPE++;
       }
     }
