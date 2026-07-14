@@ -17,6 +17,23 @@ TF1* coreFit(TH1* h, double nsig=2.0, int iters=4) {
   return g;
 }
 
+// Robust fractional resolution (sigma/mean, %) with error, for the ENERGY/PHOTON
+// spectra. At low light these are strongly non-Gaussian (Poisson-like, skewed),
+// and the iterative gaussian core-fit degenerates — that produced the 5 GeV
+// point at 42 +/- 209%. When the gauss fit's relative error on sigma exceeds
+// 25% (fit unreliable), fall back to the well-defined RMS/mean with the analytic
+// large-N error sigma_rel/sqrt(2N). Returns res%, err% by reference.
+void robustRes(TH1* h, double& res, double& err) {
+  double N=h->GetEntries();
+  double rmsRes = (h->GetMean()>0) ? 100.*h->GetRMS()/h->GetMean() : -1;
+  double rmsErr = (N>1) ? rmsRes/std::sqrt(2.*N) : 1e9;
+  TF1* g=coreFit(h,2.0,4);
+  double mu=g->GetParameter(1), sg=g->GetParameter(2), se=g->GetParError(2);
+  bool fitOK = (mu>0 && sg>0 && se>0 && se/sg < 0.25);
+  if(fitOK){ res=100.*sg/mu; err=100.*se/mu; }
+  else     { res=rmsRes;     err=rmsErr; }   // RMS fallback (honest, well-defined)
+}
+
 void scan_resolution(const char* dir="build/scan", const char* prefix="radical") {
   gStyle->SetOptStat(0); gStyle->SetOptFit(0);
   gStyle->SetPadGridX(1); gStyle->SetPadGridY(1);
