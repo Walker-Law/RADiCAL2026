@@ -54,9 +54,19 @@ public:
     // "Scint" population = cat 1+2 (everything non-Cherenkov, i.e. what the
     // real WLS-band SiPM sees); "WLS" population = cat 2 only.
     static constexpr G4double kQE = 0.20;
-    void RecordPhoton(G4int corner, bool isUpstream, G4double t, G4int cat) {
+    void RecordPhoton(G4int corner, bool isUpstream, G4double t0, G4int cat) {
         if (corner < 0 || corner >= 4) return;
         if (G4UniformRand() > kQE) return;            // apply QE
+        // Single-Photon Time Resolution (SPTR): a real SiPM adds ~Gaussian jitter
+        // to EACH detected photon's arrival time (avalanche transit-time spread,
+        // ~80-150 ps FWHM for HDR2-class devices). Absent, our timing was
+        // optimistic; adding it makes the leading edge realistically smeared and
+        // contributes ~SPTR/sqrt(N_pe) to sigma_t. RADICAL_SPTR_PS sets the RMS
+        // (default 60 ps ~ 140 ps FWHM); 0 disables.
+        static G4ThreadLocal G4double sptr = -1.;
+        if (sptr < 0.) { const char* s = std::getenv("RADICAL_SPTR_PS");
+                         sptr = s ? std::atof(s) : 60.; }
+        G4double t = (sptr > 0.) ? t0 + G4RandGauss::shoot(0., sptr * 1.e-3) : t0;  // ps->ns
         if (isUpstream) { fNphUp[corner]++;   if (t < fTphUp[corner])   fTphUp[corner]   = t;
                           if (fPhTUp[corner].size()   < kMaxStore) fPhTUp[corner].push_back(t); }
         else            { fNphDown[corner]++; if (t < fTphDown[corner]) fTphDown[corner] = t;
