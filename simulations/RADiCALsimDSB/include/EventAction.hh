@@ -6,6 +6,7 @@
 #include "Randomize.hh"
 #include <vector>
 #include <array>
+#include <cstdlib>   // std::getenv / std::atof for the SPTR knob
 
 class EventAction : public G4UserEventAction {
 public:
