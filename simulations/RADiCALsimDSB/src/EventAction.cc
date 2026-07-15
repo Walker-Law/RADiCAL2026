@@ -439,6 +439,7 @@ void EventAction::EndOfEventAction(const G4Event*) {
     {
         const G4double thrHG = envD("RADICAL_HG_THRESH_PE", 2.5);   // pe
         G4double eLowGain = 0.;
+        G4double sumHGdt = 0.; G4int nHG = 0;          // per-event 4-corner mean ΔT
         for (G4int c = 0; c < 4; c++) {
             // low-gain ENERGY: integrated charge ~ fired pixels (both ends)
             eLowGain += sipmNfired((G4double)fPhTUpS[c].size());
@@ -446,9 +447,17 @@ void EventAction::EndOfEventAction(const G4Event*) {
             // high-gain TIMING: fixed-threshold leading edge, downstream - upstream
             G4double tHGu = leadingEdgeFixed(fPhTUpS[c],   thrHG);
             G4double tHGd = leadingEdgeFixed(fPhTDownS[c], thrHG);
-            if (tHGu > 0. && tHGd > 0.) am->FillH1(37, tHGd - tHGu);   // H1[37] high-gain ΔT
+            if (tHGu > 0. && tHGd > 0.) {
+                G4double d = tHGd - tHGu;
+                am->FillH1(37, d);                     // H1[37] per-corner high-gain ΔT
+                sumHGdt += d; ++nHG;
+            }
         }
         if (eLowGain > 0.) am->FillH1(36, eLowGain);   // H1[36] low-gain energy
+        // H2[15]: energy vs timing, for the paper's energy-binned (time-walk-
+        // corrected) sigma_t. Uses the per-event 4-corner-mean ΔT.
+        if (eLowGain > 0. && nHG > 0)
+            am->FillH2(15, eLowGain, sumHGdt / nHG);
     }
 
     // =========================================================================
