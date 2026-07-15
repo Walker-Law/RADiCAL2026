@@ -296,6 +296,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   if(gTimingScint) mgT->Add(gTimingScint,"P");
   if(gTimingWls)   mgT->Add(gTimingWls,"P");
   if(gTimingHG)    mgT->Add(gTimingHG,"P");
+  if(gTimingHGE)   mgT->Add(gTimingHGE,"P");
   mgT->SetTitle("Timing resolution (downstream #minus upstream);E_{beam} (GeV);#sigma_{t} (ps)");
   mgT->Draw("A");
   mgT->SetMinimum(0.);
