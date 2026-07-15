@@ -133,6 +133,23 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       EHG[nGoodHG]=E[i]; tResHG[nGoodHG]=sgTHG; tResHGErr[nGoodHG]=gHG->GetParError(2)*500;
       nGoodHG++;
     }
+    // Energy-BINNED high-gain timing — the paper's time-walk removal: select the
+    // high-detected-energy events (top 40%, ~ "bins 6-8") where the fixed-
+    // threshold pulse is large and its crossing time is amplitude-stable.
+    double sgTHGE=-1;
+    TH2D* h2hg=(TH2D*)f->Get("DeltaT_HG_vs_Elg");
+    if(h2hg && h2hg->GetEntries()>100){
+      TH1D* px=h2hg->ProjectionX(Form("pxE%d",i));
+      double tot=px->Integral(), cum=0; int xcut=1;
+      for(int b=1;b<=px->GetNbinsX();b++){ cum+=px->GetBinContent(b); if(cum>=0.60*tot){xcut=b;break;} }
+      TH1D* py=h2hg->ProjectionY(Form("pyE%d",i), xcut, h2hg->GetNbinsX());
+      if(py->GetEntries()>50){
+        TF1* gE=coreFit(py,2.5,4);
+        sgTHGE=gE->GetParameter(2)*500;   // (DW-UP)/2 corner trick, ns->ps
+        EHGE[nGoodHGE]=E[i]; tResHGE[nGoodHGE]=sgTHGE;
+        tResHGEErr[nGoodHGE]=gE->GetParError(2)*500; nGoodHGE++;
+      }
+    }
     // Dual-gain: LOW-GAIN energy resolution (SiPM fired-pixel count, saturated)
     double eresLG=-1;
     TH1D* hLG=(TH1D*)f->Get("EnergyLowGain");
