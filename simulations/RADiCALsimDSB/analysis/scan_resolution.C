@@ -421,6 +421,8 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
                  fabs(ftW->GetParameter(0)),fabs(ftW->GetParameter(1)));
   if(ftHG) printf("  Timing res (DUAL-GAIN high-gain, fixed threshold): %.1f ps/sqrt(E) (+) %.1f ps\n",
                  fabs(ftHG->GetParameter(0)),fabs(ftHG->GetParameter(1)));
+  if(ftHGE) printf("  Timing res (high-gain, ENERGY-BINNED / time-walk corrected): %.1f ps/sqrt(E) (+) %.1f ps   [paper method]\n",
+                 fabs(ftHGE->GetParameter(0)),fabs(ftHGE->GetParameter(1)));
   // Dual-gain low-gain energy: resolution + SiPM-saturation linearity check
   if(nGoodLG>=3){
     printf("  DUAL-GAIN low-gain energy (SiPM fired-pixel sum):\n");
