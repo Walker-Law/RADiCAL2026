@@ -158,11 +158,12 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       if(rLG>0 && hLG->GetMean()>0){ eresLG=rLG;
         eLG[nGoodLG]=eresLG; eLGmean[nGoodLG]=hLG->GetMean(); nGoodLG++; }
     }
-    printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s%s%s%s\n",
+    printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f      %s%s%s%s%s\n",
            E[i],muE,sgE,eResI,muT,sgT,
            sgTS>0?Form("(scint: %.2f) ",sgTS):"",
            sgTW>0?Form("(WLS: %.2f) ",sgTW):"",
            sgTHG>0?Form("(HG-t: %.2f) ",sgTHG):"",
+           sgTHGE>0?Form("(HG-Ebin: %.2f) ",sgTHGE):"",
            eresLG>0?Form("(LG-E: %.1f%%)",eresLG):"");
     // --- longitudinal profile overlay (normalized to unit area) ---
     TH1D* hL=(TH1D*)f->Get("ShowerProfile"); hL=(TH1D*)hL->Clone(Form("L%d",i));
