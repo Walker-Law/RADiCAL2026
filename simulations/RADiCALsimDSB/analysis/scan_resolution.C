@@ -327,6 +327,12 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
                 fabs(ftHG->GetParameter(0)),fabs(ftHG->GetParameter(1))));
     t.SetTextColor(kBlack);
   }
+  if(ftHGE){
+    t.SetTextColor(kOrange+2);
+    t.DrawLatex(0.40,0.51,Form("high-gain (E-binned): %.1f ps/#sqrt{E} #oplus %.1f ps",
+                fabs(ftHGE->GetParameter(0)),fabs(ftHGE->GetParameter(1))));
+    t.SetTextColor(kBlack);
+  }
   t.SetTextColor(kGray+2);
   t.DrawLatex(0.40,0.72,"paper (arXiv:2401.01747): 256 ps/#sqrt{E} #oplus 17.5 ps");
   t.SetTextColor(kBlack);
