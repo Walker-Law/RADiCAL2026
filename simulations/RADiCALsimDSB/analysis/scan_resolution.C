@@ -274,6 +274,19 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     gtHG->Fit(ftHG,"RQ");
     gTimingHG=gtHG;
   }
+  // Energy-binned high-gain graph + fit (paper's time-walk-corrected method)
+  TF1* ftHGE=nullptr;
+  if(nGoodHGE>=3){
+    double zeroHGE[N]={0};
+    TGraphErrors* gtHGE=new TGraphErrors(nGoodHGE,EHGE,tResHGE,zeroHGE,tResHGEErr);
+    gtHGE->SetName("TimingResolutionHighGainEbinned");
+    gtHGE->SetMarkerStyle(29); gtHGE->SetMarkerColor(kOrange+2); gtHGE->SetLineColor(kOrange+2);
+    gtHGE->SetMarkerSize(1.8);
+    ftHGE=new TF1("ftHGE","sqrt([0]*[0]/x+[1]*[1])",4,130);
+    ftHGE->SetParameters(100,15); ftHGE->SetLineColor(kOrange+2); ftHGE->SetLineStyle(1);
+    gtHGE->Fit(ftHGE,"RQ");
+    gTimingHGE=gtHGE;
+  }
   // Paper's measured fit (arXiv:2401.01747 abstract): sigma_t = 256/sqrt(E) (+) 17.5 ps
   TF1* fpaperT=new TF1("fpaperT","sqrt(256.*256./x+17.5*17.5)",4,160);
   fpaperT->SetLineColor(kGray+2); fpaperT->SetLineStyle(2); fpaperT->SetLineWidth(2);
