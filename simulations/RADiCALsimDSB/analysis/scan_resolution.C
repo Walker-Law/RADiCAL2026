@@ -47,6 +47,8 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   TGraphErrors* gTimingWls=nullptr;
   double tResHG[N],tResHGErr[N], EHG[N]; int nGoodHG=0;  // high-gain timing (dual-gain)
   TGraphErrors* gTimingHG=nullptr;
+  double tResHGE[N],tResHGEErr[N], EHGE[N]; int nGoodHGE=0;  // energy-binned high-gain
+  TGraphErrors* gTimingHGE=nullptr;
   double eLG[N],eLGmean[N]; int nGoodLG=0;               // low-gain energy res + mean
   double smRes[N],smResErr[N], ESM[N]; int nGoodSM=0; // shower-max slice res (dE/dx, if present)
   double peRes[N],peResErr[N], EPE[N]; int nGoodPE=0; // shower-max res (photon-COUNT based, if present)
