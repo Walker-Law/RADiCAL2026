@@ -333,6 +333,16 @@ RunAction::RunAction() {
                  "Timing correlation;t_{MCP} (ns);t_{WLS} (ns)",
                  100, 0., 2.,
                  100, 0., 3.);
+
+    // H2[15]: per-event low-gain ENERGY vs high-gain 4-corner-mean #DeltaT. The
+    // fixed-threshold high-gain timing suffers amplitude walk (low-energy events
+    // cross the threshold late/erratically). The paper removes this by binning
+    // events by detected energy and using the high-energy bins. This 2D lets the
+    // analysis slice the high-energy events -> time-walk-corrected sigma_t.
+    am->CreateH2("DeltaT_HG_vs_Elg",
+                 "High-gain #DeltaT vs low-gain energy;E_{low-gain} (N_{fired});#DeltaT (ns)",
+                 200, 0., 120000.,
+                 400, -0.2, 0.6);
 }
 
 RunAction::~RunAction() {}
