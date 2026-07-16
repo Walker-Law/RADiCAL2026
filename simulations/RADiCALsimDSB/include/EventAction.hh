@@ -49,12 +49,13 @@ public:
     void AddPbGlassEdep(G4double edep) { fEdepPbGlass += edep; }
 
     // ── Optical-photon timing readout ───────────────────────────────────────
-    // Quantum efficiency of the end photodetectors (bialkali/SiPM-like).
+    // Photon detection efficiency of the end SiPMs. 0.30 = Hamamatsu
+    // S14160-3015PS datasheet PDE at DSB1's 495 nm emission (32% at the 460 nm
+    // peak; PDE curve gives ~30% at 495 nm). Was 0.20 placeholder before.
     // cat = creation-process category: 0 Cherenkov, 1 fiber self-scint,
     // 2 OpWLS (LYSO light re-emitted by DSB1 — the realistic signal path).
-    // "Scint" population = cat 1+2 (everything non-Cherenkov, i.e. what the
-    // real WLS-band SiPM sees); "WLS" population = cat 2 only.
-    static constexpr G4double kQE = 0.20;
+    // "Scint" population = cat 1+2 (everything non-Cherenkov); "WLS" = cat 2.
+    static constexpr G4double kQE = 0.30;
     void RecordPhoton(G4int corner, bool isUpstream, G4double t0, G4int cat) {
         if (corner < 0 || corner >= 4) return;
         if (G4UniformRand() > kQE) return;            // apply QE
