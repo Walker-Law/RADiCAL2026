@@ -427,10 +427,15 @@ void EventAction::EndOfEventAction(const G4Event*) {
     if (fNphWls > 0) am->FillH1(30, fNphWls);
 
     // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
-    //   Both channels use the scint/WLS stream (Cherenkov excluded). NOTE: the
-    //   real solid capillary DOES carry Cherenkov; excluding it here is the
-    //   standard proxy for the WLS-dominated regime, since the suppressed LYSO
-    //   yield over-weights Cherenkov ~1000x vs reality (see StackingAction.cc).
+    //   Both channels use ALL detected light (Cherenkov INCLUDED) — the real
+    //   SiPM cannot distinguish photon origins. This is faithful ONLY when the
+    //   run restores the physical scint:Cherenkov ratio by scaling every light
+    //   source uniformly, e.g. the "2% universe":
+    //     RADICAL_LYSO_SCINT_SCALE=2e-2  RADICAL_SCINT_YIELD=0.02
+    //     RADICAL_KEEP_LYSO_CHER=1       RADICAL_QUARTZ_CHER_KEEP=0.02
+    //   (all sources at 2% of physical -> ratios exact, statistics /50).
+    //   At non-uniform scalings this estimator over-weights Cherenkov; use the
+    //   scint/WLS-only histograms (H1[24..30]) as the proxy in that regime.
     //   Each channel applies its own response, split by gain:
     //     HIGH GAIN -> TIMING: fixed-threshold leading edge. Big amplification
     //       puts a low fixed threshold on the steep early edge -> sharp t_ref.
@@ -442,11 +447,11 @@ void EventAction::EndOfEventAction(const G4Event*) {
         G4double sumHGdt = 0.; G4int nHG = 0;          // per-event 4-corner mean ΔT
         for (G4int c = 0; c < 4; c++) {
             // low-gain ENERGY: integrated charge ~ fired pixels (both ends)
-            eLowGain += sipmNfired((G4double)fPhTUpS[c].size());
-            eLowGain += sipmNfired((G4double)fPhTDownS[c].size());
+            eLowGain += sipmNfired((G4double)fPhTUp[c].size());
+            eLowGain += sipmNfired((G4double)fPhTDown[c].size());
             // high-gain TIMING: fixed-threshold leading edge, downstream - upstream
-            G4double tHGu = leadingEdgeFixed(fPhTUpS[c],   thrHG);
-            G4double tHGd = leadingEdgeFixed(fPhTDownS[c], thrHG);
+            G4double tHGu = leadingEdgeFixed(fPhTUp[c],   thrHG);
+            G4double tHGd = leadingEdgeFixed(fPhTDown[c], thrHG);
             if (tHGu > 0. && tHGd > 0.) {
                 G4double d = tHGd - tHGu;
                 am->FillH1(37, d);                     // H1[37] per-corner high-gain ΔT
