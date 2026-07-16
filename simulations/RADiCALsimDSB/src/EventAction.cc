@@ -129,8 +129,13 @@ static G4double envD(const char* k, G4double dflt) {
 // nonlinearity the low-gain energy channel must live with (and why a single
 // linear "photon count" over-reads the true energy at high light). Npix<=0
 // disables it. Default 39984 = Hamamatsu S14160-3015PS datasheet (3x3 mm,
-// 15 um pitch, fill factor 49%) — the "wide dynamic range, small pixel" MPPC
-// family matching the paper's 3x3 mm HDR2 device.
+// 15 um pitch, 49% fill) = the 15 um HDR2 variant (HDR2-3015 ~40k pixels).
+// CAVEAT: the exact HDR2 pitch is NOT stated in arXiv:2401.01747 (only "HDR2
+// SiPM"); 15 um is the best-supported guess (RADiCAL beam-test summaries +
+// datasheet match), NOT paper-confirmed. The 10 um HDR2-3010 (~90k px, PDE~18%)
+// is the alternative — sweep RADICAL_SIPM_NPIX + kQE if verifying. At the 2%
+// tractability yield, occupancy is ~5% so pixel COUNT barely matters here;
+// the PDE (kQE) is the more impactful of the two.
 static G4double sipmNfired(G4double nDet) {
     static G4double npix = envD("RADICAL_SIPM_NPIX", 39984.);
     if (npix <= 0.) return nDet;
