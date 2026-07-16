@@ -37,7 +37,7 @@ void robustRes(TH1* h, double& res, double& err) {
 void scan_resolution(const char* dir="build/scan", const char* prefix="radical") {
   gStyle->SetOptStat(0); gStyle->SetOptFit(0);
   gStyle->SetPadGridX(1); gStyle->SetPadGridY(1);
-  const int N=8; double E[N]={5,10,20,25,50,100,120,150};
+  const int N=6; double E[N]={5,10,25,50,100,120};
   const char* out="build/plots";
 
   double eResAll[N],eResErrAll[N], tResAll[N],tResErrAll[N], EAll[N];
