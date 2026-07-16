@@ -24,7 +24,7 @@ source ../setup_env.sh >/dev/null 2>&1
 if [ -n "${RADICAL_ENERGIES:-}" ]; then
     read -ra ENERGIES <<< "$RADICAL_ENERGIES"
 else
-    ENERGIES=(5 10 20 25 50 100 120 150)
+    ENERGIES=(5 10 25 50 100 120)
 fi
 NEVT=${1:-1000}
 OPTICAL=${2:-0}
