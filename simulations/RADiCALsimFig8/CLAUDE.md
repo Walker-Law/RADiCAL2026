@@ -1,4 +1,14 @@
-# RADiCALsimDSB — Claude/AI Reference Guide
+# RADiCALsimFig8 — Claude/AI Reference Guide
+
+> **PURPOSE: recreate arXiv:2401.01747 Fig 8** — single-downstream-SiPM timing
+> resolution vs detected light yield (npe/MeV) for a 50 GeV e- shower. This is a
+> copy of RADiCALsimDSB with one addition: **H1[38] DeltaT_SingleDown** =
+> downstream WLS first-photon time minus fiber signal time = the pure
+> photostatistics single-SiPM σ_t. Driver: `run_fig8_sweep.sh` sweeps
+> `RADICAL_LYSO_SCINT_SCALE` (1e-4..2e-2) at 50 GeV to span LY. Analysis:
+> `analysis/plot_fig8.C` plots σ_t vs LY (log-log) vs the paper's 485 ps/√LY.
+> SPTR off (RADICAL_SPTR_PS=0) for the clean photostatistics limit. Everything
+> below is inherited from the RADiCALsimDSB parent.
 
 > **VARIANT: DSB1 timing WLS.** This is the fast-scintillator copy of the sim —
 > the corner timing fiber is **DSB1** (polysiloxane WLS, ~2 ns decay) to chase the
