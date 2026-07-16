@@ -469,8 +469,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicECapTube->SetVisAttributes(eCapTubeVis);
 
     // --- Corner timing capillaries (shared logical volumes) ---
-    // Upstream rod: solid quartz cylinder (fills bore + wall region)
-    auto solidTUpstream = new G4Tubs("TCapUpstream", 0, tCap_outR, upstreamLen/2, 0., 360.*deg);
+    // HOLLOW quartz tubes (arXiv:2401.01747: "A RADiCAL capillary is a hollow
+    // quartz tube"). Only the thin 0.1 mm wall (bore 0.475 -> outer 0.575 mm) is
+    // quartz, so shower particles crossing a capillary radiate Cherenkov in
+    // ~32% of the quartz path a SOLID rod would have given. The bore is air
+    // (mother volume) and light propagates by TIR in the wall + the air lumen.
+    // This is the PHYSICAL Cherenkov suppression — no artificial thinning needed
+    // for the quartz-Cherenkov geometry (the earlier solid-rod model overstated
+    // Cherenkov ~3x). Corrects the 2026-07-09 "solid capillary" misread.
+    // Upstream tube: hollow quartz (air bore)
+    auto solidTUpstream = new G4Tubs("TCapUpstream", tCap_boreR, tCap_outR, upstreamLen/2, 0., 360.*deg);
     auto logicTUpstream = new G4LogicalVolume(solidTUpstream, quartz, "Cap_Corner_Upstream");
 
     // Middle WLS section: quartz tube wall
@@ -481,8 +489,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTMidWLS = new G4Tubs("TCapMidWLS", 0, wlsFiberR, wlsLen/2, 0., 360.*deg);
     auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, dsb1, "Cap_Corner_WLS");
 
-    // Downstream rod: solid quartz cylinder
-    auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, downstreamLen/2, 0., 360.*deg);
+    // Downstream tube: hollow quartz (air bore)
+    auto solidTDownstream = new G4Tubs("TCapDownstream", tCap_boreR, tCap_outR, downstreamLen/2, 0., 360.*deg);
     auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
 
     // Quartz timing rods/tube as outlines
