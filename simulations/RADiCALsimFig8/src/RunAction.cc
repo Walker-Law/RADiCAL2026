@@ -237,6 +237,12 @@ RunAction::RunAction() {
                  "High-gain fixed-threshold #DeltaT (downstream #minus upstream);#DeltaT (ns);Corners",
                  4000, -0.2, 0.6);
 
+    // H1[38]: FIG 8 — single-ended downstream WLS time minus fiber signal time.
+    // sigma of this vs detected LY (npe/MeV) recreates paper Fig 8.
+    am->CreateH1("DeltaT_SingleDown",
+                 "Fig8 single-ended downstream time (t_down - t_fiber);#Deltat (ns);Corners",
+                 8000, -1.0, 3.0);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
