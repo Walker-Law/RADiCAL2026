@@ -282,8 +282,13 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     gtHGE->SetName("TimingResolutionHighGainEbinned");
     gtHGE->SetMarkerStyle(29); gtHGE->SetMarkerColor(kOrange+2); gtHGE->SetLineColor(kOrange+2);
     gtHGE->SetMarkerSize(1.8);
-    ftHGE=new TF1("ftHGE","sqrt([0]*[0]/x+[1]*[1])",4,130);
-    ftHGE->SetParameters(100,15); ftHGE->SetLineColor(kOrange+2); ftHGE->SetLineStyle(1);
+    // Fit from 15 GeV up: below that the E-binned estimator is still strongly
+    // walk/statistics limited and the falling low-E points drag the 2-parameter
+    // fit's constant term to an unphysical 0 (railed floor). The constant term
+    // is defined by the high-E asymptote, which E>=15 GeV isolates cleanly.
+    ftHGE=new TF1("ftHGE","sqrt([0]*[0]/x+[1]*[1])",15,130);
+    ftHGE->SetParameters(100,15); ftHGE->SetParLimits(1,1.,100.);
+    ftHGE->SetLineColor(kOrange+2); ftHGE->SetLineStyle(1);
     gtHGE->Fit(ftHGE,"RQ");
     gTimingHGE=gtHGE;
   }
