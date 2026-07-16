@@ -439,6 +439,16 @@ void EventAction::EndOfEventAction(const G4Event*) {
     }
     if (fNphWls > 0) am->FillH1(30, fNphWls);
 
+    // ── FIG 8 STUDY: single-ended DOWNSTREAM timing (the Fig 8 configuration) ──
+    // Downstream WLS first-photon time minus the fiber signal time = the pure
+    // photostatistics-limited single-SiPM resolution. σ(H1[38]) vs detected LY
+    // (npe/MeV) recreates arXiv:2401.01747 Fig 8 (σ_t ≈ 485 ps/√LY). Filled per
+    // corner as independent single-capillary measurements.
+    for (G4int c = 0; c < 4; c++) {
+        if (fTphDownW[c] < kBigTime && fiberTime[c] < kBigTime)
+            am->FillH1(38, (fTphDownW[c] - fiberTime[c]) / ns);
+    }
+
     // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
     //   Both channels use ALL detected light (Cherenkov INCLUDED) — the real
     //   SiPM cannot distinguish photon origins. This is faithful ONLY when the
