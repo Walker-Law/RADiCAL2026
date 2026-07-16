@@ -128,9 +128,11 @@ static G4double envD(const char* k, G4double dflt) {
 // Linear at Ndet << Npix, saturates to Npix at Ndet >> Npix. This is the sensor
 // nonlinearity the low-gain energy channel must live with (and why a single
 // linear "photon count" over-reads the true energy at high light). Npix<=0
-// disables it. Default 14400 ~ an HDR2-class few-mm SiPM (e.g. 10 um pitch).
+// disables it. Default 39984 = Hamamatsu S14160-3015PS datasheet (3x3 mm,
+// 15 um pitch, fill factor 49%) — the "wide dynamic range, small pixel" MPPC
+// family matching the paper's 3x3 mm HDR2 device.
 static G4double sipmNfired(G4double nDet) {
-    static G4double npix = envD("RADICAL_SIPM_NPIX", 14400.);
+    static G4double npix = envD("RADICAL_SIPM_NPIX", 39984.);
     if (npix <= 0.) return nDet;
     return npix * (1. - std::exp(-nDet / npix));
 }
