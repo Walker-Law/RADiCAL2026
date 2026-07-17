@@ -47,7 +47,11 @@ void plot_fig8(int NEVT=2000){
     TString f=Form("build/scan/optical_scan_%d_ly%s/optical_E50GeV.root",NEVT,scales[i]);
     TFile* fp=TFile::Open(f);
     if(!fp||fp->IsZombie()){ printf("  %-8s  -- file missing --\n",scales[i]); continue; }
-    TH1D* hN =(TH1D*)fp->Get("PhotonsWLS");       // detected WLS photons/event
+    // single-SiPM LY: DOWNSTREAM-only WLS photons (H1[39]); fall back to the
+    // all-corner/both-end PhotonsWLS/8 for older files that lack H1[39].
+    TH1D* hN =(TH1D*)fp->Get("PhotonsWLSDown");
+    double npeScale=1.0;
+    if(!hN){ hN=(TH1D*)fp->Get("PhotonsWLS"); npeScale=1.0/8.0; }  // ~4 corners x 2 ends
     TH1D* hE =(TH1D*)fp->Get("TotalCornerWLS");   // fiber energy (MeV)/event
     TH1D* hT =(TH1D*)fp->Get("DeltaT_SingleDown");// single-ended downstream (ns)
     if(!hN||!hE||!hT||hT->GetEntries()<50){ printf("  %-8s  -- no data --\n",scales[i]); fp->Close(); continue; }
