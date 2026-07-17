@@ -260,6 +260,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // (Beam travels +z: "upstream" = −z end, "downstream" = +z end.)
     static const G4double showerMaxDepth = 40.4*mm;  // layer 9 centre, arXiv:2401.01747 Fig. 7
     static const G4double wlsLen         = 15.0*mm;  // arXiv:2401.01747 §2: 15 mm WLS length
+    // KNOWN GAP (deferred, per Walker): the paper states total capillary length
+    // 183 mm, extending 25 mm beyond the module on EACH end to reach the SiPMs
+    // ("A RADiCAL capillary is a hollow quartz tube. Each capillary is 18 cm
+    // long ... extending 2.5 cm from the module on either end"). This sim's
+    // capillary is flush with the module (upstreamLen+wlsLen+downstreamLen =
+    // stackZ = 124.88 mm), missing the 2x25mm extension. Not fixed yet because
+    // extending length would worsen the hollow-tube transport tractability
+    // issue (July 2026) before it's resolved. Revisit together.
     static const G4double upstreamLen    = showerMaxDepth - wlsLen/2.0;       // 40.0 mm
     static const G4double downstreamLen  = stackZ - upstreamLen - wlsLen;     // 68.06 mm
 
