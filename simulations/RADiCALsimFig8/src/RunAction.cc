@@ -249,6 +249,13 @@ RunAction::RunAction() {
                  "Fig8 single-ended downstream time (t_down - t_fiber);#Deltat (ns);Corners",
                  30000, -5.0, 150.0);
 
+    // H1[39]: Fig8 single-SiPM detected light yield — DOWNSTREAM WLS photons
+    // only (one SiPM, not all-corner/both-end PhotonsWLS). LY = <this>/<fiber
+    // MeV> puts each point at its correct x-position on the paper's Fig 8 axis.
+    am->CreateH1("PhotonsWLSDown",
+                 "Fig8 downstream-only detected WLS photons per event;N_{p.e.};Events",
+                 400, 0., 20000.);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
