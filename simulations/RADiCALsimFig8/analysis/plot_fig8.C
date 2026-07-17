@@ -55,7 +55,7 @@ void plot_fig8(int NEVT=2000){
     TH1D* hE =(TH1D*)fp->Get("TotalCornerWLS");   // fiber energy (MeV)/event
     TH1D* hT =(TH1D*)fp->Get("DeltaT_SingleDown");// single-ended downstream (ns)
     if(!hN||!hE||!hT||hT->GetEntries()<50){ printf("  %-8s  -- no data --\n",scales[i]); fp->Close(); continue; }
-    double ly = (hE->GetMean()>0)? hN->GetMean()/hE->GetMean() : -1;
+    double ly = (hE->GetMean()>0)? npeScale*hN->GetMean()/hE->GetMean() : -1;
     double ste_ns=0.;
     double st  = coreSigmaPeak(hT,&ste_ns)*1000.;   // core sigma, ns -> ps
     double ste = ste_ns*1000.;
