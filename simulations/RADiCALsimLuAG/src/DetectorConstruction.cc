@@ -408,13 +408,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicECapTube->SetVisAttributes(eCapTubeVis);
 
     // --- Corner timing capillaries (shared logical volumes) ---
-    // HOLLOW quartz tubes (arXiv:2401.01747: "A RADiCAL capillary is a hollow
-    // quartz tube"). Only the thin wall (bore 0.475 -> outer 0.575 mm) is
-    // quartz; bore is air. Matches RADiCALsimDSB's corrected geometry.
-    auto solidTUpstream = new G4Tubs("TCapUpstream", tCap_boreR, tCap_outR, upstreamLen/2, 0., 360.*deg);
+    // OPTICALLY SOLID quartz rods. Paper (arXiv:2401.01747): the capillary is a
+    // "hollow quartz tube" but "the remainder of each core was filled and fused
+    // with quartz rods" -> optically solid quartz outside the 15mm WLS filament.
+    // An air-bore "hollow" model broke the TIR light guide (see
+    // RADiCALsimDSB/src/DetectorConstruction.cc) and was reverted.
+    auto solidTUpstream = new G4Tubs("TCapUpstream", 0, tCap_outR, upstreamLen/2, 0., 360.*deg);
     auto logicTUpstream = new G4LogicalVolume(solidTUpstream, quartz, "Cap_Corner_Upstream");
 
-    // Middle WLS section: quartz tube wall
+    // Middle WLS section: quartz tube wall (annulus around the LuAG:Ce filament)
     auto solidTMidTube = new G4Tubs("TCapMidTube", wlsFiberR, tCap_outR, wlsLen/2, 0., 360.*deg);
     auto logicTMidTube = new G4LogicalVolume(solidTMidTube, quartz, "Cap_Corner_MidTube");
 
@@ -422,18 +424,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTMidWLS = new G4Tubs("TCapMidWLS", 0, wlsFiberR, wlsLen/2, 0., 360.*deg);
     auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, luag, "Cap_Corner_WLS");
 
-    // Downstream tube: hollow quartz (air bore)
-    auto solidTDownstream = new G4Tubs("TCapDownstream", tCap_boreR, tCap_outR, downstreamLen/2, 0., 360.*deg);
+    // Downstream rod: solid quartz (tube wall + fused-quartz core)
+    auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, downstreamLen/2, 0., 360.*deg);
     auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
-
-    // Explicit air-filled bore volumes (named for diagnostics/vis; ordinary
-    // optical boundary physics applies — no special kill rule; see
-    // RADiCALsimDSB/src/DetectorConstruction.cc for why an earlier kill-on-
-    // entry attempt was removed — it also killed genuine near-axial signal).
-    auto solidBoreUpstream = new G4Tubs("TCapBoreUp", 0, tCap_boreR, upstreamLen/2, 0., 360.*deg);
-    auto logicBoreUpstream = new G4LogicalVolume(solidBoreUpstream, air, "Cap_Corner_Bore");
-    auto solidBoreDownstream = new G4Tubs("TCapBoreDown", 0, tCap_boreR, downstreamLen/2, 0., 360.*deg);
-    auto logicBoreDownstream = new G4LogicalVolume(solidBoreDownstream, air, "Cap_Corner_Bore");
 
     // Quartz timing rods/tube as outlines
     auto tRodVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));

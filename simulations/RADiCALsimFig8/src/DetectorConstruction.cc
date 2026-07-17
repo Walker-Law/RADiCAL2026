@@ -260,6 +260,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // (Beam travels +z: "upstream" = −z end, "downstream" = +z end.)
     static const G4double showerMaxDepth = 40.4*mm;  // layer 9 centre, arXiv:2401.01747 Fig. 7
     static const G4double wlsLen         = 15.0*mm;  // arXiv:2401.01747 §2: 15 mm WLS length
+    // KNOWN GAP (deferred, per Walker): the paper states total capillary length
+    // 183 mm, extending 25 mm beyond the module on EACH end to reach the SiPMs
+    // ("Each capillary is 18 cm long ... extending 2.5 cm from the module on
+    // either end"). This sim's capillary is flush with the module
+    // (upstreamLen+wlsLen+downstreamLen = stackZ = 124.88 mm), missing the
+    // 2x25mm extension. Straightforward to add now (solid quartz light guide);
+    // deferred as a lower-priority refinement.
     static const G4double upstreamLen    = showerMaxDepth - wlsLen/2.0;       // 40.0 mm
     static const G4double downstreamLen  = stackZ - upstreamLen - wlsLen;     // 68.06 mm
 
@@ -469,19 +476,22 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicECapTube->SetVisAttributes(eCapTubeVis);
 
     // --- Corner timing capillaries (shared logical volumes) ---
-    // HOLLOW quartz tubes (arXiv:2401.01747: "A RADiCAL capillary is a hollow
-    // quartz tube"). Only the thin 0.1 mm wall (bore 0.475 -> outer 0.575 mm) is
-    // quartz, so shower particles crossing a capillary radiate Cherenkov in
-    // ~32% of the quartz path a SOLID rod would have given. The bore is air
-    // (mother volume) and light propagates by TIR in the wall + the air lumen.
-    // This is the PHYSICAL Cherenkov suppression — no artificial thinning needed
-    // for the quartz-Cherenkov geometry (the earlier solid-rod model overstated
-    // Cherenkov ~3x). Corrects the 2026-07-09 "solid capillary" misread.
-    // Upstream tube: hollow quartz (air bore)
-    auto solidTUpstream = new G4Tubs("TCapUpstream", tCap_boreR, tCap_outR, upstreamLen/2, 0., 360.*deg);
+    // OPTICALLY SOLID quartz rods. The paper (arXiv:2401.01747, §2 / Fig 7-8
+    // page) describes the capillary as a "hollow quartz tube" (OD 1150, bore
+    // 950 um) but then states: "The remainder of each core was filled and fused
+    // with quartz rods." So outside the 15 mm WLS filament the bore is filled
+    // with FUSED QUARTZ — the light guide is solid quartz, NOT an air core.
+    // (July 2026: an air-bore "hollow" model broke the TIR light guide — photons
+    // trapped in the air core bounced pathologically, hanging the sim or, under
+    // the step cap, truncating mid-transit -> collapsed mean dT (200->50 ns) and
+    // 5-10x inflated sigma_t. Reverted to solid, which reproduces sensible
+    // ~200 ps geometric dT.) Cherenkov is at the full solid-quartz rate,
+    // managed by RADICAL_QUARTZ_CHER_KEEP, not by geometry.
+    // Upstream rod: solid quartz (tube wall + fused-quartz core)
+    auto solidTUpstream = new G4Tubs("TCapUpstream", 0, tCap_outR, upstreamLen/2, 0., 360.*deg);
     auto logicTUpstream = new G4LogicalVolume(solidTUpstream, quartz, "Cap_Corner_Upstream");
 
-    // Middle WLS section: quartz tube wall
+    // Middle WLS section: quartz tube wall (annulus around the DSB1 filament)
     auto solidTMidTube = new G4Tubs("TCapMidTube", wlsFiberR, tCap_outR, wlsLen/2, 0., 360.*deg);
     auto logicTMidTube = new G4LogicalVolume(solidTMidTube, quartz, "Cap_Corner_MidTube");
 
@@ -489,26 +499,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTMidWLS = new G4Tubs("TCapMidWLS", 0, wlsFiberR, wlsLen/2, 0., 360.*deg);
     auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, dsb1, "Cap_Corner_WLS");
 
-    // Downstream tube: hollow quartz (air bore)
-    auto solidTDownstream = new G4Tubs("TCapDownstream", tCap_boreR, tCap_outR, downstreamLen/2, 0., 360.*deg);
+    // Downstream rod: solid quartz (tube wall + fused-quartz core)
+    auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, downstreamLen/2, 0., 360.*deg);
     auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
-
-    // Explicit air-filled bore volumes (named, so they're identifiable in
-    // diagnostics/vis — not currently treated specially by SteppingAction;
-    // ordinary optical boundary physics applies, same as any air-quartz
-    // interface). NOTE: a photon that fails TIR at the wall's inner surface
-    // leaks in here; from the air side TIR back into the wall is impossible
-    // (low->high index) — a July 2026 attempt to kill photons on entry (as a
-    // tractability workaround) was REMOVED because it also killed genuine
-    // near-axial signal photons transiting straight through the bore (the
-    // DSB1 fiber radius 0.45mm and bore radius 0.475mm are close, so most
-    // forward-going WLS light passes through here). If runs hang again, the
-    // fix needs to distinguish "stuck bouncing" from "clean transit" (e.g. a
-    // bounded per-track bore-residency counter), not an unconditional kill.
-    auto solidBoreUpstream = new G4Tubs("TCapBoreUp", 0, tCap_boreR, upstreamLen/2, 0., 360.*deg);
-    auto logicBoreUpstream = new G4LogicalVolume(solidBoreUpstream, air, "Cap_Corner_Bore");
-    auto solidBoreDownstream = new G4Tubs("TCapBoreDown", 0, tCap_boreR, downstreamLen/2, 0., 360.*deg);
-    auto logicBoreDownstream = new G4LogicalVolume(solidBoreDownstream, air, "Cap_Corner_Bore");
 
     // Quartz timing rods/tube as outlines
     auto tRodVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));
@@ -552,8 +545,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
                           logicTUpstream, "TCapUpstream_Phys", logicCalo, false, c-1);
-        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
-                          logicBoreUpstream, "TCapBoreUp_Phys", logicCalo, false, c-1);
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
                           logicTMidTube, "TCapMidTube_Phys", logicCalo, false, c-1);
@@ -563,8 +554,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
                           logicTDownstream, "TCapDownstream_Phys", logicCalo, false, c-1);
-        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
-                          logicBoreDownstream, "TCapBoreDown_Phys", logicCalo, false, c-1);
 
         // photodetectors (copy number = corner index 0..3)
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDUpstream),
