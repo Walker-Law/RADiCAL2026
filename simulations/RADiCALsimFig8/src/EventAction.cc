@@ -53,7 +53,7 @@ EventAction::EventAction() {
     fTphUpS.fill(kBigTime); fTphDownS.fill(kBigTime);
     fNphScint = 0; fNphCher = 0;
     fTphUpW.fill(kBigTime); fTphDownW.fill(kBigTime);
-    fNphWls = 0;
+    fNphWls = 0; fNphWlsDown = 0;
 }
 EventAction::~EventAction() {}
 
@@ -79,7 +79,7 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     for (auto& v : fPhTUpS)   v.clear();
     for (auto& v : fPhTDownS) v.clear();
     fTphUpW.fill(kBigTime); fTphDownW.fill(kBigTime);
-    fNphWls = 0;
+    fNphWls = 0; fNphWlsDown = 0;
 }
 
 // ── DRS4-style waveform emulation (mirrors the CERN test-beam analysis) ─────
@@ -438,6 +438,7 @@ void EventAction::EndOfEventAction(const G4Event*) {
             am->FillH1(29, (fTphDownW[c] - fTphUpW[c]) / ns);
     }
     if (fNphWls > 0) am->FillH1(30, fNphWls);
+    if (fNphWlsDown > 0) am->FillH1(39, fNphWlsDown);  // Fig8 single-SiPM LY
 
     // ── FIG 8 STUDY: single-ended DOWNSTREAM timing (the Fig 8 configuration) ──
     // arXiv:2401.01747 §3: "The timing resolution is dominated by the measured
