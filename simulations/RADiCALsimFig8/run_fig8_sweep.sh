@@ -3,8 +3,9 @@
 # Single downstream SiPM readout, 50 GeV e- shower. Sweeps the LYSO->DSB1 WLS
 # yield (RADICAL_LYSO_SCINT_SCALE) to span a range of detected LY (npe/MeV);
 # each point writes build/scan/optical_scan_2000_ly<scale>/optical_E50GeV.root.
-# The single-ended observable is H1[38] DeltaT_SingleDown (downstream WLS
-# first-photon time - fiber signal time = pure photostatistics). Analysis:
+# The single-ended observable is H1[38] DeltaT_SingleDown (downstream WLS pulse
+# 5% CFD leading-edge time - fiber signal time = the "rise-time" resolution the
+# paper describes, pure photostatistics 1/sqrt(LY)). Analysis:
 #   root -l -b -q 'analysis/plot_fig8.C()'
 #
 # SPTR is OFF here (RADICAL_SPTR_PS=0) so the curve is the clean photostatistics
