@@ -426,10 +426,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTDownstream = new G4Tubs("TCapDownstream", tCap_boreR, tCap_outR, downstreamLen/2, 0., 360.*deg);
     auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
 
-    // Explicit air-filled bore volumes — see RADiCALsimDSB/src/DetectorConstruction.cc
-    // for the full tractability rationale (SteppingAction kills photons on entry:
-    // a photon that fails TIR at the inner wall cannot TIR back from air->quartz,
-    // causing unbounded lossy bouncing without this).
+    // Explicit air-filled bore volumes (named for diagnostics/vis; ordinary
+    // optical boundary physics applies — no special kill rule; see
+    // RADiCALsimDSB/src/DetectorConstruction.cc for why an earlier kill-on-
+    // entry attempt was removed — it also killed genuine near-axial signal).
     auto solidBoreUpstream = new G4Tubs("TCapBoreUp", 0, tCap_boreR, upstreamLen/2, 0., 360.*deg);
     auto logicBoreUpstream = new G4LogicalVolume(solidBoreUpstream, air, "Cap_Corner_Bore");
     auto solidBoreDownstream = new G4Tubs("TCapBoreDown", 0, tCap_boreR, downstreamLen/2, 0., 360.*deg);
