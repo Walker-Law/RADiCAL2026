@@ -54,7 +54,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   double peRes[N],peResErr[N], EPE[N]; int nGoodPE=0; // shower-max res (photon-COUNT based, if present)
   TCanvas* cL=new TCanvas("cL","long",800,600);
   TLegend* leg=new TLegend(0.62,0.55,0.88,0.88);
-  int cols[N]={kRed+1,kOrange+1,kGreen+2,kSpring+4,kAzure+2,kBlue+1,kMagenta+1,kViolet+2};
+  int cols[N]={kRed+1,kOrange+1,kSpring+4,kAzure+2,kBlue+1,kMagenta+1};
 
   printf("\n  E(GeV)   mu_E(GeV)  sigma_E   sigma/E(%%)   DeltaT(ps)  sigma_t(ps)\n");
   printf("  -------------------------------------------------------------------\n");
