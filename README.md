@@ -1,6 +1,6 @@
 # RADiCAL2026
 
-Research repository for the **RADiCAL** project.
+Research repository for the **RADiCAL** (Radiation-hard Innovative Calorimeter) project.
 Based on [[1]](https://arxiv.org/abs/2303.05580) and [[2]](https://arxiv.org/abs/2401.01747).
 
 ## References
@@ -11,24 +11,69 @@ Based on [[1]](https://arxiv.org/abs/2303.05580) and [[2]](https://arxiv.org/abs
 ## Repository layout
 
 ```
-RADiCAL/                  Test-beam data and ROOT analysis
-  Data/                   DRS4 waveform files (RUN1211, RUN1259–1261)
-  Analysis/               ROOT macros for data analysis
+RADiCAL/                     Test-beam data and ROOT analysis
+  Data/                      DRS4 waveform files (RUN1211, RUN1259–1261)
+  Analysis/                  ROOT macros for data analysis
+  legacy/                    Older analysis code (reference)
 
-simulations/              Geant4 simulations
-  RADiCALsim1/            Full RADiCAL module simulation (active)
-  firstsim/               Early prototype (reference only)
+simulations/                 Geant4 simulations
+  RADiCALsimDSB/             ★ Primary full-module sim — DSB1 WLS fiber (fast,
+                               3.5 ns decay). Hollow quartz capillaries, optically
+                               active LYSO→DSB1 WLS chain, dual-gain SiPM readout
+                               (onsemi MicroFJ-30035), full CERN test-beam line,
+                               DRS4 waveform emulation. Actively developed.
+  RADiCALsimLuAG/            Identical geometry with LuAG:Ce WLS fiber (slow,
+                               60 ns decay) — material comparison against DSB.
+  RADiCALsimFig8/            Focused recreation of ref [2] Fig. 8: single
+                               downstream-SiPM timing resolution vs detected
+                               light yield (npe/MeV), 50 GeV e⁻, rise-time (CFD)
+                               method. LY sweep via run_fig8_sweep.sh.
+  RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
+                               which corner SiPM lights up; S-curve reconstruction).
+  RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, coloured by
+                               originating corner capillary (crosstalk visual).
+  H3generation/              Standalone generation study.
+  firstsim/                  Early prototype (reference only).
 ```
+
+The three `RADiCALsim{DSB,LuAG,Fig8}` directories share the same core Geant4
+code (they were forked from a common base) and differ in the WLS material,
+observables, and study focus. `RADiCALsimDSB` is the canonical, most up-to-date
+version; the others inherit fixes from it.
 
 ## Quick start
 
 ```bash
-cd simulations/RADiCALsim1
-source setup_env.sh
+cd simulations/RADiCALsimDSB
+source setup_env.sh            # sources Geant4 (auto-detects conda `g4` env)
 mkdir build && cd build
-cmake ..
+cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
+         -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
 make -j$(nproc)
-./radical ../run_batch.mac   # 120 GeV electrons, 100 events
+./radical ../run_batch.mac    # 120 GeV electrons
+
+# energy/timing scan across energies (embarrassingly parallel, all cores):
+RADICAL_OPTICAL=1 RADICAL_ENERGIES="5 10 25 50 100 120" \
+  bash ../run_scan.sh 2000 1
 ```
 
-See [simulations/RADiCALsim1/README.md](simulations/RADiCALsim1/README.md) for full documentation.
+Optical-photon tracking is enabled with `RADICAL_OPTICAL=1` and is far slower
+than the energy-only mode; the scan splits events into many single-thread chunks
+across all cores and hadd-merges them per energy.
+
+See [simulations/RADiCALsimDSB/README.md](simulations/RADiCALsimDSB/README.md)
+and its `CLAUDE.md` for full detector, physics, and workflow documentation.
+
+## Key runtime knobs (RADiCALsimDSB / Fig8)
+
+| Env var | Purpose |
+|---------|---------|
+| `RADICAL_OPTICAL` | 1 = track optical photons (timing); 0 = energy/shower only (fast) |
+| `RADICAL_BEAM_ENERGY_GEV` | Beam energy per run |
+| `RADICAL_ENERGIES` | Space-separated energy list for `run_scan.sh` |
+| `RADICAL_LYSO_SCINT_SCALE` | Scale LYSO scintillation yield (tractability; default 1e-3) |
+| `RADICAL_SCINT_YIELD` | Scale DSB1 self-scintillation yield |
+| `RADICAL_QUARTZ_CHER_KEEP` | Binomial-thin quartz Cherenkov (restore real scint:Cher ratio) |
+| `RADICAL_SIPM_NPIX` | SiPM microcell count (default 5676 = MicroFJ-30035) |
+| `RADICAL_SPTR_PS` | SiPM single-photon time resolution RMS (ps) |
+| `RADICAL_OPT_MAXSTEP` / `RADICAL_OPT_TMAX` | Optical-photon step / time caps (tractability) |
