@@ -239,9 +239,15 @@ RunAction::RunAction() {
 
     // H1[38]: FIG 8 — single-ended downstream WLS time minus fiber signal time.
     // sigma of this vs detected LY (npe/MeV) recreates paper Fig 8.
+    // RANGE: the reference (fiber dE/dx time) precedes the OpWLS photon's
+    // creation by the FULL LYSO(36ns)+DSB1(3.5ns) decay chain, not just a
+    // sub-ns photostatistics jitter — found July 2026 when a too-narrow
+    // [-1,3]ns range put 99.97% of entries in overflow. -5..150ns covers
+    // several LYSO decay lengths (36ns*4~144ns); 30000 bins -> ~5.2ps/bin,
+    // fine enough to resolve Fig8's smallest expected sigma (~15ps).
     am->CreateH1("DeltaT_SingleDown",
                  "Fig8 single-ended downstream time (t_down - t_fiber);#Deltat (ns);Corners",
-                 8000, -1.0, 3.0);
+                 30000, -5.0, 150.0);
 
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
