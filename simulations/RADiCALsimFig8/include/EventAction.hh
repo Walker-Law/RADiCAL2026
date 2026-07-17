@@ -82,7 +82,8 @@ public:
         if (cat != 2) return;
         fNphWls++;
         if (isUpstream) { if (t < fTphUpW[corner])   fTphUpW[corner]   = t; }
-        else            { if (t < fTphDownW[corner]) fTphDownW[corner] = t; }
+        else            { fNphWlsDown++;   // Fig8: single DOWNSTREAM SiPM readout
+                          if (t < fTphDownW[corner]) fTphDownW[corner] = t; }
     }
 
 private:
