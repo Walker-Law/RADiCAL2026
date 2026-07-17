@@ -551,6 +551,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
                           logicTUpstream, "TCapUpstream_Phys", logicCalo, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
+                          logicBoreUpstream, "TCapBoreUp_Phys", logicCalo, false, c-1);
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
                           logicTMidTube, "TCapMidTube_Phys", logicCalo, false, c-1);
@@ -560,6 +562,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
                           logicTDownstream, "TCapDownstream_Phys", logicCalo, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
+                          logicBoreDownstream, "TCapBoreDown_Phys", logicCalo, false, c-1);
 
         // photodetectors (copy number = corner index 0..3)
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDUpstream),
