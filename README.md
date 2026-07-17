@@ -30,7 +30,7 @@ simulations/                 Geant4 simulations
                                method. LY sweep via run_fig8_sweep.sh.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
-  RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, coloured by
+  RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
                                originating corner capillary (crosstalk visual).
   H3generation/              Standalone generation study.
   firstsim/                  Early prototype (reference only).

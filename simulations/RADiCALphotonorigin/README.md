@@ -10,7 +10,7 @@ additions:
 1. **Random-uniform beam impact.** Each event fires a pencil beam at a fresh
    random `(x,y)` over the 14×14 mm tile face, so a run sweeps the whole
    transverse plane. (The cross-talk sim fired a fixed central beam.)
-2. **Shower-max LYSO drawn as 4 colour-coded quadrants.** In the WLS z-window each
+2. **Shower-max LYSO drawn as 4 color-coded quadrants.** In the WLS z-window each
    LYSO tile is built as four 7×7 mm quadrant volumes — TR red, TL yellow, BR
    green, BL blue — so you can *see* which quadrant the shower develops in.
 3. **Position → SiPM scoring.** Per-corner "where was the beam when this corner
@@ -18,8 +18,8 @@ additions:
 
 > LYSO emits **no** optical photons here — it's the energy-sampling absorber. All
 > detected light is quartz Cherenkov + LuAG:Ce WLS born **inside the corner
-> capillaries**, read out at each end by a SiPM. The colour quadrants just mark
-> *where the shower is*; the physics question is whether an off-centre shower
+> capillaries**, read out at each end by a SiPM. The color quadrants just mark
+> *where the shower is*; the physics question is whether an off-center shower
 > preferentially lights the **nearest** corner SiPM (transverse position
 > sensitivity), which the Molière-radius shower spread blurs.
 
@@ -40,20 +40,20 @@ RADICAL_BEAM_QUADRANT=3 ./radical vis_quadrants.mac   # bottom-left, etc. (0=TR 
 RADICAL_BEAM_X_MM=2 RADICAL_BEAM_Y_MM=-5 ./radical vis_quadrants.mac   # explicit point
 ```
 
-The shower lands in the coloured quadrant; the optical photons it makes in the
-nearby corner capillary stream to that corner's SiPM, coloured by the same key.
+The shower lands in the colored quadrant; the optical photons it makes in the
+nearby corner capillary stream to that corner's SiPM, colored by the same key.
 Only optical photons are drawn (EM shower filtered). Step cap is 2000 for a quick
 image — raise `RADICAL_OPT_MAXSTEP` for fuller propagation.
 
-### Colour key (beam's-eye view, +x right, +y up)
+### Color key (beam's-eye view, +x right, +y up)
 
-| Quadrant | Position | Colour | Corner copy |
+| Quadrant | Position | Color | Corner copy |
 |----------|----------|--------|-------------|
 | top-right    | (+x, +y) | red    | 0 |
 | top-left     | (−x, +y) | yellow | 1 |
 | bottom-right | (+x, −y) | green  | 2 |
 | bottom-left  | (−x, −y) | blue   | 3 |
-| light born outside the shower-max corners | — | dim grey | — |
+| light born outside the shower-max corners | — | dim gray | — |
 
 ## Quantitative: position → SiPM maps
 

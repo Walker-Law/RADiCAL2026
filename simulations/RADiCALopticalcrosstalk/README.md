@@ -1,10 +1,10 @@
 # RADiCAL Optical Photon Locator
 
-A focused Geant4 viewer that colours optical-photon trajectories by **which corner
+A focused Geant4 viewer that colors optical-photon trajectories by **which corner
 capillary they were born in**, so you can see where the light in the RADiCAL
 timing capillaries comes from. Derived from `RADiCALsim1` — same geometry, but the
 four corner capillaries are built as distinctly-named per-corner volumes so
-`drawByOriginVolume` can paint each corner a different colour.
+`drawByOriginVolume` can paint each corner a different color.
 
 ## Build
 
@@ -25,29 +25,29 @@ step cap to 200000 (effectively uncapped, so photons propagate fully for a
 faithful image), and opens `vis_corners.mac`. Override with env vars, e.g.
 `RADICAL_OPT_MAXSTEP=200 ./radical` for a fast (but truncated) preview.
 
-## Colour key (beam's-eye view, +x right, +y up)
+## Color key (beam's-eye view, +x right, +y up)
 
 Only optical photons born in the **shower-max region** (the WLS section of each
 corner capillary — the LuAG:Ce fiber + surrounding quartz at depth 32.9–47.9 mm,
-straddling layer 9) are coloured by their corner. Light born anywhere else
-(upstream/downstream quartz rods, centre cap, etc.) is dim grey.
+straddling layer 9) are colored by their corner. Light born anywhere else
+(upstream/downstream quartz rods, center cap, etc.) is dim gray.
 
-| Born in shower-max corner | Position | Colour |
+| Born in shower-max corner | Position | Color |
 |--------|----------|--------|
 | top-right    | (+x, +y) | red |
 | top-left     | (−x, +y) | yellow |
 | bottom-right | (+x, −y) | green |
 | bottom-left  | (−x, −y) | blue |
-| born outside the shower-max region | — | dim grey |
+| born outside the shower-max region | — | dim gray |
 
 > Note: LYSO emits **no** optical photons in this sim — it is the energy-sampling
 > absorber, scored by energy deposit only. The detected light is quartz Cherenkov
-> + LuAG:Ce WLS scintillation generated **inside the capillaries**. The colour
+> + LuAG:Ce WLS scintillation generated **inside the capillaries**. The color
 > therefore marks light created in the capillary's shower-max section, which is
 > embedded among the LYSO tiles at the shower peak.
 
 Only optical photons are drawn (the EM shower is filtered out for clarity). Edit
-the colours, viewpoint, or filter in `vis_corners.mac`.
+the colors, viewpoint, or filter in `vis_corners.mac`.
 
 ## Cross-talk graph: which corner's light hits which SiPM
 
@@ -61,7 +61,7 @@ cd build && source ../setup_env.sh
 RADICAL_OPTICAL=1 RADICAL_OPT_MAXSTEP=200 RADICAL_BEAM_ENERGY_GEV=2 ./radical run_batch.mac
 ```
 
-**Plot it** (needs ROOT) — a stacked bar per SiPM, coloured by origin corner, with
+**Plot it** (needs ROOT) — a stacked bar per SiPM, colored by origin corner, with
 a printed percentage-composition table:
 ```bash
 cd ..
@@ -76,14 +76,14 @@ bash run_sipm_batch.sh 512            # 512 events spread over all cores
 ```
 
 Each event detects thousands of photons, so even ~50 events gives a clean
-composition. A diagonal result (each bar one solid colour) means the capillaries
+composition. A diagonal result (each bar one solid color) means the capillaries
 are optically isolated — each SiPM only sees its own corner's light.
 
-## How the per-corner colouring works
+## How the per-corner coloring works
 
 `src/DetectorConstruction.cc` places the corner capillary segments via a
 `placeCornerSegment` helper that names each `"<base>_<corner>"` (e.g.
 `Cap_Corner_WLS_0`). The copy number is kept equal to the corner index so timing
 scoring is unchanged. `src/SteppingAction.cc` routes WLS energy by substring match
-on `Cap_Corner_WLS`. `vis_corners.mac` maps each corner's volumes to a colour with
+on `Cap_Corner_WLS`. `vis_corners.mac` maps each corner's volumes to a color with
 `/vis/modeling/trajectories/create/drawByOriginVolume`.
