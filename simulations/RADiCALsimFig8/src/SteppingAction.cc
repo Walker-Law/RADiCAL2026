@@ -52,6 +52,18 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
                 track->SetTrackStatus(fStopAndKill);
                 return;
             }
+            if (pn == "Cap_Corner_Bore") {
+                // TRACTABILITY (see DetectorConstruction.cc comment at the bore
+                // volume): a photon that leaks into the hollow bore cannot TIR
+                // back into the quartz wall (air->quartz is low->high index),
+                // so it undergoes unbounded lossy Fresnel bouncing — some
+                // photons never terminated within any tractable step budget.
+                // Kill on entry: physically, light that decouples from the
+                // TIR-guided wall in an uncoated hollow core is lost from the
+                // useful signal, not efficiently recaptured.
+                track->SetTrackStatus(fStopAndKill);
+                return;
+            }
         }
         // Transport caps: kill undetected photons that have bounced/lived too long.
         const G4int    mx = optMaxStep();

@@ -408,8 +408,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicECapTube->SetVisAttributes(eCapTubeVis);
 
     // --- Corner timing capillaries (shared logical volumes) ---
-    // Upstream rod: solid quartz cylinder (fills bore + wall region)
-    auto solidTUpstream = new G4Tubs("TCapUpstream", 0, tCap_outR, upstreamLen/2, 0., 360.*deg);
+    // HOLLOW quartz tubes (arXiv:2401.01747: "A RADiCAL capillary is a hollow
+    // quartz tube"). Only the thin wall (bore 0.475 -> outer 0.575 mm) is
+    // quartz; bore is air. Matches RADiCALsimDSB's corrected geometry.
+    auto solidTUpstream = new G4Tubs("TCapUpstream", tCap_boreR, tCap_outR, upstreamLen/2, 0., 360.*deg);
     auto logicTUpstream = new G4LogicalVolume(solidTUpstream, quartz, "Cap_Corner_Upstream");
 
     // Middle WLS section: quartz tube wall
@@ -420,9 +422,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTMidWLS = new G4Tubs("TCapMidWLS", 0, wlsFiberR, wlsLen/2, 0., 360.*deg);
     auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, luag, "Cap_Corner_WLS");
 
-    // Downstream rod: solid quartz cylinder
-    auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, downstreamLen/2, 0., 360.*deg);
+    // Downstream tube: hollow quartz (air bore)
+    auto solidTDownstream = new G4Tubs("TCapDownstream", tCap_boreR, tCap_outR, downstreamLen/2, 0., 360.*deg);
     auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
+
+    // Explicit air-filled bore volumes — see RADiCALsimDSB/src/DetectorConstruction.cc
+    // for the full tractability rationale (SteppingAction kills photons on entry:
+    // a photon that fails TIR at the inner wall cannot TIR back from air->quartz,
+    // causing unbounded lossy bouncing without this).
+    auto solidBoreUpstream = new G4Tubs("TCapBoreUp", 0, tCap_boreR, upstreamLen/2, 0., 360.*deg);
+    auto logicBoreUpstream = new G4LogicalVolume(solidBoreUpstream, air, "Cap_Corner_Bore");
+    auto solidBoreDownstream = new G4Tubs("TCapBoreDown", 0, tCap_boreR, downstreamLen/2, 0., 360.*deg);
+    auto logicBoreDownstream = new G4LogicalVolume(solidBoreDownstream, air, "Cap_Corner_Bore");
 
     // Quartz timing rods/tube as outlines
     auto tRodVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));

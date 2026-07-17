@@ -493,6 +493,22 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto solidTDownstream = new G4Tubs("TCapDownstream", tCap_boreR, tCap_outR, downstreamLen/2, 0., 360.*deg);
     auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
 
+    // Explicit air-filled bore volumes (named, so SteppingAction can identify
+    // them). TRACTABILITY: a photon that fails TIR at the quartz-wall's INNER
+    // surface leaks into this bore; from the air side, TIR back into the wall
+    // is impossible (low->high index), so it undergoes unbounded lossy Fresnel
+    // bouncing (found July 2026 to hang the sim indefinitely — some photons
+    // never terminate within any tractable step budget). SteppingAction kills
+    // optical photons on entry to these volumes: physically, light that
+    // decouples from the TIR-guided wall in an uncoated hollow core is lost
+    // from the useful signal (scattered/absorbed by real-world imperfections),
+    // not efficiently recaptured — a conservative, defensible approximation
+    // that also restores solid-rod-like computational tractability.
+    auto solidBoreUpstream = new G4Tubs("TCapBoreUp", 0, tCap_boreR, upstreamLen/2, 0., 360.*deg);
+    auto logicBoreUpstream = new G4LogicalVolume(solidBoreUpstream, air, "Cap_Corner_Bore");
+    auto solidBoreDownstream = new G4Tubs("TCapBoreDown", 0, tCap_boreR, downstreamLen/2, 0., 360.*deg);
+    auto logicBoreDownstream = new G4LogicalVolume(solidBoreDownstream, air, "Cap_Corner_Bore");
+
     // Quartz timing rods/tube as outlines
     auto tRodVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));
     tRodVis->SetForceWireframe(true);
@@ -535,6 +551,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
                           logicTUpstream, "TCapUpstream_Phys", logicCalo, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
+                          logicBoreUpstream, "TCapBoreUp_Phys", logicCalo, false, c-1);
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
                           logicTMidTube, "TCapMidTube_Phys", logicCalo, false, c-1);
@@ -544,6 +562,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
                           logicTDownstream, "TCapDownstream_Phys", logicCalo, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
+                          logicBoreDownstream, "TCapBoreDown_Phys", logicCalo, false, c-1);
 
         // photodetectors (copy number = corner index 0..3)
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDUpstream),
