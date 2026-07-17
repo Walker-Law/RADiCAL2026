@@ -440,13 +440,20 @@ void EventAction::EndOfEventAction(const G4Event*) {
     if (fNphWls > 0) am->FillH1(30, fNphWls);
 
     // ── FIG 8 STUDY: single-ended DOWNSTREAM timing (the Fig 8 configuration) ──
-    // Downstream WLS first-photon time minus the fiber signal time = the pure
-    // photostatistics-limited single-SiPM resolution. σ(H1[38]) vs detected LY
-    // (npe/MeV) recreates arXiv:2401.01747 Fig 8 (σ_t ≈ 485 ps/√LY). Filled per
-    // corner as independent single-capillary measurements.
+    // arXiv:2401.01747 §3: "The timing resolution is dominated by the measured
+    // RISE TIME of this signal" — so this is a WAVEFORM/CFD leading-edge
+    // measurement of the downstream pulse, NOT a first-photon time. First-photon
+    // is an order statistic (min arrival ~ tau/N -> 1/N scaling); the CFD/rise
+    // estimator combines the whole pulse -> genuine 1/sqrt(N) photostatistics,
+    // matching Fig 8's clean 1/sqrt(LY). Single downstream SiPM, 5% CFD on the
+    // scint/WLS pulse, referenced to the fiber signal time (removes shower-depth
+    // jitter -> pure photostatistics). sigma(H1[38]) vs detected LY recreates
+    // Fig 8. Per corner = independent single-capillary measurements.
     for (G4int c = 0; c < 4; c++) {
-        if (fTphDownW[c] < kBigTime && fiberTime[c] < kBigTime)
-            am->FillH1(38, (fTphDownW[c] - fiberTime[c]) / ns);
+        if (fiberTime[c] >= kBigTime) continue;
+        G4double fw = -1.;
+        G4double tCFD = pulseCFD(fPhTDownS[c], &fw);   // downstream scint/WLS pulse, 5% CFD
+        if (tCFD > 0.) am->FillH1(38, (tCFD - fiberTime[c]) / ns);
     }
 
     // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
