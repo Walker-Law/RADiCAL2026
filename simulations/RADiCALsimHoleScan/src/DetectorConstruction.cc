@@ -259,15 +259,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         {-capOff, -capOff, 0},
     };
 
-    // Energy capillary (center) — OD scaled to fit 0.9 mm hole
-    // Paper: OD=1000 µm, bore=400 µm; scaled to fit: OD=0.88 mm, bore=0.352 mm
-    static const G4double eCap_outR = centerHoleR;   // fully fill the 0.45 mm drilled hole
-    static const G4double eCap_boreR = 0.200*mm;
+    // Energy capillary (center): fills the hole (OD = D); EJ309 bore proportional.
+    const G4double eCap_outR  = holeR;             // OD = hole diameter
+    const G4double eCap_boreR = 0.4000 * holeR;    // EJ309 bore = 0.400 × OD (paper 400/1000)
 
-    // Timing capillary (corners) — paper: OD=1150 µm, bore=950 µm, fiber=900 µm
-    static const G4double tCap_outR  = 0.575*mm;   // 1.15 mm OD
-    static const G4double tCap_boreR = 0.475*mm;   // 0.95 mm bore
-    static const G4double wlsFiberR  = 0.450*mm;   // 0.9 mm DSB1 fiber
+    // Timing capillary (corners): fills the hole (OD = D); DSB1 fiber proportional.
+    const G4double tCap_outR  = holeR;             // OD = hole diameter
+    const G4double tCap_boreR = 0.8261 * holeR;    // 950/1150 (vestigial in solid model)
+    const G4double wlsFiberR  = 0.7826 * holeR;    // DSB1 fiber = 0.7826 × OD (900/1150)
 
     // Timing capillary segmentation.
     // With corrected Tyvek (0.2032 mm), one LYSO+W period = 1.5+2.5+2*0.2032 = 4.4064 mm.
