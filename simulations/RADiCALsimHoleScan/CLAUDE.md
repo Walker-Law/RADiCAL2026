@@ -1,11 +1,38 @@
-# RADiCALsimDSB — Claude/AI Reference Guide
+# RADiCALsimHoleScan — Claude/AI Reference Guide
 
-> **VARIANT: DSB1 timing WLS.** This is the fast-scintillator copy of the sim —
-> the corner timing fiber is **DSB1** (polysiloxane WLS, ~2 ns decay) to chase the
-> RADiCAL paper's ~27 ps σ_t. The sibling `simulations/RADiCALsimLuAG/` is the
-> identical geometry with the **LuAG:Ce** fiber (60 ns decay, ~52 ps σ_t floor).
-> Only the corner WLS material differs between the two. Decay is tunable at
-> runtime via `RADICAL_DSB_DECAY_NS` (default 2.0).
+> **VARIANT: TILE-HOLE / CAPILLARY-SIZE SCAN.** A fork of `RADiCALsimDSB` built to
+> answer ONE question: **how does the light output at the capillary ENDS depend on
+> the diameter of the holes drilled through the tiles?** All five holes are set to
+> a common diameter D (`RADICAL_HOLE_DIAM_MM`, default 1.30 mm) and every capillary
+> **scales to FILL its hole** (OD = D), with internal features proportional to the
+> paper's design ratios (corner WLS fiber = 0.7826·OD, center EJ309 bore = 0.400·OD).
+> Bigger hole → bigger fiber/bore → more light. Sweep D = 1.2 → 2.0 mm in 0.1 mm
+> steps at fixed 50 GeV with `run_hole_scan.sh`.
+>
+> **What changed vs RADiCALsimDSB:**
+> - `DetectorConstruction.cc`: hole radii + all capillary radii are runtime-scaled
+>   from `RADICAL_HOLE_DIAM_MM` (capillaries fill the hole exactly — verified
+>   overlap-clean 1.2–2.0 mm, 1341 volumes OK).
+> - **EJ309 is now OPTICALLY ACTIVE** (11500 ph/MeV × `RADICAL_EJ309_SCINT_SCALE`,
+>   3.5 ns, 424 nm, n=1.57) so the CENTER energy capillary produces measurable end
+>   light — the 5th of "all five".
+> - **Center photodetectors** added: `PDC_Upstream`/`PDC_Downstream` at the center
+>   capillary ends; SteppingAction routes them to `RecordCenterPhoton`.
+> - New histograms: **H1[38] Light_Corners** (4 WLS caps, both ends), **H1[39]
+>   Light_Center** (EJ309 cap, both ends), **H1[40] Light_Total** (all five). Filled
+>   EVERY event so each histogram's MEAN is the light yield at fixed D.
+> - `run_hole_scan.sh` (sweep D, fixed E) + `analysis/plot_holescan.C` (mean light
+>   vs D, 3 curves → `build/plots/holescan_light_vs_diameter.png`).
+>
+> The underlying corner timing fiber is still **DSB1** (3.5 ns WLS). Everything
+> below is inherited from RADiCALsimDSB and still applies.
+
+---
+
+> **INHERITED (RADiCALsimDSB): DSB1 timing WLS.** The corner timing fiber is
+> **DSB1** (polysiloxane WLS, ~3.5 ns decay). The sibling `simulations/RADiCALsimLuAG/`
+> is the identical geometry with the **LuAG:Ce** fiber (60 ns decay, ~52 ps σ_t floor).
+> Decay is tunable at runtime via `RADICAL_DSB_DECAY_NS` (default 3.5).
 
 > Read this first. It captures everything needed to work on this project without
 > re-deriving context. Keep it updated when geometry, materials, or workflow change.
