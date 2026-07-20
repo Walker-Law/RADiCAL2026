@@ -71,7 +71,7 @@ The ~4–7× gap is attributed to uncalibrated DRS4 inter-cell timing jitter in 
 
 ```bash
 git clone https://github.com/Walker-Law/RADiCAL2026.git
-cd RADiCAL2026/simulations/RADiCALsim1
+cd RADiCAL2026/simulations/RADiCALsimLuAG
 source setup_env.sh          # set Geant4 data paths
 mkdir build && cd build
 cmake ..
