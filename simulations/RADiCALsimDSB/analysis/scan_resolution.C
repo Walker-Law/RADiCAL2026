@@ -78,6 +78,18 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TF1* gE=coreFit(hE,2.0,4);
     double muE=gE->GetParameter(1), sgE=gE->GetParameter(2), sgEerr=gE->GetParError(2);
     double eResI=100*sgE/muE, eResErrI=100*sgEerr/muE;
+    // Save the histogram + fit overlay for THIS energy point (the actual object
+    // the sigma/E numerator comes from), zoomed to the fit window.
+    { cFit->cd(); cFit->Clear();
+      hE->GetXaxis()->SetRangeUser(muE-6*sgE, muE+6*sgE);
+      hE->SetLineColor(kAzure+2); hE->SetLineWidth(2);
+      hE->SetTitle(Form("ECombined, E_{beam}=%.0f GeV;E_{reco} (GeV);Events", E[i]));
+      hE->Draw("hist");
+      gE->SetLineColor(kRed+1); gE->SetLineWidth(2); gE->Draw("same");
+      TLatex tl; tl.SetNDC(); tl.SetTextSize(0.035);
+      tl.DrawLatex(0.15,0.85, Form("#mu = %.3f GeV", muE));
+      tl.DrawLatex(0.15,0.80, Form("#sigma = %.4f GeV  (%.2f%%)", sgE, eResI));
+      cFit->SaveAs(Form("%s/fits/energy_fit_E%.0fGeV.png", out, E[i])); }
     // --- timing ---
     TH1D* hT=(TH1D*)f->Get("DeltaT");
     TF1* gT=coreFit(hT,2.5,4);
