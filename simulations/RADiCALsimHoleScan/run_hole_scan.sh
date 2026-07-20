@@ -164,7 +164,7 @@ fi
 echo "[$(date '+%H:%M:%S')] merging with $HADD ..."
 any_failed=0
 for D in "${HOLES[@]}"; do
-    DT=$(printf '%.0f' "$(echo "$D * 10" | bc -l)")
+    DT=$(awk "BEGIN{printf \"%.0f\", $D*10}")
     OUT="$OUTDIR/hole_D${D}.root"
     [ -f "$OUT" ] && continue
     CHUNKS=( tmphole_D${DT}_c*.root )
