@@ -44,6 +44,10 @@ export RADICAL_LYSO_SCINT_SCALE=${RADICAL_LYSO_SCINT_SCALE:-1e-2}
 export RADICAL_EJ309_SCINT_SCALE=${RADICAL_EJ309_SCINT_SCALE:-1e-2}
 export RADICAL_OPT_MAXSTEP=${RADICAL_OPT_MAXSTEP:-5000}
 export RADICAL_OPT_TMAX=${RADICAL_OPT_TMAX:-50}
+# Raise the per-event photon budget well above what a 50 GeV shower generates at
+# scale 1e-2 (~2M/event) so NO bright event is silently truncated at the default
+# 4M cap (the yield-sweep postmortem's saturation trap — see DSB CLAUDE.md).
+export RADICAL_MAX_OPT_PHOTONS=${RADICAL_MAX_OPT_PHOTONS:-20000000}
 
 OUTDIR="$(pwd)/scan/hole_scan_${NEVT}${RADICAL_RUN_TAG:+_$RADICAL_RUN_TAG}"
 BINARY="$(pwd)/radical"
