@@ -45,12 +45,37 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TF1* gE=coreFit(hE,2.0,4);
     double muE=gE->GetParameter(1), sgE=gE->GetParameter(2), sgEerr=gE->GetParError(2);
     eRes[i]=100*sgE/muE; eResErr[i]=100*sgEerr/muE;
+    // Save the ECombined histogram + fit for THIS energy (the object the sigma/E
+    // numerator comes from), zoomed to the fit window.
+    { cFit->cd(); cFit->Clear();
+      hE->GetXaxis()->SetRangeUser(muE-6*sgE, muE+6*sgE);
+      hE->SetLineColor(kAzure+2); hE->SetLineWidth(2);
+      hE->SetTitle(Form("ECombined, E_{beam}=%.0f GeV;E_{reco} (GeV);Events", E[i]));
+      hE->Draw("hist");
+      gE->SetLineColor(kRed+1); gE->SetLineWidth(2); gE->Draw("same");
+      TLatex tl; tl.SetNDC(); tl.SetTextSize(0.035);
+      tl.DrawLatex(0.15,0.85, Form("#mu = %.3f GeV", muE));
+      tl.DrawLatex(0.15,0.80, Form("#sigma = %.4f GeV  (%.2f%%)", sgE, eRes[i]));
+      cFit->SaveAs(Form("%s/fits/energy_fit_E%.0fGeV.png", out, E[i])); }
     // --- timing ---
     TH1D* hT=(TH1D*)f->Get("DeltaT");
     TF1* gT=coreFit(hT,2.5,4);
     // (DW−UP)/2 corner trick: σ_t = σ(ΔT)/2 (dividing by 2 gives physical timing resolution)
     double muT=gT->GetParameter(1)*1000, sgT=gT->GetParameter(2)*500, sgTerr=gT->GetParError(2)*500;
     tRes[i]=sgT; tResErr[i]=sgTerr;
+    // Save the DeltaT histogram + fit (native ns; text applies the (DW-UP)/2
+    // corner trick, ns->ps and sigma/2, to match the summary table).
+    { cFit->cd(); cFit->Clear();
+      double muN=gT->GetParameter(1), sgN=gT->GetParameter(2);
+      hT->GetXaxis()->SetRangeUser(muN-6*sgN, muN+6*sgN);
+      hT->SetLineColor(kAzure+2); hT->SetLineWidth(2);
+      hT->SetTitle(Form("DeltaT, E_{beam}=%.0f GeV;#Delta T (ns);Corners", E[i]));
+      hT->Draw("hist");
+      gT->SetLineColor(kRed+1); gT->SetLineWidth(2); gT->Draw("same");
+      TLatex tl; tl.SetNDC(); tl.SetTextSize(0.035);
+      tl.DrawLatex(0.15,0.85, Form("#DeltaT mean = %.1f ps", muT));
+      tl.DrawLatex(0.15,0.80, Form("#sigma_{t} = #sigma(#DeltaT)/2 = %.1f ps", sgT));
+      cFit->SaveAs(Form("%s/fits/timing_fit_DeltaT_E%.0fGeV.png", out, E[i])); }
     printf("  %5.0f    %7.3f   %6.3f    %6.2f       %6.1f      %6.2f\n",
            E[i],muE,sgE,eRes[i],muT,sgT);
     // --- longitudinal profile overlay (normalized to unit area) ---
