@@ -582,6 +582,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     pdVis->SetForceSolid(true);
     logicPDUpstream->SetVisAttributes(pdVis);
     logicPDDownstream->SetVisAttributes(pdVis);
+
+    // Center energy-capillary PDs (distinct names so SteppingAction routes their
+    // hits to the center light-output counter). Same disc solid — center OD =
+    // corner OD = holeR in the hole scan.
+    auto logicPDCUp   = new G4LogicalVolume(solidPD, siPD, "PDC_Upstream");
+    auto logicPDCDown = new G4LogicalVolume(solidPD, siPD, "PDC_Downstream");
+    logicPDCUp->SetVisAttributes(pdVis);
+    logicPDCDown->SetVisAttributes(pdVis);
     // PDs sit just outside the Tyvek end caps (quartz rod photons pass through the
     // drilled holes in the end caps and arrive at the Si PD through a thin air gap)
     const G4double zPDUpstream   = -stackZ/2.0 - wrapThick - pdHalfZ;
