@@ -132,6 +132,9 @@ private:
     // OpWLS-only (LYSO->DSB1 re-emission, the realistic chain): first times + count
     std::array<G4double, 4> fTphUpW, fTphDownW;
     G4int fNphWls;
+
+    // Center energy-capillary detected light output (up/down PDs) + process split
+    G4int fNphCenterUp, fNphCenterDown, fNphCenterCher, fNphCenterScint;
 };
 
 #endif
