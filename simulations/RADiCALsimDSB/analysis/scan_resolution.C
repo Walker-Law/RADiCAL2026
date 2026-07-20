@@ -110,6 +110,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     // --- timing ---
     TH1D* hT=(TH1D*)f->Get("DeltaT");
     TF1* gT=coreFit(hT,2.5,4);
+    saveTimingFit(hT, gT, "DeltaT", E[i]);
     // (DW−UP)/2 corner trick: σ_t = σ(ΔT)/2 (dividing by 2 gives physical timing resolution)
     double muT=gT->GetParameter(1)*1000, sgT=gT->GetParameter(2)*500, sgTerr=gT->GetParError(2)*500;
     // scint-only timing (new files only): same corner trick, Cherenkov excluded
