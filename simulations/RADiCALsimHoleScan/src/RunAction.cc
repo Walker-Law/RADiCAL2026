@@ -237,6 +237,24 @@ RunAction::RunAction() {
                  "High-gain fixed-threshold #DeltaT (downstream #minus upstream);#DeltaT (ns);Corners",
                  4000, -0.2, 0.6);
 
+    // ── H1[38-40]: HOLE-SCAN light output at the capillary ENDS ───────────────
+    // Detected p.e. per event at the capillary ends, filled every event so the
+    // MEAN is the light yield at fixed hole diameter D. Ranges deliberately wide
+    // so no event overflows (ROOT's GetMean uses the in-range value sum, so the
+    // mean stays exact regardless of bin width, provided nothing overflows).
+    // H1[38]: 4 corner WLS timing capillaries, both ends summed.
+    am->CreateH1("Light_Corners",
+                 "Light output at corner-capillary ends;N_{p.e.} (4 WLS caps, up+down);Events",
+                 1000, 0., 1.0e6);
+    // H1[39]: center EJ309 energy capillary, both ends summed.
+    am->CreateH1("Light_Center",
+                 "Light output at center-capillary ends;N_{p.e.} (EJ309 cap, up+down);Events",
+                 1000, 0., 1.0e6);
+    // H1[40]: all five capillaries combined.
+    am->CreateH1("Light_Total",
+                 "Light output at all capillary ends;N_{p.e.} (all 5 caps);Events",
+                 1000, 0., 2.0e6);
+
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
     // H2[0]: Timing calibration — ΔT vs true z
