@@ -18,7 +18,10 @@ RADiCAL/                     Test-beam data and ROOT analysis
 
 simulations/                 Geant4 simulations
   RADiCALsimDSB/             ★ Primary full-module sim — DSB1 WLS fiber (fast,
-                               3.5 ns decay). Hollow quartz capillaries, optically
+                               3.5 ns decay). Solid quartz capillary rods (the
+                               paper's "hollow tube" core is filled and fused
+                               with quartz — an earlier air-bore model broke
+                               light transport and was reverted), optically
                                active LYSO→DSB1 WLS chain, dual-gain SiPM readout
                                (onsemi MicroFJ-30035), full CERN test-beam line,
                                DRS4 waveform emulation. Actively developed.
@@ -28,6 +31,12 @@ simulations/                 Geant4 simulations
                                downstream-SiPM timing resolution vs detected
                                light yield (npe/MeV), 50 GeV e⁻, rise-time (CFD)
                                method. LY sweep via run_fig8_sweep.sh.
+  RADiCALsimHoleScan/        Light output at the capillary ends vs the diameter
+                               of the tile holes (1.2–2.0 mm sweep, 50 GeV); all
+                               five capillaries scale to fill their hole. Center
+                               EJ309 capillary made optically active (with its
+                               own end PDs) so it counts as the 5th light source
+                               alongside the 4 corner WLS caps. run_hole_scan.sh.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
@@ -36,10 +45,10 @@ simulations/                 Geant4 simulations
   firstsim/                  Early prototype (reference only).
 ```
 
-The three `RADiCALsim{DSB,LuAG,Fig8}` directories share the same core Geant4
-code (they were forked from a common base) and differ in the WLS material,
-observables, and study focus. `RADiCALsimDSB` is the canonical, most up-to-date
-version; the others inherit fixes from it.
+The four `RADiCALsim{DSB,LuAG,Fig8,HoleScan}` directories share the same core
+Geant4 code (they were forked from a common base) and differ in the WLS
+material, geometry parametrization, observables, and study focus. `RADiCALsimDSB`
+is the canonical, most up-to-date version; the others inherit fixes from it.
 
 ## Quick start
 
