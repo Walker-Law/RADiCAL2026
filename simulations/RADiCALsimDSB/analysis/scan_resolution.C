@@ -60,6 +60,23 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   // the aggregate curve). Answers "do you have those histograms" with a file.
   gSystem->mkdir(Form("%s/fits", out), true);
   TCanvas* cFit=new TCanvas("cFit","fit",800,600);
+  // Same idea for timing: save the histogram + Gaussian-core-fit overlay behind
+  // each timing-curve point. Histogram/fit are native ns; displayed numbers
+  // apply the (DW-UP)/2 corner trick (ns->ps, sigma/2) to match the summary table.
+  auto saveTimingFit = [&](TH1* h, TF1* g, const char* tag, double Ei){
+    double muPs=g->GetParameter(1)*1000, sgPs=g->GetParameter(2)*500;
+    double muN=g->GetParameter(1), sgN=g->GetParameter(2);
+    cFit->cd(); cFit->Clear();
+    h->GetXaxis()->SetRangeUser(muN-6*sgN, muN+6*sgN);
+    h->SetLineColor(kAzure+2); h->SetLineWidth(2);
+    h->SetTitle(Form("%s, E_{beam}=%.0f GeV;#Delta T (ns);Corners", tag, Ei));
+    h->Draw("hist");
+    g->SetLineColor(kRed+1); g->SetLineWidth(2); g->Draw("same");
+    TLatex tl; tl.SetNDC(); tl.SetTextSize(0.035);
+    tl.DrawLatex(0.15,0.85, Form("#DeltaT mean = %.1f ps", muPs));
+    tl.DrawLatex(0.15,0.80, Form("#sigma_{t} = #sigma(#DeltaT)/2 = %.1f ps", sgPs));
+    cFit->SaveAs(Form("%s/fits/timing_fit_%s_E%.0fGeV.png", out, tag, Ei));
+  };
 
   printf("\n  E(GeV)   mu_E(GeV)  sigma_E   sigma/E(%%)   DeltaT(ps)  sigma_t(ps)\n");
   printf("  -------------------------------------------------------------------\n");
