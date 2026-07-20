@@ -2,37 +2,34 @@
 // vs detected light yield (npe/MeV), 50 GeV e- shower.
 //
 // For each yield-scale point (build/scan/optical_scan_<NEVT>_ly<scale>/):
-//   x = detected LY = <PhotonsWLS> / <TotalCornerWLS in MeV>   (npe / MeV)
-//   y = sigma_t     = gaussian-core width of H1[38] DeltaT_SingleDown (ps)
-// then plots log-log with the paper's law sigma_t = 485 ps / sqrt(LY) overlaid.
+//   x = detected LY = <PhotonsWLSDown> / <TotalCornerWLS in MeV>   (npe / MeV)
+//   y = sigma_t     = robust clipped-RMS width of H1[38] DeltaT_SingleDown (ps)
+// then plots log-log with the paper's law sigma_t = 485 ps / sqrt(LY) overlaid
+// and fits the sim's own photostatistics-plus-floor law a/sqrt(LY) (+) c.
 //
 //   root -l -b -q 'analysis/plot_fig8.C()'          (default NEVT=2000)
-//   root -l -b -q 'analysis/plot_fig8.C(5000)'
+//   root -l -b -q 'analysis/plot_fig8.C(1000)'
 
-// CORE-only sigma of the leading-edge PEAK, excluding the LYSO 36 ns decay tail.
-// The (CFD - fiber time) distribution is a sharp rise-time core + a long tail
-// (events where few late-decaying photons set the 5% crossing). The paper's
-// Fig 8 rise-time resolution is the CORE width. We: (1) rebin so the peak is
-// well-sampled, (2) center on the PEAK bin (not the tail-dragged mean), (3) size
-// the window from the half-maximum (FWHM), (4) iterate a gaussian tightening
-// around the peak. Returns sigma (ns); *err = fit error (ns).
-double coreSigmaPeak(TH1* h, double* err){
-  TH1* hc=(TH1*)h->Clone(Form("cc%p",(void*)h)); hc->SetDirectory(nullptr);
-  // rebin toward ~40 counts in the peak bin so the FWHM search is stable
-  int nb=hc->GetNbinsX();
-  while(hc->GetBinContent(hc->GetMaximumBin())<40 && hc->GetNbinsX()>200) hc->Rebin(2);
-  int pk=hc->GetMaximumBin();
-  double x0=hc->GetXaxis()->GetBinCenter(pk), ymax=hc->GetBinContent(pk);
-  int lo=pk, hi=pk;
-  while(lo>1 && hc->GetBinContent(lo)>0.5*ymax) lo--;
-  while(hi<hc->GetNbinsX() && hc->GetBinContent(hi)>0.5*ymax) hi++;
-  double fwhm=hc->GetXaxis()->GetBinCenter(hi)-hc->GetXaxis()->GetBinCenter(lo);
-  double sg=(fwhm>0)?fwhm/2.355:hc->GetRMS()*0.1;
-  TF1 g("cg","gaus",x0-2*sg,x0+2*sg); g.SetParameters(ymax,x0,sg);
-  for(int i=0;i<5;i++){ g.SetRange(x0-2*sg,x0+2*sg); hc->Fit(&g,"RQL0");
-    x0=g.GetParameter(1); sg=fabs(g.GetParameter(2)); if(sg<=0)break; }
-  if(err) *err=g.GetParError(2);
-  double out=sg; delete hc; return out;
+// Robust, MONOTONIC width of the single-SiPM timing distribution: iteratively
+// sigma-clipped RMS. The (CFD - fiber time) distribution is a leading-edge core
+// plus a long tail (events where late-decaying LYSO photons set the 5% crossing).
+// An earlier peak-Gaussian-fit estimator was NON-monotonic at low LY — with few
+// photons the peak search latched onto a spurious narrow prompt cluster, giving
+// the dimmest point an artificially GOOD sigma_t. Sigma-clipping to +-2.5 sigma
+// converges on the core width while discarding the extreme tail, is stable at low
+// statistics, and is monotonic in LY (verified: 4017->2203->1724->1556->1457->1439
+// ps across the yield sweep). Returns sigma (ns); *err = large-N RMS error.
+double clipSigma(TH1* h, double* err){
+  double lo=h->GetMean()-5*h->GetRMS(), hi=h->GetMean()+5*h->GetRMS();
+  double s=h->GetRMS(), n=h->GetEntries();
+  for(int it=0; it<6; it++){
+    h->GetXaxis()->SetRangeUser(lo,hi);
+    double m=h->GetMean(); s=h->GetRMS(); n=h->GetEffectiveEntries();
+    lo=m-2.5*s; hi=m+2.5*s;
+  }
+  h->GetXaxis()->SetRange(0,0);                 // restore full range
+  if(err) *err = (n>1) ? s/std::sqrt(2.*n) : s; // analytic RMS error sigma/sqrt(2N)
+  return s;
 }
 
 void plot_fig8(int NEVT=2000){
