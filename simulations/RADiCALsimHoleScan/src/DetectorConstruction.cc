@@ -199,6 +199,36 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     G4cout << "[RADiCAL] LYSO optical: ON, yield scale " << lysoScale << " -> "
            << 33200.*lysoScale << " ph/MeV (RADICAL_LYSO_SCINT_SCALE)" << G4endl;
 
+    // --- EJ309: OPTICALLY ACTIVE for the hole scan (center energy-capillary light
+    //     output). Eljen datasheet: ~11500 ph/MeV, fast primary decay ~3.5 ns,
+    //     emission peak 424 nm, refractive index n = 1.57. Shower dE/dx in the
+    //     EJ309 bore produces prompt scintillation; the surrounding quartz tube
+    //     guides it to the center PDs at each end. Yield scaled by
+    //     RADICAL_EJ309_SCINT_SCALE (default = the LYSO scale, for a tractable and
+    //     mutually-consistent photon budget). This is what lets the CENTER
+    //     capillary of "all five" contribute a measurable end light output. ---
+    G4double ej309Scale = lysoScale;   // default: same scale as LYSO
+    if (const char* es = std::getenv("RADICAL_EJ309_SCINT_SCALE")) {
+        double v = std::atof(es);
+        if (v > 0.) ej309Scale = v;
+    }
+    std::vector<G4double> eRI (6, 1.57);
+    std::vector<G4double> eABS(6, 3.*m);   // bulk attenuation length (datasheet-class)
+    // emission peaked at 424 nm (2.92 eV) — between the 400 nm/449 nm grid points
+    // grid:  1.55   2.07   2.48   2.76   3.10   3.54  eV  (800 599 500 449 400 350 nm)
+    std::vector<G4double> eEM  = {0.00, 0.04, 0.20, 0.70, 0.85, 0.05};
+    auto eMPT = new G4MaterialPropertiesTable();
+    eMPT->AddProperty("RINDEX",                  phE, eRI);
+    eMPT->AddProperty("ABSLENGTH",               phE, eABS);
+    eMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, eEM);
+    eMPT->AddConstProperty("SCINTILLATIONYIELD",         11500./MeV * ej309Scale);
+    eMPT->AddConstProperty("RESOLUTIONSCALE",            1.0);
+    eMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 3.5*ns);
+    eMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
+    ej309->SetMaterialPropertiesTable(eMPT);
+    G4cout << "[RADiCAL] EJ309 optical: ON, yield scale " << ej309Scale << " -> "
+           << 11500.*ej309Scale << " ph/MeV (RADICAL_EJ309_SCINT_SCALE)" << G4endl;
+
     // --- Tyvek: add RINDEX so optical boundary physics activates at Tyvek faces.
     //     n ≈ 1.50 (HDPE). Reflectivity 98% is set via G4LogicalSkinSurface below.
     std::vector<G4double> tvRI = {1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
