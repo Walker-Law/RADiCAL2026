@@ -110,7 +110,7 @@ export OUTDIR TS BINARY ENERGY
 # Launch every chunk for every not-yet-done hole size simultaneously.
 pids=(); EVTARGET=0
 for D in "${HOLES[@]}"; do
-    DT=$(printf '%.0f' "$(echo "$D * 10" | bc -l)")   # 1.2 -> 12  (filesystem tag)
+    DT=$(awk "BEGIN{printf \"%.0f\", $D*10}")   # 1.2 -> 12  (filesystem tag)
     EXIST="$OUTDIR/hole_D${D}.root"
     if [ -f "$EXIST" ]; then
         sz=$(stat -c%s "$EXIST" 2>/dev/null || stat -f%z "$EXIST" 2>/dev/null || echo 0)
