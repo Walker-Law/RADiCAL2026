@@ -441,20 +441,24 @@ void EventAction::EndOfEventAction(const G4Event*) {
     if (fNphWlsDown > 0) am->FillH1(39, fNphWlsDown);  // Fig8 single-SiPM LY
 
     // ── FIG 8 STUDY: single-ended DOWNSTREAM timing (the Fig 8 configuration) ──
-    // arXiv:2401.01747 §3: "The timing resolution is dominated by the measured
-    // RISE TIME of this signal" — so this is a WAVEFORM/CFD leading-edge
-    // measurement of the downstream pulse, NOT a first-photon time. First-photon
-    // is an order statistic (min arrival ~ tau/N -> 1/N scaling); the CFD/rise
-    // estimator combines the whole pulse -> genuine 1/sqrt(N) photostatistics,
-    // matching Fig 8's clean 1/sqrt(LY). Single downstream SiPM, 5% CFD on the
-    // scint/WLS pulse, referenced to the fiber signal time (removes shower-depth
-    // jitter -> pure photostatistics). sigma(H1[38]) vs detected LY recreates
-    // Fig 8. Per corner = independent single-capillary measurements.
+    // arXiv:2401.01747: "When the leading edge of the high-gain pulses from a
+    // given channel exceeded the threshold, the timing for that channel was
+    // determined and compared with the reference timing provided by the MCP tube."
+    // So the reference is the fast EXTERNAL MCP counter (σ_t ~10-20 ps), COMMON to
+    // every event — NOT the fiber's own dE/dx time. Referencing against the MCP
+    // subtracts a near-perfect clock, leaving only the SiPM's own photostatistics
+    // (plus a small shower-depth geometric term) -> the clean 1/sqrt(LY) STRAIGHT
+    // line the paper shows. The earlier version referenced the fiber dE/dx time
+    // (fiberTime[c]), whose ~1.4 ns event-to-event shower-DEVELOPMENT jitter is
+    // constant vs LY, so it dominated the curve and bent it into a ~1.4 ns floor
+    // (both the ~10x offset AND the flattening). Single downstream SiPM, 5% CFD on
+    // the scint/WLS pulse, referenced to t_MCP. sigma(H1[38]) vs LY recreates Fig 8.
+    // (fiberTime[c] < kBigTime is kept only as a "was this channel hit" gate.)
     for (G4int c = 0; c < 4; c++) {
-        if (fiberTime[c] >= kBigTime) continue;
+        if (fiberTime[c] >= kBigTime || fTimeMCP >= kBigTime) continue;
         G4double fw = -1.;
         G4double tCFD = pulseCFD(fPhTDownS[c], &fw);   // downstream scint/WLS pulse, 5% CFD
-        if (tCFD > 0.) am->FillH1(38, (tCFD - fiberTime[c]) / ns);
+        if (tCFD > 0.) am->FillH1(38, (tCFD - fTimeMCP) / ns);
     }
 
     // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
