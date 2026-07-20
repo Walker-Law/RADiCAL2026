@@ -73,16 +73,30 @@ across all cores and hadd-merges them per energy.
 See [simulations/RADiCALsimDSB/README.md](simulations/RADiCALsimDSB/README.md)
 and its `CLAUDE.md` for full detector, physics, and workflow documentation.
 
-## Key runtime knobs (RADiCALsimDSB / Fig8)
+## Analysis: per-energy fit overlays
+
+`analysis/scan_resolution.C` (present in all four sims) saves, for every energy
+point in a scan, the raw reconstructed-energy and timing histograms with their
+actual Gaussian-core fit drawn on top (μ, σ, σ/E or σ_t annotated) to
+`build/plots/fits/energy_fit_E<N>GeV.png` and `timing_fit_<variant>_E<N>GeV.png`.
+This makes the fit behind any point on a resolution curve directly inspectable,
+rather than only the aggregate curve/table — e.g. to check whether the Gaussian
+core fit is excluding a leakage tail sensibly, or to see the shape of the
+distribution a σ/E number was drawn from.
+
+## Key runtime knobs (RADiCALsimDSB / Fig8 / HoleScan)
 
 | Env var | Purpose |
 |---------|---------|
 | `RADICAL_OPTICAL` | 1 = track optical photons (timing); 0 = energy/shower only (fast) |
 | `RADICAL_BEAM_ENERGY_GEV` | Beam energy per run |
 | `RADICAL_ENERGIES` | Space-separated energy list for `run_scan.sh` |
+| `RADICAL_HOLE_DIAM_MM` | (HoleScan only) common tile-hole diameter; all capillaries scale to fill it |
 | `RADICAL_LYSO_SCINT_SCALE` | Scale LYSO scintillation yield (tractability; default 1e-3) |
 | `RADICAL_SCINT_YIELD` | Scale DSB1 self-scintillation yield |
+| `RADICAL_EJ309_SCINT_SCALE` | (HoleScan only) Scale EJ309 scintillation yield (center capillary) |
 | `RADICAL_QUARTZ_CHER_KEEP` | Binomial-thin quartz Cherenkov (restore real scint:Cher ratio) |
 | `RADICAL_SIPM_NPIX` | SiPM microcell count (default 5676 = MicroFJ-30035) |
 | `RADICAL_SPTR_PS` | SiPM single-photon time resolution RMS (ps) |
 | `RADICAL_OPT_MAXSTEP` / `RADICAL_OPT_TMAX` | Optical-photon step / time caps (tractability) |
+| `RADICAL_MAX_OPT_PHOTONS` | Per-event optical-photon budget cap (raise for bright/large-hole events) |
