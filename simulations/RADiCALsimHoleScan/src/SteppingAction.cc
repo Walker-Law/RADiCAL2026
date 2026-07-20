@@ -52,6 +52,22 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
                 track->SetTrackStatus(fStopAndKill);
                 return;
             }
+            // Center energy-capillary PDs (EJ309 scint + quartz Cherenkov) —
+            // separate light-output counter for the 5th ("all five") capillary.
+            if (pn == "PDC_Upstream" || pn == "PDC_Downstream") {
+                const G4VProcess* cp = track->GetCreatorProcess();
+                G4int cat = 1;
+                if (cp) {
+                    const G4String& pname = cp->GetProcessName();
+                    if      (pname == "Cerenkov") cat = 0;
+                    else if (pname == "OpWLS")    cat = 2;
+                }
+                fEventAction->RecordCenterPhoton(pn == "PDC_Upstream",
+                                                 step->GetPostStepPoint()->GetGlobalTime(),
+                                                 cat);
+                track->SetTrackStatus(fStopAndKill);
+                return;
+            }
         }
         // Transport caps: kill undetected photons that have bounced/lived too long.
         const G4int    mx = optMaxStep();
