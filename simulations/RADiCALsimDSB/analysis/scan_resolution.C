@@ -156,6 +156,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TH1D* hTW=(TH1D*)f->Get("DeltaT_WLS");
     if(hTW && hTW->GetEntries()>50){
       TF1* gTW=coreFit(hTW,2.5,4);
+      saveTimingFit(hTW, gTW, "DeltaT_WLS", E[i]);
       sgTW=gTW->GetParameter(2)*500;
       EW[nGoodW]=E[i]; tResW[nGoodW]=sgTW; tResWErr[nGoodW]=gTW->GetParError(2)*500;
       nGoodW++;
