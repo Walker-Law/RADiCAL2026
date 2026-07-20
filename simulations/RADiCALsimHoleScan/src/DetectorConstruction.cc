@@ -617,6 +617,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
                           logicPDDownstream, "PDDownstream_Phys", logicCalo, false, c-1);
     }
 
+    // Center energy capillary PDs at both ends (copy number 0)
+    new G4PVPlacement(nullptr, capXY[0] + G4ThreeVector(0, 0, zPDUpstream),
+                      logicPDCUp, "PDCUpstream_Phys", logicCalo, false, 0);
+    new G4PVPlacement(nullptr, capXY[0] + G4ThreeVector(0, 0, zPDDownstream),
+                      logicPDCDown, "PDCDownstream_Phys", logicCalo, false, 0);
+
     // =========================================================================
     // 9. CERN TEST-BEAM LINE
     //    Beam travels +z.  Upstream:  Trig1 -> Trig2 -> MCP
