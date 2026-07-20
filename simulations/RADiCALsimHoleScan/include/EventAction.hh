@@ -85,6 +85,16 @@ public:
         else            { if (t < fTphDownW[corner]) fTphDownW[corner] = t; }
     }
 
+    // Center energy-capillary light output (EJ309 scintillation + quartz
+    // Cherenkov), detected at the two center-capillary end PDs. This is a
+    // light-yield measurement, so we count detected p.e. (same SiPM QE as the
+    // corners); arrival time is unused here. cat: 0 Cherenkov, else scint.
+    void RecordCenterPhoton(bool isUpstream, G4double /*t0*/, G4int cat) {
+        if (G4UniformRand() > kQE) return;             // apply QE
+        if (isUpstream) fNphCenterUp++; else fNphCenterDown++;
+        if (cat == 0) fNphCenterCher++; else fNphCenterScint++;
+    }
+
 private:
     std::array<G4double, 29> fEdepLYSO;
     std::array<G4double, 28> fEdepW;
