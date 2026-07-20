@@ -118,6 +118,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TH1D* hTS=(TH1D*)f->Get("DeltaT_Scint");
     if(hTS && hTS->GetEntries()>50){
       TF1* gTS=coreFit(hTS,2.5,4);
+      saveTimingFit(hTS, gTS, "DeltaT_Scint", E[i]);
       sgTS=gTS->GetParameter(2)*500;
       ES[nGoodS]=E[i]; tResS[nGoodS]=sgTS; tResSErr[nGoodS]=gTS->GetParError(2)*500;
       nGoodS++;
