@@ -27,6 +27,11 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   TCanvas* cL=new TCanvas("cL","long",800,600);
   TLegend* leg=new TLegend(0.62,0.55,0.88,0.88);
   int cols[N]={kRed+1,kOrange+1,kGreen+2,kSpring+4,kAzure+2,kBlue+1,kMagenta+1,kViolet+2};
+  // Per-energy histogram + Gaussian-core-fit overlays (energy & timing) saved to
+  // build/plots/fits/ so the fit behind each resolution-curve point is
+  // inspectable after the fact, not just the aggregate curve.
+  gSystem->mkdir(Form("%s/fits", out), true);
+  TCanvas* cFit=new TCanvas("cFit","fit",800,600);
 
   printf("\n  E(GeV)   mu_E(GeV)  sigma_E   sigma/E(%%)   DeltaT(ps)  sigma_t(ps)\n");
   printf("  -------------------------------------------------------------------\n");

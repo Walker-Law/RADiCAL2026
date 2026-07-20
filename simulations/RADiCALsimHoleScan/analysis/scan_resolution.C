@@ -55,6 +55,28 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   TCanvas* cL=new TCanvas("cL","long",800,600);
   TLegend* leg=new TLegend(0.62,0.55,0.88,0.88);
   int cols[N]={kRed+1,kOrange+1,kSpring+4,kAzure+2,kBlue+1,kMagenta+1};
+  // Per-energy histogram + Gaussian-core-fit overlay, saved to disk so the fit
+  // behind each resolution-curve point is inspectable after the fact (not just
+  // the aggregate curve). Answers "do you have those histograms" with a file.
+  gSystem->mkdir(Form("%s/fits", out), true);
+  TCanvas* cFit=new TCanvas("cFit","fit",800,600);
+  // Same idea for timing: save the histogram + Gaussian-core-fit overlay behind
+  // each timing-curve point. Histogram/fit are native ns; displayed numbers
+  // apply the (DW-UP)/2 corner trick (ns->ps, sigma/2) to match the summary table.
+  auto saveTimingFit = [&](TH1* h, TF1* g, const char* tag, double Ei){
+    double muPs=g->GetParameter(1)*1000, sgPs=g->GetParameter(2)*500;
+    double muN=g->GetParameter(1), sgN=g->GetParameter(2);
+    cFit->cd(); cFit->Clear();
+    h->GetXaxis()->SetRangeUser(muN-6*sgN, muN+6*sgN);
+    h->SetLineColor(kAzure+2); h->SetLineWidth(2);
+    h->SetTitle(Form("%s, E_{beam}=%.0f GeV;#Delta T (ns);Corners", tag, Ei));
+    h->Draw("hist");
+    g->SetLineColor(kRed+1); g->SetLineWidth(2); g->Draw("same");
+    TLatex tl; tl.SetNDC(); tl.SetTextSize(0.035);
+    tl.DrawLatex(0.15,0.85, Form("#DeltaT mean = %.1f ps", muPs));
+    tl.DrawLatex(0.15,0.80, Form("#sigma_{t} = #sigma(#DeltaT)/2 = %.1f ps", sgPs));
+    cFit->SaveAs(Form("%s/fits/timing_fit_%s_E%.0fGeV.png", out, tag, Ei));
+  };
 
   printf("\n  E(GeV)   mu_E(GeV)  sigma_E   sigma/E(%%)   DeltaT(ps)  sigma_t(ps)\n");
   printf("  -------------------------------------------------------------------\n");
@@ -73,9 +95,22 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TF1* gE=coreFit(hE,2.0,4);
     double muE=gE->GetParameter(1), sgE=gE->GetParameter(2), sgEerr=gE->GetParError(2);
     double eResI=100*sgE/muE, eResErrI=100*sgEerr/muE;
+    // Save the histogram + fit overlay for THIS energy point (the actual object
+    // the sigma/E numerator comes from), zoomed to the fit window.
+    { cFit->cd(); cFit->Clear();
+      hE->GetXaxis()->SetRangeUser(muE-6*sgE, muE+6*sgE);
+      hE->SetLineColor(kAzure+2); hE->SetLineWidth(2);
+      hE->SetTitle(Form("ECombined, E_{beam}=%.0f GeV;E_{reco} (GeV);Events", E[i]));
+      hE->Draw("hist");
+      gE->SetLineColor(kRed+1); gE->SetLineWidth(2); gE->Draw("same");
+      TLatex tl; tl.SetNDC(); tl.SetTextSize(0.035);
+      tl.DrawLatex(0.15,0.85, Form("#mu = %.3f GeV", muE));
+      tl.DrawLatex(0.15,0.80, Form("#sigma = %.4f GeV  (%.2f%%)", sgE, eResI));
+      cFit->SaveAs(Form("%s/fits/energy_fit_E%.0fGeV.png", out, E[i])); }
     // --- timing ---
     TH1D* hT=(TH1D*)f->Get("DeltaT");
     TF1* gT=coreFit(hT,2.5,4);
+    saveTimingFit(hT, gT, "DeltaT", E[i]);
     // (DW−UP)/2 corner trick: σ_t = σ(ΔT)/2 (dividing by 2 gives physical timing resolution)
     double muT=gT->GetParameter(1)*1000, sgT=gT->GetParameter(2)*500, sgTerr=gT->GetParError(2)*500;
     // scint-only timing (new files only): same corner trick, Cherenkov excluded
@@ -83,6 +118,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TH1D* hTS=(TH1D*)f->Get("DeltaT_Scint");
     if(hTS && hTS->GetEntries()>50){
       TF1* gTS=coreFit(hTS,2.5,4);
+      saveTimingFit(hTS, gTS, "DeltaT_Scint", E[i]);
       sgTS=gTS->GetParameter(2)*500;
       ES[nGoodS]=E[i]; tResS[nGoodS]=sgTS; tResSErr[nGoodS]=gTS->GetParError(2)*500;
       nGoodS++;
@@ -120,6 +156,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TH1D* hTW=(TH1D*)f->Get("DeltaT_WLS");
     if(hTW && hTW->GetEntries()>50){
       TF1* gTW=coreFit(hTW,2.5,4);
+      saveTimingFit(hTW, gTW, "DeltaT_WLS", E[i]);
       sgTW=gTW->GetParameter(2)*500;
       EW[nGoodW]=E[i]; tResW[nGoodW]=sgTW; tResWErr[nGoodW]=gTW->GetParError(2)*500;
       nGoodW++;
@@ -129,6 +166,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TH1D* hHG=(TH1D*)f->Get("DeltaT_HighGain");
     if(hHG && hHG->GetEntries()>50){
       TF1* gHG=coreFit(hHG,2.5,4);
+      saveTimingFit(hHG, gHG, "DeltaT_HighGain", E[i]);
       sgTHG=gHG->GetParameter(2)*500;
       EHG[nGoodHG]=E[i]; tResHG[nGoodHG]=sgTHG; tResHGErr[nGoodHG]=gHG->GetParError(2)*500;
       nGoodHG++;
