@@ -354,6 +354,15 @@ void EventAction::EndOfEventAction(const G4Event*) {
     }
     if (nPhotTot > 0) am->FillH1(21, nPhotTot);         // photons detected / event
 
+    // ── HOLE-SCAN light output: detected p.e. at the capillary ENDS ──────────
+    // Filled EVERY event (including zeros) so each histogram's MEAN is the true
+    // mean light output at fixed hole diameter D. Corners = 4 WLS timing caps
+    // (up+down PDs); Center = EJ309 energy cap (up+down PDs); Total = all five.
+    G4int nPhotCenter = fNphCenterUp + fNphCenterDown;
+    am->FillH1(38, nPhotTot);                 // Light_Corners (4 WLS caps, both ends)
+    am->FillH1(39, nPhotCenter);              // Light_Center  (EJ309 cap, both ends)
+    am->FillH1(40, nPhotTot + nPhotCenter);   // Light_Total   (all five caps)
+
     // =========================================================================
     // 6c. WAVEFORM-EMULATED TIMING (data-identical estimator)
     //   Pulse built from ALL detected photon times, digitized DRS4-style, then
