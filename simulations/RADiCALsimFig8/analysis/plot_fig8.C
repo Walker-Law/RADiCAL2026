@@ -72,24 +72,29 @@ void plot_fig8(int NEVT=2000){
   g->SetTitle("Fig 8 recreation: single-SiPM timing vs detected light yield;LY (npe/MeV);#sigma_{t} (ps)");
   g->SetMarkerStyle(20); g->SetMarkerSize(1.3); g->SetMarkerColor(kBlue+1); g->SetLineColor(kBlue+1);
   g->Draw("AP");
-  g->GetYaxis()->SetRangeUser(5,1000);
-  // paper's law: sigma_t = 485 ps / sqrt(LY)
-  TF1* fp=new TF1("fp","485./sqrt(x)",0.5,2000.);
-  fp->SetLineColor(kRed); fp->SetLineStyle(2); fp->Draw("same");
-  // our own fit sigma_t = a/sqrt(LY)
-  TF1* fo=new TF1("fo","[0]/sqrt(x)",0.5,2000.);
-  fo->SetParameter(0,485); fo->SetLineColor(kBlue+1);
+  g->GetYaxis()->SetRangeUser(20,6000);
+  // paper's law: sigma_t = 485 ps / sqrt(LY) (pure photostatistics, no floor)
+  TF1* fpap=new TF1("fpap","485./sqrt(x)",0.5,2000.);
+  fpap->SetLineColor(kRed); fpap->SetLineStyle(2); fpap->Draw("same");
+  // sim's own law: photostatistics a/sqrt(LY) PLUS a constant single-ended floor c.
+  // A pure 1/sqrt(LY) cannot describe the high-LY flattening — single-ended timing
+  // carries the shower-development / fiber-reference jitter that the dual-ended
+  // (DW-UP)/2 method cancels, so sigma_t floors instead of going to zero.
+  TF1* fo=new TF1("fo","sqrt([0]*[0]/x+[1]*[1])",0.5,2000.);
+  fo->SetParameters(485,1000); fo->SetParNames("stoch(ps)","floor(ps)");
+  fo->SetLineColor(kBlue+1);
   g->Fit(fo,"RQ");
   fo->Draw("same");
-  TLatex t; t.SetNDC(); t.SetTextSize(0.038);
+  TLatex t; t.SetNDC(); t.SetTextSize(0.036);
   t.SetTextColor(kBlue+1);
-  t.DrawLatex(0.42,0.82,Form("sim: #sigma_{t} = %.0f ps/#sqrt{LY}",fabs(fo->GetParameter(0))));
+  t.DrawLatex(0.38,0.86,Form("sim: #sigma_{t} = %.0f ps/#sqrt{LY} #oplus %.0f ps",
+              fabs(fo->GetParameter(0)),fabs(fo->GetParameter(1))));
   t.SetTextColor(kRed);
-  t.DrawLatex(0.42,0.75,"paper Fig 8: 485 ps/#sqrt{LY}");
+  t.DrawLatex(0.38,0.79,"paper Fig 8: 485 ps/#sqrt{LY}");
   t.SetTextColor(kBlack);
   gSystem->mkdir("build/plots",true);
   c->SaveAs("build/plots/fig8_timing_vs_LY.png");
-  printf("\n  sim law: sigma_t = %.0f ps/sqrt(LY)   [paper Fig 8: 485 ps/sqrt(LY)]\n",
-         fabs(fo->GetParameter(0)));
+  printf("\n  sim law: sigma_t = %.0f ps/sqrt(LY) (+) %.0f ps floor   [paper Fig 8: 485 ps/sqrt(LY)]\n",
+         fabs(fo->GetParameter(0)),fabs(fo->GetParameter(1)));
   printf("  Saved build/plots/fig8_timing_vs_LY.png\n\n");
 }
