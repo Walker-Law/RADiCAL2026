@@ -54,6 +54,7 @@ EventAction::EventAction() {
     fNphScint = 0; fNphCher = 0;
     fTphUpW.fill(kBigTime); fTphDownW.fill(kBigTime);
     fNphWls = 0;
+    fNphCenterUp = 0; fNphCenterDown = 0; fNphCenterCher = 0; fNphCenterScint = 0;
 }
 EventAction::~EventAction() {}
 
@@ -80,6 +81,7 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     for (auto& v : fPhTDownS) v.clear();
     fTphUpW.fill(kBigTime); fTphDownW.fill(kBigTime);
     fNphWls = 0;
+    fNphCenterUp = 0; fNphCenterDown = 0; fNphCenterCher = 0; fNphCenterScint = 0;
 }
 
 // ── DRS4-style waveform emulation (mirrors the CERN test-beam analysis) ─────
