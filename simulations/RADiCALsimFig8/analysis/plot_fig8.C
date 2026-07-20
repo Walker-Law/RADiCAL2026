@@ -54,7 +54,7 @@ void plot_fig8(int NEVT=2000){
     if(!hN||!hE||!hT||hT->GetEntries()<50){ printf("  %-8s  -- no data --\n",scales[i]); fp->Close(); continue; }
     double ly = (hE->GetMean()>0)? npeScale*hN->GetMean()/hE->GetMean() : -1;
     double ste_ns=0.;
-    double st  = coreSigmaPeak(hT,&ste_ns)*1000.;   // core sigma, ns -> ps
+    double st  = clipSigma(hT,&ste_ns)*1000.;   // robust clipped-RMS, ns -> ps
     double ste = ste_ns*1000.;
     if(ly>0 && st>0){
       LY.push_back(ly); sigT.push_back(st); sigTerr.push_back(ste);
