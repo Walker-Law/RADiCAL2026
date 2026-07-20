@@ -451,14 +451,24 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // line the paper shows. The earlier version referenced the fiber dE/dx time
     // (fiberTime[c]), whose ~1.4 ns event-to-event shower-DEVELOPMENT jitter is
     // constant vs LY, so it dominated the curve and bent it into a ~1.4 ns floor
-    // (both the ~10x offset AND the flattening). Single downstream SiPM, 5% CFD on
-    // the scint/WLS pulse, referenced to t_MCP. sigma(H1[38]) vs LY recreates Fig 8.
-    // (fiberTime[c] < kBigTime is kept only as a "was this channel hit" gate.)
+    // Single downstream SiPM, referenced to t_MCP. sigma(H1[38]) vs LY recreates Fig 8.
+    //
+    // TIMING METHOD = FIXED-THRESHOLD leading edge (paper's "leading edge of the
+    // high-gain pulses exceeded the threshold"), NOT 5% CFD. This is the crux of
+    // reproducing Fig 8's STRAIGHT 1/sqrt(LY) line: a 5% CFD threshold is a fixed
+    // FRACTION of each pulse's own peak, so it always samples the same photon-
+    // starved sliver of the leading edge -> a ~1.4 ns floor that does not improve
+    // with light (curve flattens). A fixed ABSOLUTE threshold (RADICAL_HG_THRESH_PE
+    // p.e., default 2.5) is crossed on a progressively STEEPER rising edge as LY
+    // grows -> jitter falls as 1/sqrt(LY) with no early floor. leadingEdgeFixed()
+    // returns -1 when the pulse never reaches the threshold (dim events at low LY),
+    // which correctly thins the photon-starved points.
+    // (fiberTime[c] < kBigTime kept only as a "was this channel hit" gate.)
+    const G4double thrFig8 = envD("RADICAL_HG_THRESH_PE", 2.5);   // p.e., same as dual-gain
     for (G4int c = 0; c < 4; c++) {
         if (fiberTime[c] >= kBigTime || fTimeMCP >= kBigTime) continue;
-        G4double fw = -1.;
-        G4double tCFD = pulseCFD(fPhTDownS[c], &fw);   // downstream scint/WLS pulse, 5% CFD
-        if (tCFD > 0.) am->FillH1(38, (tCFD - fTimeMCP) / ns);
+        G4double tHG = leadingEdgeFixed(fPhTDownS[c], thrFig8);    // fixed-threshold, paper method
+        if (tHG > 0.) am->FillH1(38, (tHG - fTimeMCP) / ns);
     }
 
     // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
