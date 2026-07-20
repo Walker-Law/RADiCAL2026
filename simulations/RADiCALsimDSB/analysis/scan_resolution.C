@@ -166,6 +166,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     TH1D* hHG=(TH1D*)f->Get("DeltaT_HighGain");
     if(hHG && hHG->GetEntries()>50){
       TF1* gHG=coreFit(hHG,2.5,4);
+      saveTimingFit(hHG, gHG, "DeltaT_HighGain", E[i]);
       sgTHG=gHG->GetParameter(2)*500;
       EHG[nGoodHG]=E[i]; tResHG[nGoodHG]=sgTHG; tResHGErr[nGoodHG]=gHG->GetParError(2)*500;
       nGoodHG++;
