@@ -542,7 +542,10 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
 
   printf("\n  Energy res:  %.1f%%/sqrt(E) (+) %.2f%%\n",fabs(fr->GetParameter(0)),fabs(fr->GetParameter(1)));
   printf("  Timing res:  %.1f ps/sqrt(E) (+) %.1f ps\n",fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1)));
-  if(ft4c) printf("  *** PAPER-MATCHED (4-capillary mean, scint-only, DW-UP vs MCP):\n"
+  if(ft4d) printf("  *** PAPER-MATCHED + ELECTRONICS (4-cap mean + DRS4 + amp jitter):\n"
+                  "        %.1f ps/sqrt(E) (+) %.1f ps   [paper: 256 ps/sqrt(E) (+) 17.5 ps]\n",
+                  fabs(ft4d->GetParameter(0)),fabs(ft4d->GetParameter(1)));
+  if(ft4c) printf("  *** PAPER-MATCHED light-only (4-capillary mean, scint, DW-UP):\n"
                   "        %.1f ps/sqrt(E) (+) %.1f ps   [paper: 256 ps/sqrt(E) (+) 17.5 ps]\n",
                   fabs(ft4c->GetParameter(0)),fabs(ft4c->GetParameter(1)));
   if(ftS) printf("  Timing res (scint-only, per-corner, no sqrt4 averaging): %.1f ps/sqrt(E) (+) %.1f ps   [paper: 256 ps/sqrt(E) (+) 17.5 ps]\n",
