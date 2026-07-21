@@ -490,6 +490,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   gr->Write();
   gt->Write();
   if(gTimingScint) gTimingScint->Write();
+  if(gTiming4c)    gTiming4c->Write();   // paper-matched estimator
   if(gTimingWls)   gTimingWls->Write();
   if(gTimingHG)    gTimingHG->Write();
   if(gTimingHGE)   gTimingHGE->Write();
