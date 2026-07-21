@@ -337,8 +337,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // NO EJ309 energy capillary (the real module's four T-types sit at
     // non-central positions and its centre hole "was unused in these studies" —
     // but the Fig 8 SIMULATION is the single centred capillary described above).
-    // Only the one centre hole is drilled, sized to the T-type OD (1150 um).
-    auto drill_center = new G4Tubs("Drill_Center", 0, tCap_outR, drillHalf, 0., 360.*deg);
+    // Only the one centre hole is drilled. It is sized to the T-type capillary
+    // HOLE (cornerHoleR = 0.65 mm r = 1.3 mm dia), NOT to the capillary OD
+    // (0.575 mm r): the ~75 um AIR GAP between the quartz rod and the LYSO is
+    // what makes the light guide work. Quartz n=1.46 against air n=1.0 gives
+    // total internal reflection; quartz in direct contact with LYSO (n=1.81)
+    // has NO TIR and the rod leaks all its light into the tiles (verified: doing
+    // so collapsed the detected yield from ~1000s of p.e. to ~1).
+    auto drill_center = new G4Tubs("Drill_Center", 0, cornerHoleR, drillHalf, 0., 360.*deg);
 
     auto DoDrills = [&](G4VSolid* base) -> G4VSolid* {
         return new G4SubtractionSolid("d0", base, drill_center, nullptr, capXY[0]);
