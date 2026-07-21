@@ -452,7 +452,9 @@ void EventAction::EndOfEventAction(const G4Event*) {
         if (fTphUpW[c] < kBigTime && fTphDownW[c] < kBigTime)
             am->FillH1(29, (fTphDownW[c] - fTphUpW[c]) / ns);
     }
-    if (fNphWls > 0) am->FillH1(30, fNphWls);
+    // (gated by the same beam-core selection as H1[28] — this is the
+    //  photon-count shower-max observable, the true Fig 17 analog)
+    if (fNphWls > 0 && smInCore) am->FillH1(30, fNphWls);
 
     // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
     //   Both channels use ALL detected light (Cherenkov INCLUDED) — the real
