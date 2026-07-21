@@ -197,6 +197,28 @@ void EventAction::EndOfEventAction(const G4Event*) {
 
     G4double cog = (cogDenom > 0.) ? cogNumer / cogDenom : 0.;  // in layer units
 
+    // Beam-core event selection (paper procedure): the test beam selected
+    // well-centred events (position reconstruction / "events where measured
+    // energy matched beam energy closely") before quoting shower-max resolution.
+    // Our sigma=2.9 mm beam spot adds an energy-INDEPENDENT impact-position
+    // variance to the shower-max slice; without the selection it masquerades as
+    // a large flat constant term (~16% at all E, where the paper falls
+    // 14.5% -> 10.2% over 25-150 GeV). RADICAL_SM_COG_CUT_MM > 0 keeps only
+    // events whose lateral energy-weighted COG is within that radius of the
+    // module axis — a data-like cut (COG is reconstructable in the real module).
+    // Default 0 = off (no behaviour change).
+    bool smInCore = true;
+    {
+        static G4ThreadLocal G4double cogCut = -1.;
+        if (cogCut < 0.) cogCut = envD("RADICAL_SM_COG_CUT_MM", 0.);
+        if (cogCut > 0.) {
+            G4double cx = 0., cy = 0., ce = 0.;
+            for (const auto& h : fLYSOHits) { cx += h.x*h.edep; cy += h.y*h.edep; ce += h.edep; }
+            smInCore = (ce > 0.) &&
+                (std::sqrt(cx/ce*cx/ce + cy/ce*cy/ce) < cogCut*mm);
+        }
+    }
+
     // Shower-max slice energy — the sim analog of the paper's Fig 17 (right):
     // LYSO deposit in the layers the 15 mm WLS window covers (8-10, centers
     // 36.0/40.4/44.8 mm, window 32.9-47.9 mm). The real SiPM amplitude is LYSO
@@ -205,7 +227,7 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // and NOT by dE/dx in the thin fibers (H1[13], ~95% RMS/mean).
     {
         G4double eSM = fEdepLYSO[8] + fEdepLYSO[9] + fEdepLYSO[10];
-        if (eSM > 0.) am->FillH1(28, eSM / GeV);
+        if (eSM > 0. && smInCore) am->FillH1(28, eSM / GeV);
     }
 
     // RMS of longitudinal distribution
