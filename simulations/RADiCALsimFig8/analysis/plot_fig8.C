@@ -81,12 +81,17 @@ void plot_fig8(int NEVT=2000){
     TH1D* hT =(TH1D*)fp->Get("DeltaT_SingleDown");// single-ended downstream (ns)
     if(!hN||!hE||!hT||hT->GetEntries()<50){ printf("  %-8s  -- no data --\n",scales[i]); fp->Close(); continue; }
     double ly = (hE->GetMean()>0)? npeScale*hN->GetMean()/hE->GetMean() : -1;
-    double ste_ns=0.;
-    double st  = clipSigma(hT,&ste_ns)*1000.;   // robust clipped-RMS, ns -> ps
+    double ste_ns=0., frac=0.;
+    double st  = promptPeakSigma(hT,&ste_ns,&frac)*1000.;   // prompt-peak sigma, ns -> ps
     double ste = ste_ns*1000.;
+    // crossFrac = fraction of the 1000 events that cleared the fixed threshold at
+    // all. Well below ~90% means the point is threshold-STARVED, not measured.
+    double crossFrac = hT->GetEntries()/1000.;
     if(ly>0 && st>0){
       LY.push_back(ly); sigT.push_back(st); sigTerr.push_back(ste);
-      printf("  %-8s  %10.1f   %8.1f\n",scales[i],ly,st);
+      printf("  %-8s  %10.1f   %8.1f      %4.0f%%       %4.0f%%%s\n",
+             scales[i],ly,st,100*frac,100*crossFrac,
+             crossFrac<0.90 ? "   <-- THRESHOLD-STARVED" : "");
     }
     fp->Close();
   }
