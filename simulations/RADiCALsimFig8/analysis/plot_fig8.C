@@ -32,6 +32,34 @@ double clipSigma(TH1* h, double* err){
   return s;
 }
 
+// PROMPT-PEAK sigma — the physical single-SiPM timing resolution.
+// The (t_thresh - t_MCP) distribution is a dominant PROMPT peak (events whose
+// early light burst clears the threshold immediately) plus a LATE tail near
+// ~5 ns (events whose prompt light fell short, so the threshold is only crossed
+// later on the slow LYSO-36ns decay). The late tail SHRINKS as light yield rises,
+// so it is a low-light-fluctuation population, not a resolution. Mixing the two
+// (plain RMS or clipped RMS) reports the population SEPARATION rather than the
+// timing width. Here we fit a gaussian to the dominant prompt peak only.
+// Returns sigma (ns); *err = fit error; *frac = fraction of events within +-3sigma
+// of the prompt peak (report it — it is the honest caveat on this number).
+double promptPeakSigma(TH1* hin, double* err, double* frac){
+  TH1* h=(TH1*)hin->Clone(Form("pp%p",(void*)hin)); h->SetDirectory(nullptr);
+  h->Rebin(10);
+  int pk=h->GetMaximumBin();
+  double x0=h->GetXaxis()->GetBinCenter(pk), sg=0.3;
+  TF1 g("ppg","gaus",x0-0.6,x0+0.6);
+  for(int it=0; it<6; it++){
+    g.SetRange(x0-2.0*sg, x0+2.0*sg);
+    h->Fit(&g,"RQ0");
+    x0=g.GetParameter(1); sg=fabs(g.GetParameter(2));
+    if(sg<=0 || sg>2.) break;
+  }
+  if(err)  *err  = g.GetParError(2);
+  if(frac) *frac = (h->Integral()>0)
+      ? h->Integral(h->FindBin(x0-3*sg), h->FindBin(x0+3*sg))/h->Integral() : 0.;
+  double out=sg; delete h; return out;
+}
+
 void plot_fig8(int NEVT=2000){
   gStyle->SetOptStat(0);
   const char* scales[]={"1e-4","3e-4","1e-3","3e-3","1e-2","2e-2"};
