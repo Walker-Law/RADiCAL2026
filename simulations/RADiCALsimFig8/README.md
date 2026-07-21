@@ -5,16 +5,32 @@ timing resolution vs detected light yield (npe/MeV) for a 50 GeV e⁻ shower, us
 the paper's rise-time (CFD) methodology. Forked from `RADiCALsimDSB` (identical
 detector) with one additional histogram for the single-ended observable.
 
-## Detector
+## Detector — ONE capillary only
 
-Same LYSO/W shashlik module as `RADiCALsimDSB` (see that directory's README/CLAUDE.md
-for the full geometry). Relevant to this study:
+Same LYSO/W shashlik stack as `RADiCALsimDSB`, but the capillary configuration is
+the paper's Fig 8 setup, quoted verbatim:
 
-- **Timing capillaries (4 corners):** **solid** quartz rods (not hollow — the paper's
-  "hollow quartz tube" core is filled and fused with quartz rods, so the light
-  guide is optically solid) + **DSB1** WLS fiber (15 mm, at shower max) + Si
-  photodetectors at both ends.
-- **Energy capillary (center):** quartz tube + EJ309 liquid scintillator bore.
+> *"The simulation assumed only one SiPM readout at the downstream end of a T-type
+> capillary inserted through the **center** of the module."*
+
+- **One T-type timing capillary, at the module centre:** **solid** quartz rods
+  (the paper's "hollow quartz tube" core is filled and fused with quartz rods, so
+  the light guide is optically solid) + a **DSB1** WLS filament (900 µm dia,
+  15 mm, at shower max).
+- **One SiPM, downstream end only.** No upstream SiPM — this is a single-ended
+  measurement, so the (DW−UP)/2 corner trick does not apply.
+- **No corner capillaries and no EJ309 energy capillary.**
+
+Two geometry constraints that are easy to get wrong and silently ruin the result:
+
+1. **Do not pool multiple capillaries.** Filling the observable once per corner
+   merges brightly- and dimly-illuminated channels into a **bimodal** distribution
+   whose width is set by pulse rise time, not photostatistics — giving a
+   light-yield-independent σ_t floor (~1.45 ns) that no estimator can remove.
+2. **Keep the air gap.** The drilled hole (0.65 mm r) is deliberately larger than
+   the capillary OD (0.575 mm r). That ~75 µm air gap provides the quartz→air
+   total internal reflection. Sizing the hole to the OD puts quartz against LYSO
+   (n=1.81), killing TIR — detected light drops from ~277 p.e. to ~1 p.e.
 
 ## What makes this a "Fig. 8" sim
 
