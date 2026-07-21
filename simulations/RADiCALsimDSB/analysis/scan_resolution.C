@@ -146,6 +146,16 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       saveTimingFit(h4c, g4c, "DeltaT_CFD_4c_Scint", E[i]);
       nGood4c++;
     }
+    // Electronics-inclusive twin (DRS4 timebase + optional amplifier jitter)
+    TH1D* h4d=(TH1D*)f->Get("DeltaT_CFD_4c_Scint_DRS4");
+    if(h4d && h4d->GetEntries()>50){
+      TF1* g4d=coreFit(h4d,2.5,4);
+      E4d[nGood4d]=E[i];
+      tRes4d[nGood4d]=g4d->GetParameter(2)*500;        // ns->ps, corner trick /2
+      tRes4dErr[nGood4d]=g4d->GetParError(2)*500;
+      saveTimingFit(h4d, g4d, "DeltaT_CFD_4c_Scint_DRS4", E[i]);
+      nGood4d++;
+    }
     TH1D* hTS=(TH1D*)f->Get("DeltaT_Scint");
     if(hTS && hTS->GetEntries()>50){
       TF1* gTS=coreFit(hTS,2.5,4);
