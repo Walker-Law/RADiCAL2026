@@ -400,15 +400,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicTyvekSides->SetVisAttributes(tyvekSliceVis);
 
     // ── Tyvek outer wrapper: upstream + downstream end caps ───────────────────
-    // Thin discs with holes at all 5 capillary positions (drilled same as slices)
-    // so quartz rods pass through unobstructed.
+    // Thin discs with a hole at the SINGLE centre capillary position (drilled the
+    // same as the tile slices) so the quartz rod passes through unobstructed.
     auto ecDrillH = wrapThick;   // drill half-length > end cap half-z
-    auto ecDrillC = new G4Tubs("ECDrill_C", 0, centerHoleR, ecDrillH, 0., 360.*deg);
-    auto ecDrillK = new G4Tubs("ECDrill_K", 0, cornerHoleR, ecDrillH, 0., 360.*deg);
+    auto ecDrillC = new G4Tubs("ECDrill_C", 0, tCap_outR, ecDrillH, 0., 360.*deg);
     G4VSolid* solidEC = new G4Box("TyvekEC_B", housingInnerHalf, housingInnerHalf, wrapThick/2.0);
     solidEC = new G4SubtractionSolid("ec0", solidEC, ecDrillC, nullptr, capXY[0]);
-    for (int c = 1; c < 5; c++)
-        solidEC = new G4SubtractionSolid("ecc", solidEC, ecDrillK, nullptr, capXY[c]);
     auto logicTyvekEC = new G4LogicalVolume(solidEC, tyvek, "TyvekEndCap");
     new G4PVPlacement(nullptr, G4ThreeVector(0, 0, -stackZ/2.0 - wrapThick/2.0),
                       logicTyvekEC, "TyvekECUp_Phys",  logicCalo, false, 0);
