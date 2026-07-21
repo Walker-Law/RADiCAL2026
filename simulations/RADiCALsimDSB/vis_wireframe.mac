@@ -1,0 +1,41 @@
+# vis_wireframe.mac — GEOMETRY ONLY, PURE WIREFRAME, NO BEAM.
+#
+# There is deliberately NO /run/beamOn here, so no particles are generated and
+# nothing scatters — you see only the detector structure.
+#
+#   cd build && ./radical ../vis_wireframe.mac
+#
+# (The filename must contain "vis" — radical.cc uses that to decide to open an
+#  interactive UI session rather than run in batch.)
+
+/run/initialize
+
+/vis/open OGL 1000x800
+/vis/drawVolume
+
+# ── Pure wireframe ────────────────────────────────────────────────────────────
+# The viewer style alone is not enough: DetectorConstruction calls
+# SetForceSolid() on the DSB1 WLS fibers and the EJ309 bore so they stand out in
+# the physics views, and a per-volume force overrides the global style. The
+# "all" form below re-forces every logical volume to wireframe.
+/vis/viewer/set/style wireframe
+/vis/geometry/set/forceWireframe all 0 true
+/vis/viewer/set/auxiliaryEdge true
+/vis/viewer/set/hiddenMarker true
+
+# ── Hide the CERN test-beam line so the module fills the view ─────────────────
+# The world is +-650 mm in z but the module is only ~125 mm long, so the
+# beamline elements otherwise shrink it to a speck. Comment these out to see
+# the full beam line instead.
+/vis/geometry/set/visibility Trig1        0 false
+/vis/geometry/set/visibility Trig2        0 false
+/vis/geometry/set/visibility MCP_Radiator 0 false
+/vis/geometry/set/visibility MCP_Body     0 false
+/vis/geometry/set/visibility PbGlass      0 false
+
+# ── Camera ───────────────────────────────────────────────────────────────────
+/vis/viewer/set/viewpointThetaPhi 70 20
+/vis/viewer/set/background 0.05 0.05 0.12
+/vis/viewer/zoom 6
+
+# No /run/beamOn — geometry only.
