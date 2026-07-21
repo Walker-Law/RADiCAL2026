@@ -24,7 +24,12 @@ source ../setup_env.sh >/dev/null 2>&1
 if [ -n "${RADICAL_ENERGIES:-}" ]; then
     read -ra ENERGIES <<< "$RADICAL_ENERGIES"
 else
-    ENERGIES=(5 10 25 50 100 120)
+    # PAPER-MATCHED grid (arXiv:2401.01747): the beam test used six steps,
+    # "25, 50, 75, 100, 125, and 150 GeV", and its quoted timing fit
+    # sigma_t = 256 ps/sqrt(E) (+) 17.5 ps holds over 25 <= E <= 150 GeV.
+    # Matching the grid means our fit spans the paper's range instead of
+    # extrapolating in from lower energies. Override with RADICAL_ENERGIES=...
+    ENERGIES=(25 50 75 100 125 150)
 fi
 NEVT=${1:-1000}
 OPTICAL=${2:-0}
