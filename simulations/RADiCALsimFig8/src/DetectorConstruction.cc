@@ -329,16 +329,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // =========================================================================
     auto drillHalf = 10.0*mm;  // longer than any tile
 
-    // Center drill (0.9 mm hole)
-    auto drill_center = new G4Tubs("Drill_Center", 0, centerHoleR, drillHalf, 0., 360.*deg);
-    // Corner drill (1.3 mm hole)
-    auto drill_corner = new G4Tubs("Drill_Corner", 0, cornerHoleR, drillHalf, 0., 360.*deg);
+    // ── FIG 8 CONFIGURATION — EXACTLY ONE CAPILLARY, AT THE CENTER ────────────
+    // arXiv:2401.01747, Fig 8: "The simulation assumed only one SiPM readout at
+    // the downstream end of a T-type capillary inserted through the center of the
+    // module." So this sim contains ONE T-type capillary, at the module center,
+    // read out by a SINGLE downstream SiPM. There are NO corner capillaries and
+    // NO EJ309 energy capillary (the real module's four T-types sit at
+    // non-central positions and its centre hole "was unused in these studies" —
+    // but the Fig 8 SIMULATION is the single centred capillary described above).
+    // Only the one centre hole is drilled, sized to the T-type OD (1150 um).
+    auto drill_center = new G4Tubs("Drill_Center", 0, tCap_outR, drillHalf, 0., 360.*deg);
 
     auto DoDrills = [&](G4VSolid* base) -> G4VSolid* {
-        base = new G4SubtractionSolid("d0", base, drill_center, nullptr, capXY[0]);
-        for (int c = 1; c < 5; c++)
-            base = new G4SubtractionSolid("dc", base, drill_corner, nullptr, capXY[c]);
-        return base;
+        return new G4SubtractionSolid("d0", base, drill_center, nullptr, capXY[0]);
     };
 
     // LYSO tile solid
