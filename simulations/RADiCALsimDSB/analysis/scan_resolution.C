@@ -527,7 +527,8 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   gr->Write();
   gt->Write();
   if(gTimingScint) gTimingScint->Write();
-  if(gTiming4c)    gTiming4c->Write();   // paper-matched estimator
+  if(gTiming4c)    gTiming4c->Write();   // paper-matched estimator (light only)
+  if(gTiming4d)    gTiming4d->Write();   // paper-matched + electronics
   if(gTimingWls)   gTimingWls->Write();
   if(gTimingHG)    gTimingHG->Write();
   if(gTimingHGE)   gTimingHGE->Write();
