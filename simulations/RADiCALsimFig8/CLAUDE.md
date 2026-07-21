@@ -1,14 +1,91 @@
 # RADiCALsimFig8 — Claude/AI Reference Guide
 
 > **PURPOSE: recreate arXiv:2401.01747 Fig 8** — single-downstream-SiPM timing
-> resolution vs detected light yield (npe/MeV) for a 50 GeV e- shower. This is a
-> copy of RADiCALsimDSB with one addition: **H1[38] DeltaT_SingleDown** =
-> downstream WLS first-photon time minus fiber signal time = the pure
-> photostatistics single-SiPM σ_t. Driver: `run_fig8_sweep.sh` sweeps
-> `RADICAL_LYSO_SCINT_SCALE` (1e-4..2e-2) at 50 GeV to span LY. Analysis:
-> `analysis/plot_fig8.C` plots σ_t vs LY (log-log) vs the paper's 485 ps/√LY.
-> SPTR off (RADICAL_SPTR_PS=0) for the clean photostatistics limit. Everything
-> below is inherited from the RADiCALsimDSB parent.
+> resolution vs detected light yield (npe/MeV) for a 50 GeV e- shower.
+> Driver: `run_fig8_sweep.sh` sweeps `RADICAL_LYSO_SCINT_SCALE` (1e-4..2e-2) at
+> 50 GeV to span LY. Analysis: `analysis/plot_fig8.C`.
+
+## ⚠️ THE GEOMETRY IS **ONE** CAPILLARY — READ THIS BEFORE TOUCHING ANYTHING
+
+The paper states the Fig 8 configuration verbatim:
+
+> *"The simulation assumed only one SiPM readout at the downstream end of a
+> T-type capillary inserted through the **center** of the module."*
+
+So this sim contains **exactly ONE T-type capillary, at the module CENTRE, with a
+SINGLE downstream SiPM**. No corner capillaries. No EJ309 energy capillary. No
+upstream SiPM (hence the (DW−UP)/2 corner trick is *not* available here).
+
+**Why this matters — the bimodality trap (July 21 2026).** This sim was originally
+forked from RADiCALsimDSB with all 4 corner capillaries, and H1[38] was filled
+once *per corner*. Within any one event the corners are illuminated very
+unequally (`CornerWLSEnergy` RMS/mean ≈ **2.1**): a bright corner crosses the
+threshold promptly (~1.9 ns) while a dim one only crosses later on the slow
+LYSO-decay tail (~5.1 ns). Pooling them produced a **bimodal** histogram whose
+RMS (~1.45 ns) measured the *separation between two populations*, not a timing
+resolution. Because that separation is set by pulse rise time, it was completely
+**independent of light yield** — so σ_t floored at ~1.45 ns and no estimator
+could fix it. Three separate fixes (MCP reference, fixed-threshold vs 5% CFD,
+robust width estimators) all failed before the real cause was found.
+**Diagnostic signature: a light-yield-independent floor + a two-peak H1[38].**
+Fixing the geometry to one capillary dropped the floor 1450 ps → 227 ps.
+
+## ⚠️ THE AIR GAP IS LOAD-BEARING — NEVER SIZE THE HOLE TO THE CAPILLARY OD
+
+The drilled tile hole uses `cornerHoleR` = 0.65 mm (1.3 mm dia) while the
+capillary OD is `tCap_outR` = 0.575 mm. That **~75 µm air gap is what makes the
+light guide work**: quartz (n=1.46) against air (n=1.0) gives total internal
+reflection. Setting the hole radius equal to the capillary OD puts quartz in
+direct contact with LYSO (n=**1.81**) — there is then *no* TIR and the rod leaks
+its light straight into the tiles. Measured cost of getting this wrong:
+detected light collapsed **277 p.e. → 1 p.e.** Same class of error as the
+earlier hollow-vs-solid capillary confusion; optical boundaries are unforgiving.
+
+## Fig 8 observable + estimator (current)
+
+- **H1[38] DeltaT_SingleDown** = `leadingEdgeFixed(fPhTDownS[0], thr) − t_MCP`.
+  - **Fixed-threshold** leading edge (`RADICAL_HG_THRESH_PE`, default 2.5 p.e.),
+    matching the paper: *"When the leading edge of the high-gain pulses from a
+    given channel exceeded the threshold, the timing for that channel was
+    determined and compared with the reference timing provided by the MCP tube."*
+    NOT 5% CFD — a 5% *fraction* of each pulse's own peak is scale-invariant, so
+    it samples the same photon-starved sliver at every LY and cannot improve with
+    light.
+  - Referenced to **t_MCP** (the fast external counter, σ_t ≈ 10–20 ps), not to
+    the fiber's own dE/dx time. Filled **once per event** (single capillary).
+- **H1[39] PhotonsWLSDown** = detected WLS p.e. at that one SiPM. Filled EVERY
+  event including zeros — a `>0` gate makes the mean *conditional* on detecting
+  light and inflates the LY axis exactly at the dim points.
+- `plot_fig8.C` uses `promptPeakSigma()` — a gaussian fit to the **dominant prompt
+  peak** only. The late (~5 ns) tail is a low-light-fluctuation population that
+  shrinks as LY rises; including it reports population separation, not resolution.
+  Points with `crossFrac < 90%` are **threshold-starved** (fewer p.e./event than
+  the threshold, so only upward fluctuations register) and are excluded from the fit.
+
+## RESULT (July 21 2026, 1000 evt/point, single centred capillary)
+
+| LY (npe/MeV) | σ_t | inPrompt | crossFrac |
+|---|---|---|---|
+| 0.6 | 593 ps | 52% | 37% ← starved, excluded |
+| 1.6 | 1313 ps | 63% | 90% ← starved, excluded |
+| 4.8 | 838 ps | 74% | 97% |
+| 13.8 | 465 ps | 49% | 96% |
+| 46.5 | 370 ps | 69% | 97% |
+| 91.7 | 279 ps | 77% | 97% |
+
+**sim: σ_t = 1704 ps/√LY ⊕ 227 ps   vs   paper: 485 ps/√LY.**
+Shape is correct (monotonic, ~1/√LY); absolute scale is ~3.5× high. Open items,
+cheapest first: (1) `inPrompt` is only 49–77%, i.e. the 2.5 p.e. threshold is
+still marginal — try `RADICAL_HG_THRESH_PE=1.0`; (2) `leadingEdgeFixed` digitizes
+at 0.2 ns → ~58 ps quantization floor; (3) the LYSO **36 ns** decay gates the WLS
+light and softens the leading edge (likely the irreducible part); (4) DSB1 light
+yield is unpublished, so the LY↔timing normalization is itself uncertain.
+
+---
+
+> Everything below is inherited from the RADiCALsimDSB parent and describes the
+> FULL 4-corner module — it does **not** apply to this sim's single-capillary
+> geometry. Read the sections above first.
 
 > **VARIANT: DSB1 timing WLS.** This is the fast-scintillator copy of the sim —
 > the corner timing fiber is **DSB1** (polysiloxane WLS, ~2 ns decay) to chase the
