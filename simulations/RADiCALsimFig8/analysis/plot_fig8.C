@@ -66,8 +66,8 @@ void plot_fig8(int NEVT=2000){
   const int NS=6;
   std::vector<double> LY, sigT, sigTerr;
 
-  printf("\n  scale      LY(npe/MeV)   sigma_t(ps)\n");
-  printf("  ------------------------------------------\n");
+  printf("\n  scale      LY(npe/MeV)   sigma_t(ps)   inPrompt   crossFrac\n");
+  printf("  ---------------------------------------------------------------\n");
   for(int i=0;i<NS;i++){
     TString f=Form("build/scan/optical_scan_%d_ly%s/optical_E50GeV.root",NEVT,scales[i]);
     TFile* fp=TFile::Open(f);
@@ -87,11 +87,15 @@ void plot_fig8(int NEVT=2000){
     // crossFrac = fraction of the 1000 events that cleared the fixed threshold at
     // all. Well below ~90% means the point is threshold-STARVED, not measured.
     double crossFrac = hT->GetEntries()/1000.;
+    bool starved = (crossFrac < 0.90);
     if(ly>0 && st>0){
-      LY.push_back(ly); sigT.push_back(st); sigTerr.push_back(ste);
+      // Threshold-starved points are EXCLUDED from the plotted/fitted curve: with
+      // fewer p.e. per event than the fixed threshold, only upward fluctuations
+      // register, so their "sigma_t" is selection bias, not a measurement.
+      if(!starved){ LY.push_back(ly); sigT.push_back(st); sigTerr.push_back(ste); }
       printf("  %-8s  %10.1f   %8.1f      %4.0f%%       %4.0f%%%s\n",
              scales[i],ly,st,100*frac,100*crossFrac,
-             crossFrac<0.90 ? "   <-- THRESHOLD-STARVED" : "");
+             starved ? "   <-- STARVED, excluded" : "");
     }
     fp->Close();
   }
