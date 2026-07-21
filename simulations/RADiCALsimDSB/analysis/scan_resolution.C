@@ -340,6 +340,19 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     gt4c->Fit(ft4c,"RQ");
     gTiming4c=gt4c;
   }
+  // Electronics-inclusive paper-matched curve (H1[34]) — the true headline.
+  TF1* ft4d=nullptr;
+  if(nGood4d>=3){
+    double zero4d[N]={0};
+    TGraphErrors* gt4d=new TGraphErrors(nGood4d,E4d,tRes4d,zero4d,tRes4dErr);
+    gt4d->SetName("TimingResolution_4cScintDRS4_paperMatched");
+    gt4d->SetMarkerStyle(34); gt4d->SetMarkerColor(kBlack); gt4d->SetLineColor(kBlack);
+    gt4d->SetMarkerSize(1.6);
+    ft4d=new TF1("ft4d","sqrt([0]*[0]/x+[1]*[1])",20,160);
+    ft4d->SetParameters(256,17.5); ft4d->SetLineColor(kBlack); ft4d->SetLineWidth(2);
+    gt4d->Fit(ft4d,"RQ");
+    gTiming4d=gt4d;
+  }
   // WLS-only graph + fit (LYSO-optical runs only)
   TF1* ftW=nullptr;
   if(nGoodW>=3){
