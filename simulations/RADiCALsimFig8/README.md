@@ -34,17 +34,28 @@ Two geometry constraints that are easy to get wrong and silently ruin the result
 
 ## What makes this a "Fig. 8" sim
 
-The paper's Fig. 8 methodology: a **single downstream SiPM**, timing set by the
-**measured rise time** of its pulse (not a first-photon or corner-subtraction
-estimator). This sim adds:
+The paper's measurement procedure, quoted:
 
-- **H1[38] DeltaT_SingleDown** — downstream WLS pulse 5% CFD leading-edge time
-  minus the fiber's energy-weighted signal time = the pure photostatistics
-  single-SiPM σ_t (`analysis/plot_fig8.C`'s `coreSigmaPeak()` fits the
-  **peak-centered** Gaussian core, excluding the LYSO 36 ns decay tail).
-- **H1[39] PhotonsWLSDown** — downstream-only WLS photon count, the correct LY
-  denominator for a single SiPM (NOT the all-corner/both-end `PhotonsWLS`, which
-  is ~8× too high for this comparison).
+> *"When the leading edge of the high-gain pulses from a given channel exceeded
+> the threshold, the timing for that channel was determined and compared with the
+> reference timing provided by the MCP tube."*
+
+So: a **fixed absolute threshold** on the leading edge, referenced to the **MCP**
+(a fast external clock, σ_t ≈ 10–20 ps). This sim implements exactly that:
+
+- **H1[38] DeltaT_SingleDown** — `leadingEdgeFixed(downstream pulse, 2.5 p.e.) −
+  t_MCP`, filled **once per event**. A fixed *absolute* threshold is essential: a
+  5% CFD threshold is a fixed *fraction* of each pulse's own peak, so it samples
+  the same photon-starved sliver of the leading edge at every light yield and
+  cannot improve with light. Threshold tunable via `RADICAL_HG_THRESH_PE`.
+- **H1[39] PhotonsWLSDown** — detected WLS p.e. at that single SiPM, the LY
+  numerator. Filled **every** event including zeros; gating on `>0` would make the
+  mean conditional on detecting light and inflate the LY axis at the dim points.
+- `plot_fig8.C` fits the **dominant prompt peak** (`promptPeakSigma`). The late
+  ~5 ns tail is a low-light-fluctuation population that shrinks as LY rises.
+  Points where <90% of events clear the threshold are flagged **threshold-starved**
+  and excluded — with fewer p.e./event than the threshold, only upward
+  fluctuations register and the width is selection bias, not a measurement.
 
 ## Study: timing vs light yield
 
