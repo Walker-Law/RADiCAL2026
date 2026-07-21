@@ -37,12 +37,25 @@ void robustRes(TH1* h, double& res, double& err) {
 void scan_resolution(const char* dir="build/scan", const char* prefix="radical") {
   gStyle->SetOptStat(0); gStyle->SetOptFit(0);
   gStyle->SetPadGridX(1); gStyle->SetPadGridY(1);
-  const int N=6; double E[N]={5,10,25,50,100,120};
+  // PAPER-MATCHED ENERGY POINTS (arXiv:2401.01747): the beam test used six steps,
+  // "25, 50, 75, 100, 125, and 150 GeV", and the quoted timing fit
+  // sigma_t = 256 ps/sqrt(E) (+) 17.5 ps is valid over 25 <= E <= 150 GeV.
+  // Running the sim on the SAME grid means our fit is over the same range as the
+  // paper's rather than extrapolating from lower energies.
+  const int N=6; double E[N]={25,50,75,100,125,150};
   const char* out="build/plots";
 
   double eResAll[N],eResErrAll[N], tResAll[N],tResErrAll[N], EAll[N];
   double tResS[N],tResSErr[N], ES[N]; int nGoodS=0;   // scint-only timing (if present)
   TGraphErrors* gTimingScint=nullptr;
+  // PAPER-MATCHED timing estimator: H1[32] DeltaT_CFD_4c_Scint = per-event mean
+  // over the 4 instrumented capillaries of the 5% CFD (downstream - upstream),
+  // i.e. the paper's "difference of the average timing of the downstream SiPM
+  // relative to the MCP and the average timing of the upstream SiPM relative to
+  // the MCP". The per-corner histograms (H1[6]/[24]/[25]) lack that sqrt(4)
+  // averaging and overstate sigma_t by ~2x, so THIS is the number to compare.
+  double tRes4c[N],tRes4cErr[N], E4c[N]; int nGood4c=0;
+  TGraphErrors* gTiming4c=nullptr;
   double tResW[N],tResWErr[N], EW[N]; int nGoodW=0;   // WLS-only timing (if present)
   TGraphErrors* gTimingWls=nullptr;
   double tResHG[N],tResHGErr[N], EHG[N]; int nGoodHG=0;  // high-gain timing (dual-gain)
