@@ -309,6 +309,20 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     gtS->Fit(ftS,"RQ");
     gTimingScint=gtS;   // persisted alongside the other curves below
   }
+  // PAPER-MATCHED graph + fit: 4-capillary-averaged scint-only CFD (H1[32]).
+  // This is the curve to compare directly against 256 ps/sqrt(E) (+) 17.5 ps.
+  TF1* ft4c=nullptr;
+  if(nGood4c>=3){
+    double zero4c[N]={0};
+    TGraphErrors* gt4c=new TGraphErrors(nGood4c,E4c,tRes4c,zero4c,tRes4cErr);
+    gt4c->SetName("TimingResolution_4cScint_paperMatched");
+    gt4c->SetMarkerStyle(29); gt4c->SetMarkerColor(kRed+1); gt4c->SetLineColor(kRed+1);
+    gt4c->SetMarkerSize(1.9);
+    ft4c=new TF1("ft4c","sqrt([0]*[0]/x+[1]*[1])",20,160);
+    ft4c->SetParameters(256,17.5); ft4c->SetLineColor(kRed+1); ft4c->SetLineWidth(2);
+    gt4c->Fit(ft4c,"RQ");
+    gTiming4c=gt4c;
+  }
   // WLS-only graph + fit (LYSO-optical runs only)
   TF1* ftW=nullptr;
   if(nGoodW>=3){
