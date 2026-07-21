@@ -438,7 +438,12 @@ void EventAction::EndOfEventAction(const G4Event*) {
             am->FillH1(29, (fTphDownW[c] - fTphUpW[c]) / ns);
     }
     if (fNphWls > 0) am->FillH1(30, fNphWls);
-    if (fNphWlsDown > 0) am->FillH1(39, fNphWlsDown);  // Fig8 single-SiPM LY
+    // Fig8 single-SiPM detected light yield. Filled EVERY event (including zeros)
+    // so the histogram MEAN is the TRUE mean detected p.e. A previous
+    // "if (fNphWlsDown > 0)" gate made this a mean CONDITIONAL on detecting light,
+    // which biases the LY axis high at the photon-starved (dim) points — exactly
+    // where Fig 8's steep 1/sqrt(LY) region lives.
+    am->FillH1(39, fNphWlsDown);
 
     // ── FIG 8 STUDY: single-ended DOWNSTREAM timing (the Fig 8 configuration) ──
     // arXiv:2401.01747: "When the leading edge of the high-gain pulses from a
