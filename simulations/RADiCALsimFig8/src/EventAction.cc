@@ -463,11 +463,18 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // grows -> jitter falls as 1/sqrt(LY) with no early floor. leadingEdgeFixed()
     // returns -1 when the pulse never reaches the threshold (dim events at low LY),
     // which correctly thins the photon-starved points.
-    // (fiberTime[c] < kBigTime kept only as a "was this channel hit" gate.)
+    // (fiberTime[0] < kBigTime kept only as a "was the capillary hit" gate.)
+    //
+    // SINGLE CAPILLARY: the geometry contains exactly ONE T-type capillary, at the
+    // module centre, with ONE downstream SiPM (index 0). Do NOT loop over 4
+    // corners here — pooling several unequally-illuminated capillaries merges a
+    // bright (early-crossing) and a dim (late-crossing) population into one
+    // histogram, producing a BIMODAL distribution whose RMS is set by the pulse
+    // rise time rather than by photostatistics. That is light-yield INDEPENDENT,
+    // so it floors sigma_t (~1.45 ns) and destroys the 1/sqrt(LY) scaling.
     const G4double thrFig8 = envD("RADICAL_HG_THRESH_PE", 2.5);   // p.e., same as dual-gain
-    for (G4int c = 0; c < 4; c++) {
-        if (fiberTime[c] >= kBigTime || fTimeMCP >= kBigTime) continue;
-        G4double tHG = leadingEdgeFixed(fPhTDownS[c], thrFig8);    // fixed-threshold, paper method
+    if (fiberTime[0] < kBigTime && fTimeMCP < kBigTime) {
+        G4double tHG = leadingEdgeFixed(fPhTDownS[0], thrFig8);    // fixed-threshold, paper method
         if (tHG > 0.) am->FillH1(38, (tHG - fTimeMCP) / ns);
     }
 
