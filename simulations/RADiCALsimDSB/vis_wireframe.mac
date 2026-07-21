@@ -20,8 +20,19 @@
 # "all" form below re-forces every logical volume to wireframe.
 /vis/viewer/set/style wireframe
 /vis/geometry/set/forceWireframe all 0 true
-/vis/viewer/set/auxiliaryEdge true
-/vis/viewer/set/hiddenMarker true
+
+# ── KILL AUXILIARY EDGES (this is what makes the view a hairball) ─────────────
+# The tiles are G4SubtractionSolid (box minus 5 drilled capillary holes), which
+# Geant4 renders by TESSELLATING into many facets. "Auxiliary edges" are the
+# internal seams of that tessellation, not real geometry edges. DetectorConstruction
+# calls SetForceAuxEdgeVisible(true) on every tile for the physics views, so it
+# must be overridden HERE or 57 drilled tiles' worth of seams are all drawn at
+# once. Both switches are needed: the per-volume force overrides the viewer one.
+/vis/geometry/set/forceAuxEdgeVisible all 0 false
+/vis/viewer/set/auxiliaryEdge false
+
+# Fewer facets per drilled hole -> far fewer lines (default 24; 12 is the min).
+/vis/viewer/set/lineSegmentsPerCircle 12
 
 # ── Hide the CERN test-beam line so the module fills the view ─────────────────
 # The world is +-650 mm in z but the module is only ~125 mm long, so the
