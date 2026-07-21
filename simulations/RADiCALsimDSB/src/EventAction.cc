@@ -421,12 +421,26 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // =========================================================================
     G4double sumDTS = 0., sumDTS_drs4 = 0.; G4int nDTS = 0;  // 4-corner accumulators (scint)
     const G4double sCell = drs4CellSigmaNs();
+    // Per-CHANNEL electronics jitter (amplifier noise on the leading-edge
+    // crossing, SiPM single-channel systematics — everything downstream of the
+    // light that is NOT the DRS4 timebase, which is modeled separately above).
+    // Gaussian, RADICAL_ELEC_JITTER_PS RMS per channel, default 0 (off).
+    // Propagation to the 4-capillary-mean (DW-UP)/2 estimator: each corner's
+    // dtc gets sqrt(2)*j, the 4-corner mean divides by sqrt(4), the corner
+    // trick by 2 -> sigma_t contribution = j/(2*sqrt(2)) ~ 0.354*j. The paper's
+    // 17.5 ps floor (minus the DRS4 part) corresponds to j ~ 50 ps.
+    static G4ThreadLocal G4double elecJ = -1.;
+    if (elecJ < 0.) elecJ = envD("RADICAL_ELEC_JITTER_PS", 0.) * 1.e-3;  // ps -> ns
     for (G4int c = 0; c < 4; c++) {
         if (fTphUpS[c] < kBigTime && fTphDownS[c] < kBigTime)
             am->FillH1(24, (fTphDownS[c] - fTphUpS[c]) / ns);
         G4double fw = -1.;
         G4double tUpS = pulseCFD(fPhTUpS[c],   &fw);
         G4double tDnS = pulseCFD(fPhTDownS[c], &fw);
+        if (elecJ > 0.) {
+            if (tUpS > 0.) tUpS += G4RandGauss::shoot(0., elecJ);
+            if (tDnS > 0.) tDnS += G4RandGauss::shoot(0., elecJ);
+        }
         if (tUpS > 0. && tDnS > 0.) {
             G4double dtc = tDnS - tUpS;
             am->FillH1(25, dtc / 1.0);         // per-corner
