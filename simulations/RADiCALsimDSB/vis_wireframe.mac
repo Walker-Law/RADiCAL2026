@@ -44,6 +44,14 @@
 /vis/geometry/set/visibility MCP_Body     0 false
 /vis/geometry/set/visibility PbGlass      0 false
 
+# ── Hide the 56 Tyvek sheets ─────────────────────────────────────────────────
+# They are 0.2 mm foils interleaved between all 57 tiles and are also drilled,
+# so they roughly TRIPLE the line count while adding nothing structurally.
+# Comment these out if you specifically want to check the Tyvek wrapping.
+/vis/geometry/set/visibility Tyvek_Slice  0 false
+/vis/geometry/set/visibility TyvekSides   0 false
+/vis/geometry/set/visibility TyvekEndCap  0 false
+
 # ── Camera ───────────────────────────────────────────────────────────────────
 /vis/viewer/set/viewpointThetaPhi 70 20
 /vis/viewer/set/background 0.05 0.05 0.12
