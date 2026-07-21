@@ -72,16 +72,42 @@ p.e. / fiber energy (MeV), fits σ_t via the peak-centered Gaussian core, and
 overlays the paper's law **σ_t = 485 ps/√LY** on a log-log plot →
 `build/plots/fig8_timing_vs_LY.png`.
 
-## Corrected geometry (important — supersedes earlier runs)
+## Result (July 21 2026, 1000 evt/point)
 
-An earlier version of this sim modeled the corner capillary's straight sections
-as **hollow** (air-bore) quartz, based on a literal reading of the paper's "hollow
-quartz tube" phrase. The paper's next sentence clarifies the bore is **"filled
-and fused with quartz rods"** — the light guide is optically **solid**. The air-bore
-version broke total-internal-reflection light transport (photons trapped in the
-air core bounced pathologically), producing unphysical, non-monotonic σ_t vs LY
-(σ_t *increasing* with more light). Any `optical_scan_*_ly*` data predating this
-fix should be discarded and re-run.
+| LY (npe/MeV) | σ_t | in prompt peak | cleared threshold |
+|---|---|---|---|
+| 0.6 | 593 ps | 52% | 37% — starved, excluded |
+| 1.6 | 1313 ps | 63% | 90% — starved, excluded |
+| 4.8 | 838 ps | 74% | 97% |
+| 13.8 | 465 ps | 49% | 96% |
+| 46.5 | 370 ps | 69% | 97% |
+| 91.7 | 279 ps | 77% | 97% |
+
+**sim: σ_t = 1704 ps/√LY ⊕ 227 ps**  vs  **paper: 485 ps/√LY**
+
+The shape is correct — monotonic and ~1/√LY — and the floor fell from ~1450 ps to
+227 ps once the geometry was reduced to a single capillary. The absolute scale
+remains ~3.5× above the paper. Open items, cheapest first:
+
+1. Only 49–77% of events sit in the prompt peak, i.e. the 2.5 p.e. threshold is
+   still marginal — try `RADICAL_HG_THRESH_PE=1.0`.
+2. `leadingEdgeFixed` digitizes the waveform at 0.2 ns → ~58 ps quantization floor.
+3. The LYSO **36 ns** decay gates the WLS light and softens the leading edge —
+   likely the irreducible contribution.
+4. DSB1's light yield is unpublished (a free parameter), so the LY↔timing
+   normalization carries its own uncertainty.
+
+## Geometry corrections (supersede earlier runs)
+
+Two errors were found and fixed; data predating them is invalid and was discarded:
+
+- **Hollow vs solid capillary.** An earlier version modeled the straight sections
+  as hollow (air-bore) quartz from a literal reading of "hollow quartz tube". The
+  paper's next sentence clarifies the bore is *"filled and fused with quartz
+  rods"* — the light guide is optically **solid**. The air core broke TIR and gave
+  non-monotonic σ_t (worse timing with *more* light).
+- **Four pooled capillaries.** See the pooling/bimodality warning above — this was
+  the dominant artifact and is why the σ_t floor sat at ~1.45 ns for so long.
 
 ## Build & run
 
