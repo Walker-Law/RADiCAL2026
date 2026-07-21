@@ -56,6 +56,13 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   // averaging and overstate sigma_t by ~2x, so THIS is the number to compare.
   double tRes4c[N],tRes4cErr[N], E4c[N]; int nGood4c=0;
   TGraphErrors* gTiming4c=nullptr;
+  // Same estimator but ELECTRONICS-INCLUSIVE: H1[34] = H1[32] + the DRS4
+  // uncalibrated-timebase residual (+ per-channel amplifier jitter when
+  // RADICAL_ELEC_JITTER_PS was set at run time). The paper's 17.5 ps constant
+  // term is a with-electronics number, so THIS curve is the apples-to-apples
+  // headline; the noiseless H1[32] curve shows what the light alone supports.
+  double tRes4d[N],tRes4dErr[N], E4d[N]; int nGood4d=0;
+  TGraphErrors* gTiming4d=nullptr;
   double tResW[N],tResWErr[N], EW[N]; int nGoodW=0;   // WLS-only timing (if present)
   TGraphErrors* gTimingWls=nullptr;
   double tResHG[N],tResHGErr[N], EHG[N]; int nGoodHG=0;  // high-gain timing (dual-gain)
