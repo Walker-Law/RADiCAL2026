@@ -507,8 +507,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     wlsVis->SetForceAuxEdgeVisible(true);
     logicTMidWLS->SetVisAttributes(wlsVis);
 
-    // --- Photodetectors at the upstream & downstream ends of each capillary ---
-    // Thin Si pads, abutting the quartz rod ends, that detect optical photons
+    // --- SINGLE photodetector at the DOWNSTREAM end (Fig 8: "only one SiPM
+    //     readout at the downstream end"). There is deliberately NO upstream
+    //     SiPM: this is a single-ended measurement, so the (DW-UP)/2 corner trick
+    //     is not available and must not be used here.
+    // Thin Si pad, abutting the quartz rod end, that detects optical photons
     // (SteppingAction applies the quantum efficiency and records arrival time).
     G4Material* siPD = nist->FindOrBuildMaterial("G4_Si");
     std::vector<G4double> pdRI  = {1.50, 1.50, 1.50, 1.50, 1.50, 1.50};
@@ -519,37 +522,33 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     siPD->SetMaterialPropertiesTable(pdMPT);
 
     auto solidPD = new G4Tubs("PD", 0, tCap_outR, pdHalfZ, 0., 360.*deg);
-    auto logicPDUpstream   = new G4LogicalVolume(solidPD, siPD, "PD_Upstream");
     auto logicPDDownstream = new G4LogicalVolume(solidPD, siPD, "PD_Downstream");
     auto pdVis = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0, 0.95));  // yellow
     pdVis->SetForceSolid(true);
-    logicPDUpstream->SetVisAttributes(pdVis);
     logicPDDownstream->SetVisAttributes(pdVis);
-    // PDs sit just outside the Tyvek end caps (quartz rod photons pass through the
-    // drilled holes in the end caps and arrive at the Si PD through a thin air gap)
-    const G4double zPDUpstream   = -stackZ/2.0 - wrapThick - pdHalfZ;
+    // PD sits just outside the Tyvek end cap (quartz rod photons pass through the
+    // drilled hole in the end cap and arrive at the Si PD through a thin air gap)
     const G4double zPDDownstream = +stackZ/2.0 + wrapThick + pdHalfZ;
 
-    for (G4int c = 1; c <= 4; c++) {
-        G4ThreeVector xy = capXY[c];
+    // ── Place the ONE T-type capillary at the module CENTER (copy number 0) ────
+    {
+        const G4ThreeVector xy = capXY[0];          // centre of the module
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
-                          logicTUpstream, "TCapUpstream_Phys", logicCalo, false, c-1);
+                          logicTUpstream, "TCapUpstream_Phys", logicCalo, false, 0);
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
-                          logicTMidTube, "TCapMidTube_Phys", logicCalo, false, c-1);
+                          logicTMidTube, "TCapMidTube_Phys", logicCalo, false, 0);
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_wls),
-                          logicTMidWLS, "TCapMidWLS_Phys", logicCalo, false, c-1);
+                          logicTMidWLS, "TCapMidWLS_Phys", logicCalo, false, 0);
 
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
-                          logicTDownstream, "TCapDownstream_Phys", logicCalo, false, c-1);
+                          logicTDownstream, "TCapDownstream_Phys", logicCalo, false, 0);
 
-        // photodetectors (copy number = corner index 0..3)
-        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDUpstream),
-                          logicPDUpstream, "PDUpstream_Phys", logicCalo, false, c-1);
+        // the single downstream SiPM (copy number 0)
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDDownstream),
-                          logicPDDownstream, "PDDownstream_Phys", logicCalo, false, c-1);
+                          logicPDDownstream, "PDDownstream_Phys", logicCalo, false, 0);
     }
 
     // =========================================================================
