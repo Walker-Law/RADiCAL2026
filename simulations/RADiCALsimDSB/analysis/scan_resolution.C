@@ -418,10 +418,16 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   if(ftW) ftW->Draw("same");
   if(ftHG) ftHG->Draw("same");
   if(ft4c) ft4c->Draw("same");
+  if(ft4d) ft4d->Draw("same");
   fpaperT->Draw("same");
-  if(ft4c){   // headline: the paper-matched 4-capillary estimator
+  if(ft4d){   // TRUE headline: paper-matched estimator WITH electronics
+    t.SetTextColor(kBlack);
+    t.DrawLatex(0.30,0.965,Form("PAPER-MATCHED+electronics: %.1f ps/#sqrt{E} #oplus %.1f ps",
+                fabs(ft4d->GetParameter(0)),fabs(ft4d->GetParameter(1))));
+  }
+  if(ft4c){   // light-only reference
     t.SetTextColor(kRed+1);
-    t.DrawLatex(0.36,0.93,Form("PAPER-MATCHED (4-cap mean): %.1f ps/#sqrt{E} #oplus %.1f ps",
+    t.DrawLatex(0.36,0.93,Form("light-only (4-cap mean): %.1f ps/#sqrt{E} #oplus %.1f ps",
                 fabs(ft4c->GetParameter(0)),fabs(ft4c->GetParameter(1))));
     t.SetTextColor(kBlack);
   }
