@@ -386,7 +386,14 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   if(ftS) ftS->Draw("same");
   if(ftW) ftW->Draw("same");
   if(ftHG) ftHG->Draw("same");
+  if(ft4c) ft4c->Draw("same");
   fpaperT->Draw("same");
+  if(ft4c){   // headline: the paper-matched 4-capillary estimator
+    t.SetTextColor(kRed+1);
+    t.DrawLatex(0.36,0.93,Form("PAPER-MATCHED (4-cap mean): %.1f ps/#sqrt{E} #oplus %.1f ps",
+                fabs(ft4c->GetParameter(0)),fabs(ft4c->GetParameter(1))));
+    t.SetTextColor(kBlack);
+  }
   t.SetTextColor(kGreen+2);
   t.DrawLatex(0.40,0.86,Form("all light: #sigma_{t} = %.1f ps/#sqrt{E} #oplus %.1f ps",
               fabs(ft->GetParameter(0)),fabs(ft->GetParameter(1))));
