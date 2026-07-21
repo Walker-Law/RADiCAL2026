@@ -448,34 +448,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     }
 
     // =========================================================================
-    // 8. CAPILLARIES
+    // 8. CAPILLARY — a SINGLE T-type, at the module CENTER (Fig 8 configuration)
     //
-    //  CENTER (energy): quartz tube + EJ309 liquid bore, full stack length
-    //  CORNERS (timing): quartz upstream/downstream rods + quartz tube mid-section
-    //                    + DSB1 WLS fiber at shower max
+    //  arXiv:2401.01747 Fig 8: "The simulation assumed only one SiPM readout at
+    //  the downstream end of a T-type capillary inserted through the center of
+    //  the module."  T-type = "solid WLS filaments of short length are inserted
+    //  into the capillary cores to a position corresponding to the region of EM
+    //  shower max. The remaining core volume of such T-type capillaries are
+    //  filled with quartz rods."
+    //
+    //  => quartz upstream rod + DSB1 WLS filament (900 um dia, 15 mm) at shower
+    //     max + quartz downstream rod, placed ONCE at capXY[0] (the centre), with
+    //     ONE SiPM at the downstream end only.
+    //  There is NO EJ309 energy capillary and there are NO corner capillaries in
+    //  this Fig 8 sim — pooling several unequally-illuminated capillaries is what
+    //  produced the bimodal, light-yield-independent sigma_t artifact previously.
     // =========================================================================
 
-    // --- Center energy capillary ---
-    auto solidECapTube = new G4Tubs("ECapTube", eCap_boreR, eCap_outR, stackZ/2, 0., 360.*deg);
-    auto solidECapBore = new G4Tubs("ECapBore", 0,          eCap_boreR, stackZ/2, 0., 360.*deg);
-
-    auto logicECapTube = new G4LogicalVolume(solidECapTube, quartz,  "Cap_Center_Tube");
-    auto logicECapBore = new G4LogicalVolume(solidECapBore, ej309,   "Cap_Center_EJ309");
-
-    new G4PVPlacement(nullptr, capXY[0], logicECapTube, "ECapTube_Phys", logicCalo, false, 0);
-    new G4PVPlacement(nullptr, capXY[0], logicECapBore, "ECapBore_Phys", logicCalo, false, 0);
-
-    // EJ309 bore kept solid (key active volume); quartz tube as outline
-    auto eCapVis = new G4VisAttributes(G4Colour(0.0, 0.9, 0.0, 0.9));
-    eCapVis->SetForceSolid(true);
-    eCapVis->SetForceAuxEdgeVisible(true);
-    logicECapBore->SetVisAttributes(eCapVis);
-    auto eCapTubeVis = new G4VisAttributes(G4Colour(0.8, 0.8, 1.0, 0.8));
-    eCapTubeVis->SetForceWireframe(true);
-    eCapTubeVis->SetForceAuxEdgeVisible(true);
-    logicECapTube->SetVisAttributes(eCapTubeVis);
-
-    // --- Corner timing capillaries (shared logical volumes) ---
+    // --- The single T-type timing capillary (logical volumes) ---
     // OPTICALLY SOLID quartz rods. The paper (arXiv:2401.01747, §2 / Fig 7-8
     // page) describes the capillary as a "hollow quartz tube" (OD 1150, bore
     // 950 um) but then states: "The remainder of each core was filled and fused
