@@ -128,6 +128,17 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     double muT=gT->GetParameter(1)*1000, sgT=gT->GetParameter(2)*500, sgTerr=gT->GetParError(2)*500;
     // scint-only timing (new files only): same corner trick, Cherenkov excluded
     double sgTS=-1;
+    // --- PAPER-MATCHED: 4-capillary-averaged, scint-only 5% CFD (DW - UP) ---
+    // sigma_t = sigma(H1[32])/2 (the (DW-UP)/2 corner trick), ns -> ps.
+    TH1D* h4c=(TH1D*)f->Get("DeltaT_CFD_4c_Scint");
+    if(h4c && h4c->GetEntries()>50){
+      TF1* g4c=coreFit(h4c,2.5,4);
+      E4c[nGood4c]=E[i];
+      tRes4c[nGood4c]=g4c->GetParameter(2)*500;        // ns->ps, and /2
+      tRes4cErr[nGood4c]=g4c->GetParError(2)*500;
+      saveTimingFit(h4c, g4c, "DeltaT_CFD_4c_Scint", E[i]);
+      nGood4c++;
+    }
     TH1D* hTS=(TH1D*)f->Get("DeltaT_Scint");
     if(hTS && hTS->GetEntries()>50){
       TF1* gTS=coreFit(hTS,2.5,4);
