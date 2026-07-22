@@ -73,6 +73,31 @@ across all cores and hadd-merges them per energy.
 See [simulations/RADiCALsimDSB/README.md](simulations/RADiCALsimDSB/README.md)
 and its `CLAUDE.md` for full detector, physics, and workflow documentation.
 
+## Methodology note: light yield is a prediction, not a tuning knob
+
+`RADICAL_LYSO_SCINT_SCALE` (and `RADICAL_SCINT_YIELD`) are **Monte Carlo thinning
+factors**, not physics parameters. Full LYSO light is ~5×10⁸ optical photons per
+event at 120 GeV — untrackable — so the sim tracks a fraction and the result must
+be corrected **analytically**: the photostatistical part of σ scales as √(thinning),
+while geometric/systematic floors do not. Setting the scale to make a plot match a
+published curve is fitting the answer, and it silently breaks the other observable.
+
+The detected light yield is instead something the simulation **predicts**, from
+LYSO's datasheet 33200 ph/MeV, the sim's own computed light transport and trapping,
+and the SiPM datasheet PDE. That prediction is currently **~50 npe/MeV** (stable
+across 25–150 GeV). Note the "~25 npe/MeV" figure in older project notes is *not*
+from the paper — the paper quotes no measured light yield.
+
+Because the sim runs ~100× thinned, its photostatistics are ~10× worse than the
+real detector, so agreement obtained at a thinned setting must be extrapolated
+before it can be claimed. `run_scale_ladder.sh` + `analysis/plot_scale_ladder.C`
+do this properly: they run a ladder of coherent light multipliers and fit
+σ²(f) = A²/f + B², separating the light-dependent (photostatistics) term from the
+light-independent (shower-sampling/geometric) floor, so the true-light answer is an
+extrapolation rather than a knob. See `simulations/RADiCALsimDSB/CLAUDE.md`
+("LIGHT YIELD IS A PREDICTION, NOT A KNOB") for the full reasoning and the
+decision rule.
+
 ## Analysis: per-energy fit overlays
 
 `analysis/scan_resolution.C` (present in all four sims) saves, for every energy
