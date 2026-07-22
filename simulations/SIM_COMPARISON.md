@@ -16,11 +16,31 @@ which one is right where they disagree, and what each got wrong versus
 29 LYSO 1.5 mm + 28 W 2.5 mm, 14 mm tiles, Tyvek 0.2032 mm; capillary OD/bore
 1150/950 um; DSB1 filament 900 um; corner inset 3.5 mm.
 
+**All of these are now directly confirmed against the paper's own text**
+(`papers/2401.01747v1.pdf`, p.3, `pdftotext -layout`), not just cross-checked
+against DURU: "the capillaries were of 183 mm length, having an outer diameter
+of 1150 um and an inner (core) diameter of 950 um. Within each core, a DSB1 WLS
+filament of 900 um diameter and 15 mm length was positioned in the region of
+shower max ... The remainder of each core was filled and fused with quartz
+rods ... The central hole in the module ... was unused in these studies."
+
 **Two of our recent changes are independently confirmed by DURU:**
 - **183 mm capillaries protruding to external SiPMs** (`capLength = 183.*mm`).
 - **No center capillary** — corner holes only (paper: the 5th hole "was unused").
 
 Both were adopted here on 2026-07-22.
+
+**Timing method also confirmed verbatim.** Paper §5.2: "fixed thresholds were
+set for the high-gain signals... When the leading edge of the high-gain pulses
+from a given channel exceeded the threshold, the timing... was determined,"
+and the reported resolution uses `(ΔtDW − ΔtUP)/2` (four-downstream-mean minus
+four-upstream-mean, halved) specifically because it "gives a result which is
+independent of" the MCP reference. This is exactly `leadingEdgeFixed()` +
+the 4-capillary corner-mean estimator already implemented for `paperJ` — no
+further estimator changes needed, DURU doesn't attempt this at all (no
+test-beam line -> no fixed-threshold model, no MCP, no DW/UP split; DURU's
+`SiPMHit` records raw `GlobalTime`/`LocalTime`, no digitizer or threshold
+model, so its EventAction histograms are direct arrival-time distributions).
 
 **Photon thinning is universal.** DURU independently hit the same intractability
 and adopted the same remedy, with the same discipline we arrived at the hard way:
