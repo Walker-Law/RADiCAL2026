@@ -60,6 +60,61 @@ physically honest reproduction. Until this is done, treat `paperJ` (timing) and
 the planned `fig17` LY=3e-3 run (energy shape) as two DIAGNOSTIC configs, not a
 final result.
 
+## ★★ SCALE-LADDER RESULT + SiPM COUPLING FIX (2026-07-22) — supersedes the "paperJ reproduces the paper" claim
+
+### 1. The ladder measured it: paperJ was ~90% photostatistics, NOT a reproduction
+
+Ran f = 0.1, 0.3, 1 (f=1 = `paperJ`; verified paperJ sits on the light-scaling
+line — PhotonsScint ratios 1.00 / 2.98 / 9.44 vs expected 1 / 3 / 10, so paperJ
+is a legitimate f=1 point to ~6%). The f=3 point was killed before merging.
+
+    f      a(f) [ps/sqrt(E)]    b(f) [ps]
+    0.1        740.2              0.0
+    0.3        440.2              0.0
+    1.0        247.6             18.7      <- paperJ
+
+    a^2(f) = A^2/f + B^2  ->  A = 233.6,  B = 93.7 ps/sqrt(E)   chi2/ndf = 0.49/1
+
+Textbook 1/sqrt(f) scaling (740/440 = 1.68, 440/248 = 1.77, both ~ sqrt(3) = 1.73).
+So at f=1 the headline 247.6 was **A=234 photostatistics (+) B=94 floor — i.e.
+~90% photon-counting noise from running 100x thinned.** Extrapolated to true
+light (f~100): **a ~ 97 ps/sqrt(E) vs the paper's 256.** The paperJ "agreement"
+was two errors cancelling, exactly as feared. NEITHER branch of the decision rule
+won outright: B does not dominate (can't call paperJ legitimate) but the light
+model isn't off by a clean 10x either. The residual now sits in the
+**light-INDEPENDENT floor** = shower-sampling physics, which no light-yield change
+can fix. CAVEAT: 3 points, 1 dof, and B is an *intercept extrapolation* from
+x=1/f in [1,10] down to x=0 — B is the loose parameter and it is the one now
+carrying the physics. The f=3 point (x=0.33) is what would pin it.
+
+### 2. SiPM COUPLING BUG in ALL pre-183mm runs — they lost ~half their light
+
+The old geometry placed the PD `wrapThick` = 0.2032 mm of **AIR** beyond the
+quartz rod end. That is not a small Fresnel loss — it is a **total-internal-
+reflection trap**: quartz->air has critical angle arcsin(1/1.46) = 43.2 deg, and
+light guided by TIR in the rod arrives at the end face at angles up to almost
+exactly that, so the highest-angle (large) fraction of the guided light was
+reflected BACK into the rod instead of reaching the SiPM.
+
+The 183 mm rebuild fixed this incidentally: the PD now abuts the rod tip exactly
+(both faces at capEndZ = 91.5 mm, zero gap) and pdRINDEX = 1.50 vs quartz ~1.46,
+so Fresnel at that boundary is ~0.02%. Equivalent to `geant4-DURU-models`'
+deliberate `couplingGap = 0.0*mm` ("direct optical contact: no vacuum gap, so
+guided"). Measured at 50 GeV: **2.1x more PhotonsWLS, 2.4x more PhotonsDetected**
+(2-event smoke; part of the "detected" gain is extra Cherenkov from the longer
+rods, but PhotonsWLS is comparatively clean).
+
+**Consequence for the ladder:** every pre-183mm run — paperJ AND all ladder
+points — was discarding ~half its light at the exit face. So the sim's predicted
+true light yield rises ~50 -> **~100 npe/MeV**, and extrapolating photostatistics
+to MORE light pushes predicted sigma_t **further BELOW** the paper's 256, not
+closer. This strengthens (not overturns) the ladder conclusion: the gap to the
+paper is shower-sampling/geometric, not photon counting.
+
+**Comparing `paper183` to `paperJ` folds THREE changes at once** (183 mm rods,
+center capillary removed, ~2x coupling gain). Attribute carefully; do not credit
+any shift to capillary length alone.
+
 ## ★★ LIGHT YIELD IS A PREDICTION, NOT A KNOB (2026-07-22) — READ BEFORE TUNING
 
 Prompted by Walker asking "what is the most realistic LY value? why does it sound
