@@ -73,6 +73,10 @@ across all cores and hadd-merges them per energy.
 See [simulations/RADiCALsimDSB/README.md](simulations/RADiCALsimDSB/README.md)
 and its `CLAUDE.md` for full detector, physics, and workflow documentation.
 
+**Vis tip:** in an interactive `./radical` session, run
+`/vis/viewer/set/hiddenMarker 1` to hide particle-track step-point markers that
+would otherwise show through solid geometry, cleaning up the view.
+
 ## Methodology note: light yield is a prediction, not a tuning knob
 
 `RADICAL_LYSO_SCINT_SCALE` (and `RADICAL_SCINT_YIELD`) are **Monte Carlo thinning
