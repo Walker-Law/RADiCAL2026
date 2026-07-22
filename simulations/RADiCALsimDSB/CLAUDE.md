@@ -35,6 +35,31 @@ energy shape at full LY is FLAT (~13% all E); COG cut (2 mm) helped the constant
 dedicated Fig 17 run (88.2×√(1.1e-3/3e-3) ≈ 53%/√E ≈ paper's 52), timing quoted
 from paperJ.
 
+**ROOT-CAUSE HYPOTHESIS for the two-config split (2026-07-22, per Walker's
+question "how can both be optimized in the real experiment?"):** in the real
+detector there is exactly ONE physical light yield, and it sets BOTH the timing
+and energy stochastic terms simultaneously (both are 1/sqrt(N_pe) of the same N).
+Our sim needing DIFFERENT LY (1e-2 for timing, 3e-3 for energy — a ~3.3x gap) is
+therefore not "two aspects of physics at different scales" but a real miscalibration:
+our conversion from photons -> timing precision is worse than reality's, so timing
+compensates with extra light. Quantitatively: closing a 3.3x LY gap via sharper
+per-photon timing needs ~sqrt(3.3) = 1.8x better precision per photon. That
+matches, independently, the ALREADY-DOCUMENTED pulse-shape defect: emulated pulse
+FWHM ~17-19 ns vs the real data's measured 8.3 ns (~2x too broad). Both numbers
+pointing the same way and same rough magnitude is evidence, not coincidence.
+**Prime suspect: the hardcoded single-photon-response time constants**
+`tauR=1.0, tauF=3.0` (ns) in BOTH `pulseCFD()` and `leadingEdgeFixed()`
+(`EventAction.cc:94,153`) — never tuned to the measured 8.3 ns FWHM, and not
+env-configurable. **Proposed fix (not yet implemented — deferred by user
+2026-07-22):** make tauR/tauF runtime knobs (e.g. `RADICAL_SPR_TAU_R_NS`,
+`RADICAL_SPR_TAU_F_NS`, defaults unchanged), tune tauF down (~1.5 ns) until the
+emulated FWHM matches 8.3 ns, then re-search for the SINGLE light yield where
+BOTH the timing law (256/√E ⊕ 17.5) and the Fig17 energy law (52.04/√E ⊕ 9.31)
+hold at once — that unified result, not two separately-tuned configs, is the
+physically honest reproduction. Until this is done, treat `paperJ` (timing) and
+the planned `fig17` LY=3e-3 run (energy shape) as two DIAGNOSTIC configs, not a
+final result.
+
 ## CURRENT STATE (July 2026) — timing puzzle SOLVED, validation run in flight
 
 **UPDATE (July 8 2026) — data-matched estimators added for direct test-beam
