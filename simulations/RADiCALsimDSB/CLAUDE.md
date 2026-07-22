@@ -10,6 +10,31 @@
 > Read this first. It captures everything needed to work on this project without
 > re-deriving context. Keep it updated when geometry, materials, or workflow change.
 
+## ★ PAPER TIMING REPRODUCED (July 22 2026, run `optical_scan_1000_paperJ`)
+
+**σ_t = 247.9 ps/√E ⊕ 18.7 ps  vs  paper 256 ps/√E ⊕ 17.5 ps** (stochastic −3.2%,
+constant +6.9%; all six points 25–150 GeV within 10%). Estimator = H1[34]
+DeltaT_CFD_4c_Scint_DRS4: per-event 4-capillary mean of 5% CFD (DW−UP), scint
+light, ÷2 corner trick, + DRS4 timebase (50 ps/cell) + per-channel amplifier
+jitter (`RADICAL_ELEC_JITTER_PS=50` → 50/(2√2) ≈ 17.7 ps on the mean).
+Config: `LYSO_SCINT_SCALE=1e-2` (unscaled DSB1 self-scint), `QUARTZ_CHER_KEEP=0.01`,
+`SPTR_PS=60`, `SIPM_NPIX=5676`, `SM_COG_CUT_MM=2`, energies 25/50/75/100/125/150,
+1000 evt/E. Curves: `optical_scan_1000_paperJ/resolution_curves.root`
+(`TimingResolution_4cScintDRS4_paperMatched`), per-energy fits in `build/plots/fits/`.
+
+**DO NOT chase the paper with global light-yield cuts** (re-confirmed the hard
+way, run `paperLY`): cutting LY ×36 to "25 npe/MeV" blew σ_t up 15×
+(3830 ps/√E ⊕ 223 — pure counting jitter). The sim reproduces the paper's TIMING
+at FULL modeled light; the LY-starved config instead reproduces the paper's
+Fig 17 ENERGY *shape* (12.61% ⊕ 88.2%/√E vs paper 9.31 ⊕ 52.04/√E — stochastic
+term appears only when photostat-limited). No single LY does both → our
+per-photon timing is pessimistic (SPR τ_f=3 ns vs data pulse FWHM 8.3 vs sim
+~17–19 ns; LYSO 36 ns gating) and compensates with photon count. OPEN: shower-max
+energy shape at full LY is FLAT (~13% all E); COG cut (2 mm) helped the constant
+(15.9→13.2%) but not the shape. Next lever: LY ≈ 3e-3 + tighter COG for a
+dedicated Fig 17 run (88.2×√(1.1e-3/3e-3) ≈ 53%/√E ≈ paper's 52), timing quoted
+from paperJ.
+
 ## CURRENT STATE (July 2026) — timing puzzle SOLVED, validation run in flight
 
 **UPDATE (July 8 2026) — data-matched estimators added for direct test-beam
