@@ -73,9 +73,20 @@ across all cores and hadd-merges them per energy.
 See [simulations/RADiCALsimDSB/README.md](simulations/RADiCALsimDSB/README.md)
 and its `CLAUDE.md` for full detector, physics, and workflow documentation.
 
-**Vis tip:** in an interactive `./radical` session, run
-`/vis/viewer/set/hiddenMarker 1` to hide particle-track step-point markers that
-would otherwise show through solid geometry, cleaning up the view.
+**Vis tip:** particle tracks (trajectories) are controlled by
+`/tracking/storeTrajectory`, not `hiddenMarker` — that command only hides
+step-point markers occluded by solid geometry, not the track lines themselves.
+Bare `./radical` auto-fires one event (`vis_purple.mac`) before the interactive
+prompt appears, so its track is already drawn and accumulated. To clear it in a
+live session:
+```
+/tracking/storeTrajectory 0
+/vis/scene/endOfEventAction refresh
+/run/beamOn 1
+```
+This stops new trajectories from being stored, refreshes the scene (dropping the
+already-accumulated track), and fires one silent event to force the redraw —
+leaving a clean, track-free geometry view.
 
 ## Methodology note: light yield is a prediction, not a tuning knob
 
