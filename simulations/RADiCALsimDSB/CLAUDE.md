@@ -305,17 +305,29 @@ Stack = **29 LYSO (1.5mm) + 28 W (2.5mm) + 56 Tyvek (0.2032mm)** = `stackZ` **12
 | stackZ | 114.06 mm | **124.88 mm** | Tyvek fix |
 | WLS period coverage | layers ~10–11 | **layers ~7.3–10.7** | WLS pos fix |
 
-### Capillaries (5 holes drilled via G4SubtractionSolid)
-- **Center (energy):** `centerHoleR`=0.45mm. EJ309 bore (r=0.20mm) + quartz tube.
-  `eCap_outR = centerHoleR` so the tube fully fills the hole (no air gap).
-- **4 corners (timing):** `cornerHoleR`=0.65mm. Capillary OD=1.15mm (0.575mm r), bore=0.475mm.
-  **DSB1 WLS fiber** (r=0.45mm, **15mm length**) at shower max + quartz upstream/downstream rods.
-  Geometry verified against arXiv:2401.01747 HTML: OD=1150μm, bore=950μm, fiber diam=900μm — exact match.
-  Corner positions: ±3.5mm from tile center (= 3.5mm from each edge in 14mm tile).
-  Photodetectors `PD_Upstream`/`PD_Downstream` (Si, copy#=corner) at the two ends.
-- WLS segmentation: `upstreamLen = showerMaxDepth - wlsLen/2 = 40.4 - 7.5 = 32.9 mm`.
-  `downstreamLen = 124.88 - 32.9 - 15.0 = 76.98 mm`. WLS covers 32.9–47.9 mm (layers 7.3–10.7).
-  Volume names: `Cap_Corner_Upstream` / `Cap_Corner_Downstream` (quartz rods).
+### Capillaries (PAPER-FIDELITY UPDATE 2026-07-22: 183 mm, no center capillary)
+- **Center hole: DRILLED BUT EMPTY.** The paper states the fifth central hole
+  "was unused in these studies, but is reserved for future use" — the tested
+  module had NO center capillary. The old EJ309-filled center capillary
+  (quartz tube + liquid on the beam axis) was REMOVED; `centerHoleR`=0.45mm
+  keeps the drilled hole (air). `Cap_Center_EJ309` no longer exists →
+  H1[4] CenterCapEnergy / H1[10] / H2[3] are now empty (SteppingAction branch
+  left in place, dead). Data taken before 2026-07-22 has the extra on-axis
+  material — do not mix with new runs.
+- **4 corners (timing), FULL 183 mm LENGTH** (`capTotalLen`; paper: ~18 cm,
+  extending ~2.5 cm beyond the module each end to the SiPMs — was a deferred
+  gap, closed after seeing discrete_sims implement it). Chain per corner:
+  in-cavity quartz rods (stretched to the calo-cavity faces) + quartz tube
+  mid-section + **DSB1 WLS fiber (r=0.45mm, 15mm) at shower max (UNCHANGED,
+  32.9–47.9 mm)** + world-mothered `Cap_Corner_Ext` extension rods passing
+  through 4 new drilled holes in the Delrin end walls, out to z=±91.5 mm.
+  `cornerHoleR`=0.65mm, OD=1.15mm — verified vs paper: OD=1150μm, bore=950μm,
+  fiber=900μm. Corner positions ±3.5mm from tile center.
+  **PDs now sit OUTSIDE the housing** at ±(91.5mm+pdHalfZ), mother=world,
+  same logical names `PD_Upstream`/`PD_Downstream` (SteppingAction unchanged).
+  Validated: 155 volumes overlap-clean; 33k p.e. reach the relocated PDs at
+  50 GeV (quartz→quartz index-matched at the calo/world seam); ΔT mean ~0.17 ns
+  preserved (symmetric extensions cancel in DW−UP).
 
 ### Materials
 LYSO, Tungsten (W), Tyvek, Delrin (POM), fused quartz, EJ309 liquid scintillator,

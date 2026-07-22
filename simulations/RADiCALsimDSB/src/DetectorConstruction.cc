@@ -241,10 +241,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         {-capOff, -capOff, 0},
     };
 
-    // Energy capillary (center) — OD scaled to fit 0.9 mm hole
-    // Paper: OD=1000 µm, bore=400 µm; scaled to fit: OD=0.88 mm, bore=0.352 mm
-    static const G4double eCap_outR = centerHoleR;   // fully fill the 0.45 mm drilled hole
-    static const G4double eCap_boreR = 0.200*mm;
+    // Center hole: DRILLED BUT EMPTY (2026-07-22 paper-fidelity fix). The paper
+    // states the fifth central hole "was unused in these studies, but is
+    // reserved for future use" — the tested module had NO center capillary.
+    // The earlier EJ309-filled center capillary put quartz + dense liquid on
+    // the beam axis where the real module had air; removed. centerHoleR keeps
+    // the drilled hole itself (it exists in the real tiles).
 
     // Timing capillary (corners) — paper: OD=1150 µm, bore=950 µm, fiber=900 µm
     static const G4double tCap_outR  = 0.575*mm;   // 1.15 mm OD
@@ -260,20 +262,22 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // (Beam travels +z: "upstream" = −z end, "downstream" = +z end.)
     static const G4double showerMaxDepth = 40.4*mm;  // layer 9 centre, arXiv:2401.01747 Fig. 7
     static const G4double wlsLen         = 15.0*mm;  // arXiv:2401.01747 §2: 15 mm WLS length
-    // KNOWN GAP (deferred, per Walker): the paper states total capillary length
-    // 183 mm, extending 25 mm beyond the module on EACH end to reach the SiPMs
-    // ("Each capillary is 18 cm long ... extending 2.5 cm from the module on
-    // either end"). This sim's capillary is flush with the module
-    // (upstreamLen+wlsLen+downstreamLen = stackZ = 124.88 mm), missing the
-    // 2x25mm extension. Straightforward to add now (solid quartz light guide);
-    // deferred as a lower-priority refinement.
-    static const G4double upstreamLen    = showerMaxDepth - wlsLen/2.0;       // 40.0 mm
-    static const G4double downstreamLen  = stackZ - upstreamLen - wlsLen;     // 68.06 mm
+    // FULL-LENGTH CAPILLARY (2026-07-22 paper-fidelity fix, was a deferred gap):
+    // the paper states each capillary is ~18 cm long, extending ~2.5 cm beyond
+    // the module on either end to reach the SiPMs on the front-end cards. Total
+    // modeled length = 183 mm, centered on the stack: the in-stack segments
+    // below span the calo cavity, and solid-quartz EXTENSION rods (built in
+    // section 8) continue through drilled holes in the Delrin end walls out to
+    // z = +-91.5 mm, where the PDs now sit (outside the housing, in world).
+    static const G4double capTotalLen    = 183.0*mm;   // paper: ~18 cm
+    static const G4double capEndZ        = capTotalLen/2.0;   // +-91.5 mm
+    // IN-STACK portions (WLS placement is unchanged — physical shower max):
+    static const G4double upstreamLen    = showerMaxDepth - wlsLen/2.0;       // 32.9 mm
+    static const G4double downstreamLen  = stackZ - upstreamLen - wlsLen;     // 76.98 mm
 
-    // Z centers of timing cap segments relative to calo center
-    static const G4double z_upstream   = -stackZ/2.0 + upstreamLen/2.0;
+    // Z center of the WLS section relative to calo center (rod centers are
+    // computed in section 8 where the cavity dimensions are in scope).
     static const G4double z_wls        = -stackZ/2.0 + upstreamLen + wlsLen/2.0;
-    static const G4double z_downstream = -stackZ/2.0 + upstreamLen + wlsLen + downstreamLen/2.0;
 
     // Photodetector half-thickness (defined early — also needed for cavity size)
     static const G4double pdHalfZ = 0.02*mm;
@@ -304,7 +308,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // =========================================================================
     auto solidDelrinOuter = new G4Box("Delrin_Outer", housingOuterHalf, housingOuterHalf, housingHalfZ);
     auto solidDelrinInner = new G4Box("Delrin_Inner", housingInnerHalf, housingInnerHalf, cavityHalfZ);
-    auto solidDelrin      = new G4SubtractionSolid("Delrin", solidDelrinOuter, solidDelrinInner);
+    G4VSolid* solidDelrin = new G4SubtractionSolid("Delrin", solidDelrinOuter, solidDelrinInner);
+    // Drill the 4 corner capillary holes through BOTH Delrin end walls: the
+    // full-length (183 mm) capillaries exit the housing to reach the SiPMs on
+    // the front-end cards (paper: capillaries extend ~2.5 cm beyond the module
+    // on either end). One full-length cylinder per corner pierces both walls.
+    {
+        auto delrinDrill = new G4Tubs("DelrinDrill", 0, cornerHoleR, housingHalfZ + 1.0*mm, 0., 360.*deg);
+        for (int c = 1; c < 5; c++)
+            solidDelrin = new G4SubtractionSolid("Delrin", solidDelrin, delrinDrill, nullptr, capXY[c]);
+    }
     auto logicDelrin      = new G4LogicalVolume(solidDelrin, delrin, "Delrin");
     new G4PVPlacement(nullptr, {}, logicDelrin, "Delrin_Phys", logicWorld, false, 0);
 
@@ -448,32 +461,29 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     }
 
     // =========================================================================
-    // 8. CAPILLARIES
+    // 8. CAPILLARIES — four T-type at the corners, 183 mm full length
     //
-    //  CENTER (energy): quartz tube + EJ309 liquid bore, full stack length
-    //  CORNERS (timing): quartz upstream/downstream rods + quartz tube mid-section
-    //                    + DSB1 WLS fiber at shower max
+    //  NO CENTER CAPILLARY (paper: the fifth central hole "was unused in these
+    //  studies" — the drilled hole remains, empty/air, per the constants block).
+    //  CORNERS (timing): quartz upstream/downstream rods spanning the cavity
+    //                    + quartz tube mid-section + DSB1 WLS fiber at shower
+    //                    max + EXTENSION rods through the Delrin end walls out
+    //                    to z = +-91.5 mm (capTotalLen = 183 mm), ending at the
+    //                    SiPMs which now sit OUTSIDE the housing (in world).
     // =========================================================================
 
-    // --- Center energy capillary ---
-    auto solidECapTube = new G4Tubs("ECapTube", eCap_boreR, eCap_outR, stackZ/2, 0., 360.*deg);
-    auto solidECapBore = new G4Tubs("ECapBore", 0,          eCap_boreR, stackZ/2, 0., 360.*deg);
-
-    auto logicECapTube = new G4LogicalVolume(solidECapTube, quartz,  "Cap_Center_Tube");
-    auto logicECapBore = new G4LogicalVolume(solidECapBore, ej309,   "Cap_Center_EJ309");
-
-    new G4PVPlacement(nullptr, capXY[0], logicECapTube, "ECapTube_Phys", logicCalo, false, 0);
-    new G4PVPlacement(nullptr, capXY[0], logicECapBore, "ECapBore_Phys", logicCalo, false, 0);
-
-    // EJ309 bore kept solid (key active volume); quartz tube as outline
-    auto eCapVis = new G4VisAttributes(G4Colour(0.0, 0.9, 0.0, 0.9));
-    eCapVis->SetForceSolid(true);
-    eCapVis->SetForceAuxEdgeVisible(true);
-    logicECapBore->SetVisAttributes(eCapVis);
-    auto eCapTubeVis = new G4VisAttributes(G4Colour(0.8, 0.8, 1.0, 0.8));
-    eCapTubeVis->SetForceWireframe(true);
-    eCapTubeVis->SetForceAuxEdgeVisible(true);
-    logicECapTube->SetVisAttributes(eCapTubeVis);
+    // In-cavity rod lengths: stretch the in-stack portions to the calo-cavity
+    // faces so the chain [cavity rod | Delrin-wall extension] is continuous.
+    const G4double inCavExtra = cavityHalfZ - stackZ/2.0;          // ~0.29 mm
+    const G4double rodUpLen   = upstreamLen   + inCavExtra;
+    const G4double rodDnLen   = downstreamLen + inCavExtra;
+    const G4double z_upstream   = -cavityHalfZ + rodUpLen/2.0;
+    const G4double z_downstream = +cavityHalfZ - rodDnLen/2.0;
+    // Extension rods: world-mothered, from the cavity face through the drilled
+    // Delrin end wall out to the capillary tip at +-capEndZ.
+    const G4double extLen = capEndZ - cavityHalfZ;                 // ~28.77 mm
+    const G4double zExtUp = -cavityHalfZ - extLen/2.0;
+    const G4double zExtDn = +cavityHalfZ + extLen/2.0;
 
     // --- Corner timing capillaries (shared logical volumes) ---
     // OPTICALLY SOLID quartz rods. The paper (arXiv:2401.01747, §2 / Fig 7-8
@@ -488,7 +498,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // ~200 ps geometric dT.) Cherenkov is at the full solid-quartz rate,
     // managed by RADICAL_QUARTZ_CHER_KEEP, not by geometry.
     // Upstream rod: solid quartz (tube wall + fused-quartz core)
-    auto solidTUpstream = new G4Tubs("TCapUpstream", 0, tCap_outR, upstreamLen/2, 0., 360.*deg);
+    auto solidTUpstream = new G4Tubs("TCapUpstream", 0, tCap_outR, rodUpLen/2, 0., 360.*deg);
     auto logicTUpstream = new G4LogicalVolume(solidTUpstream, quartz, "Cap_Corner_Upstream");
 
     // Middle WLS section: quartz tube wall (annulus around the DSB1 filament)
@@ -500,8 +510,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto logicTMidWLS = new G4LogicalVolume(solidTMidWLS, dsb1, "Cap_Corner_WLS");
 
     // Downstream rod: solid quartz (tube wall + fused-quartz core)
-    auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, downstreamLen/2, 0., 360.*deg);
+    auto solidTDownstream = new G4Tubs("TCapDownstream", 0, tCap_outR, rodDnLen/2, 0., 360.*deg);
     auto logicTDownstream = new G4LogicalVolume(solidTDownstream, quartz, "Cap_Corner_Downstream");
+
+    // Extension rods (shared logical, both ends use the same length): the solid
+    // quartz continuation through the Delrin end walls to the SiPMs. Same
+    // "Cap_Corner_*" naming family so vis/routing conventions carry over
+    // (quartz rods are passive light guides — no scoring by name needed).
+    auto solidTExt = new G4Tubs("TCapExt", 0, tCap_outR, extLen/2, 0., 360.*deg);
+    auto logicTExt = new G4LogicalVolume(solidTExt, quartz, "Cap_Corner_Ext");
 
     // Quartz timing rods/tube as outlines
     auto tRodVis = new G4VisAttributes(G4Colour(0.7, 0.9, 1.0, 0.7));
@@ -510,6 +527,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     logicTUpstream->SetVisAttributes(tRodVis);
     logicTDownstream->SetVisAttributes(tRodVis);
     logicTMidTube->SetVisAttributes(tRodVis);
+    logicTExt->SetVisAttributes(tRodVis);
 
     // DSB1 WLS fiber kept solid (key timing active volume)
     auto wlsVis = new G4VisAttributes(G4Colour(1.0, 0.6, 0.0, 0.95));
@@ -535,14 +553,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     pdVis->SetForceSolid(true);
     logicPDUpstream->SetVisAttributes(pdVis);
     logicPDDownstream->SetVisAttributes(pdVis);
-    // PDs sit just outside the Tyvek end caps (quartz rod photons pass through the
-    // drilled holes in the end caps and arrive at the Si PD through a thin air gap)
-    const G4double zPDUpstream   = -stackZ/2.0 - wrapThick - pdHalfZ;
-    const G4double zPDDownstream = +stackZ/2.0 + wrapThick + pdHalfZ;
+    // PDs sit at the capillary TIPS, +-91.5 mm — OUTSIDE the housing, in world
+    // (paper: SiPMs on front-end cards beyond the module ends). The calo cavity
+    // and the world share the same origin, so capXY coordinates carry over.
+    const G4double zPDUpstream   = -capEndZ - pdHalfZ;
+    const G4double zPDDownstream = +capEndZ + pdHalfZ;
 
     for (G4int c = 1; c <= 4; c++) {
         G4ThreeVector xy = capXY[c];
 
+        // in-cavity segments (mother = calo)
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_upstream),
                           logicTUpstream, "TCapUpstream_Phys", logicCalo, false, c-1);
 
@@ -555,11 +575,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, z_downstream),
                           logicTDownstream, "TCapDownstream_Phys", logicCalo, false, c-1);
 
-        // photodetectors (copy number = corner index 0..3)
+        // extension rods (mother = world): through the drilled Delrin end walls
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zExtUp),
+                          logicTExt, "TCapExtUp_Phys", logicWorld, false, c-1);
+        new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zExtDn),
+                          logicTExt, "TCapExtDn_Phys", logicWorld, false, c-1);
+
+        // photodetectors at the capillary tips (mother = world; copy# = corner)
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDUpstream),
-                          logicPDUpstream, "PDUpstream_Phys", logicCalo, false, c-1);
+                          logicPDUpstream, "PDUpstream_Phys", logicWorld, false, c-1);
         new G4PVPlacement(nullptr, xy + G4ThreeVector(0, 0, zPDDownstream),
-                          logicPDDownstream, "PDDownstream_Phys", logicCalo, false, c-1);
+                          logicPDDownstream, "PDDownstream_Phys", logicWorld, false, c-1);
     }
 
     // =========================================================================
