@@ -73,20 +73,14 @@ across all cores and hadd-merges them per energy.
 See [simulations/RADiCALsimDSB/README.md](simulations/RADiCALsimDSB/README.md)
 and its `CLAUDE.md` for full detector, physics, and workflow documentation.
 
-**Vis tip:** particle tracks (trajectories) are controlled by
-`/tracking/storeTrajectory`, not `hiddenMarker` — that command only hides
-step-point markers occluded by solid geometry, not the track lines themselves.
-Bare `./radical` auto-fires one event (`vis_purple.mac`) before the interactive
-prompt appears, so its track is already drawn and accumulated. To clear it in a
-live session:
-```
-/tracking/storeTrajectory 0
-/vis/scene/endOfEventAction refresh
-/run/beamOn 1
-```
-This stops new trajectories from being stored, refreshes the scene (dropping the
-already-accumulated track), and fires one silent event to force the redraw —
-leaving a clean, track-free geometry view.
+**Vis tip:** bare `./radical` opens the geometry viewer with no particle track
+drawn — `vis_purple.mac` (the macro it auto-runs) no longer auto-fires
+`/run/beamOn 1`. (Trajectories are controlled by `/tracking/storeTrajectory`,
+not `/vis/viewer/set/hiddenMarker` — that command only hides step-point markers
+occluded by solid geometry, not the track lines themselves; and since the old
+macro fired its event before the interactive prompt even appeared, there was no
+way to type a fix in time anyway.) Type `/run/beamOn 1` yourself whenever you
+want to see optical-photon tracks (purple).
 
 ## Methodology note: light yield is a prediction, not a tuning knob
 
