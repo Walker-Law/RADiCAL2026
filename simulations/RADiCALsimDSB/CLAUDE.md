@@ -60,7 +60,74 @@ physically honest reproduction. Until this is done, treat `paperJ` (timing) and
 the planned `fig17` LY=3e-3 run (energy shape) as two DIAGNOSTIC configs, not a
 final result.
 
-## ★★ SCALE-LADDER RESULT + SiPM COUPLING FIX (2026-07-22) — supersedes the "paperJ reproduces the paper" claim
+## ★★★ paper183 RESULT (2026-07-22) — the ladder's missing point, and the gap to the paper WIDENS
+
+Run `optical_scan_1000_paper183`: paper-fidelity geometry (183 mm rods, NO center
+capillary, SiPM coupling fixed), 1000 evt x 6 energies, `LYSO_SCINT_SCALE=1e-2`
+(identical to paperJ). Both geometry changes verified in the data:
+`CenterCapEnergy` integral = **0** (capillary gone), `PhotonsWLS` **+85%**.
+
+    estimator: TimingResolution_4cScintDRS4_paperMatched  (H1[34])
+    run        a [ps/sqrt(E)]   b [ps]    chi2/ndf
+    paperJ         247.9         18.71    21.04/4   <- POOR fit (5.3)
+    paper183       174.5         20.42     6.40/4   <- good fit (1.6)
+    PAPER          256.0         17.50
+
+**The constant term b is unchanged (18.7 -> 20.4 ps, vs paper 17.5)** — expected,
+it is DRS4-timebase + amplifier dominated and no geometry change touches it. The
+(DW-UP) common-mode cancellation still works. **All the movement is in a.**
+
+Note also that paperJ's headline "247.9 vs 256" rested on a fit with
+**chi2/ndf = 5.3** — the six points did not actually follow the sqrt law. The
+paper183 fit is chi2/ndf = 1.6. The new number is the more trustworthy one even
+before interpretation.
+
+### paper183 IS the ladder point that was missing
+
+The killed f=3 ladder point was meant to pin the intercept B. paper183 supplies
+it: measured light ratio vs paperJ = **1.867**, i.e. x = 1/f = 0.536, sitting
+exactly in the x-gap between paperJ (x=1) and x=0.
+
+    fit  a^2 = A^2/f + B^2   (f from MEASURED <PhotonsWLS>, not nominal knobs)
+    3 old-geometry points   A = 236.6   B = 88.2   chi2/ndf = 1.25/1
+    ALL 4 incl. paper183    A = 239.2   B = 43.5   chi2/ndf = 3.48/2
+
+**A is rock-stable (236.6 -> 239.2); B HALVES (88.2 -> 43.5.)** Exactly as warned
+— B was the loose extrapolated intercept, and the first point with real leverage
+on it moved it a lot. **CONFOUND: paper183 changed geometry as well as light, so
+B=43.5 is not a clean single-variable measurement.** Longer rods and the removed
+center capillary could each move timing independently of photon count.
+
+### Consequence: the sim is now TOO GOOD, not too noisy
+
+Predicted true light yield rises **50 -> 91 npe/MeV** (thinning undone; stable
+85-99 across 25-150 GeV). Extrapolating with A=239.2, B=43.5:
+
+    f=1.87 (as run, 100x thinned)  a = 180 ps/sqrt(E)   [measured 174.5 - consistent]
+    f=10                          a =  87
+    f=50                          a =  55
+    f=186.7 (TRUE, unthinned)     a =  47 ps/sqrt(E)
+    PAPER                             256 ps/sqrt(E)
+
+At realistic light the sim predicts sigma_t **~5.5x BETTER than the paper measured.**
+The earlier hope — that the residual was a light-independent shower-sampling floor
+which would survive extrapolation — is **weakened**, because the floor B went DOWN
+when the constraining point arrived. There is no large light-independent term
+hiding here. So: **the real detector is degraded by something we do not model**
+(candidates: the pulse-shape defect already documented — emulated FWHM 17-19 ns vs
+measured 8.3 ns; SiPM saturation/nonlinearity; beam momentum spread; MCP reference
+resolution folded into the paper's quoted number).
+
+**Do NOT read paper183's 174.5 as "closer to 256 = better."** It is closer only
+because it is still ~100x photon-starved. The honest statement is that the sim's
+timing model, extrapolated to its own predicted light yield, does not reproduce
+the paper's stochastic term and is too optimistic by ~5x.
+
+**Next measurement (clean, no tuning):** run one reduced-light point ON THE NEW
+GEOMETRY (e.g. `RADICAL_LYSO_SCINT_SCALE=3e-3`, everything else = paper183). That
+gives A and B within a single geometry and removes the confound above.
+
+## ★★ SCALE-LADDER RESULT + SiPM COUPLING FIX (2026-07-22) — superseded in part by the paper183 result above
 
 ### 1. The ladder measured it: paperJ was ~90% photostatistics, NOT a reproduction
 
