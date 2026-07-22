@@ -89,9 +89,6 @@ source ../setup_env.sh
 
 # OpenGL geometry viewer
 ./radical
-# tip: run "/vis/viewer/set/hiddenMarker 1" in the UI session to hide
-# particle-track step-point markers that would otherwise show through
-# solid geometry, cleaning up the view.
 
 # Energy scan (5–120 GeV, 1500 evt/point)
 ./run_scan.sh
