@@ -53,6 +53,26 @@ Their default 100x is the same order as our `RADICAL_LYSO_SCINT_SCALE=1e-2`.
 Independent confirmation that **thinning + analytic correction** is the right
 architecture, and that the thinning factor is NOT a physics parameter.
 
+## DURU has 4 variants, not 1 — structure (re-surveyed 2026-07-22)
+
+All 4 share `ActionInitialization/PrimaryGeneratorAction/RunAction/SiPMHit/
+SiPMSD/SteppingAction/TrackingAction` near-verbatim (checksummed identical or
+near-identical); only `DetectorConstruction.cc` differs meaningfully:
+
+| Variant | Corners | Filament layout | Readout |
+|---|---|---|---|
+| `Radical_ShowerMax` | 4, square | ALL 4 short (~15.1mm @ layers 8-11), T-type | 8 SiPM, both ends |
+| `Radical_EnergyMode` | 4, square | ALL 4 full-length (183mm), E-type | 4 SiPM downstream only + upstream mirror plug |
+| `Radical_2x2` | 4, square | MIXED: corners 0,3 full-length (E), corners 1,2 short (T) | 6 SiPM (2 downstream-only E + 4 T both ends) |
+| `SixSides` | 6, hexagonal | alternating full/short around 6 corners | scales the above to a hexagon (`G4Polyhedra`) |
+
+This matters for the earlier email-list work: findings scoped to `ShowerMax`
+(filament position, SiPM PDE placeholder, BCF-92) generalize to all 4, since
+those constants are copy-pasted unchanged across variants (verified: `capLength`,
+`capOuterRadius`, `capInnerRadius`, `holeInset`, `filamentRadius`, `couplingGap`,
+`sipmPDE` are byte-identical in every variant's `DetectorConstruction.cc`). Only
+the *topology* (which corners get which capillary type, square vs hex) differs.
+
 ## What DURU does better (adopted / to consider)
 
 1. **SiPM optical coupling** — `couplingGap = 0.0*mm`, "direct optical contact:
@@ -61,7 +81,11 @@ architecture, and that the thinning factor is NOT a physics parameter.
    (quartz->air critical angle 43.2 deg). Cost: ~2x the WLS light.
    **FIXED here** as a side effect of the 183 mm rebuild (PD now abuts the tip).
 2. 183 mm capillaries + no center capillary (both adopted, see above).
-3. Filament at layers 8-11 (~15.1 mm), squarely on the paper's Fig 7 shower max.
+3. Filament radius 0.45mm (900um dia) — exact paper match, same as ours.
+4. **Fully solid rod outside the WLS band** (see retraction above) — same TIR
+   design as ours: filament (0.45mm) sits inside a 0.475mm bore, leaving the
+   ~25um vacuum annulus that lets light TIR down the fiber instead of leaking
+   straight into the surrounding quartz at first contact.
 
 ## What DURU gets wrong (worth reporting upstream)
 
