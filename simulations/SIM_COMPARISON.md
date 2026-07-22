@@ -45,12 +45,30 @@ architecture, and that the thinning factor is NOT a physics parameter.
 
 ## What DURU gets wrong (worth reporting upstream)
 
-1. **HOLLOW capillary core** — `capInnerRadius` gives a "100 um quartz wall",
-   i.e. an air bore. The paper says the remainder of each core "was filled and
-   fused with quartz rods". **This is the exact error that cost this project
-   days**: an air core breaks the TIR light guide, and photons trapped in the
-   bore bounce pathologically (hangs, or truncation under a step cap -> collapsed
-   dT and 5-10x inflated sigma_t). Highest-value thing to tell them.
+1. **~~HOLLOW capillary core~~ — RETRACTED, this was a misread.** Earlier notes
+   here claimed `capInnerRadius` left the whole 183 mm rod hollow (an air bore),
+   citing the "100 um quartz wall" comment out of context. Re-read on 2026-07-22,
+   full `DefineVolumes()`:
+   ```cpp
+   auto quartzRodS = new G4Tubs("QuartzRod", 0., capOuterRadius, capLength/2, ...);
+   auto quartzCoreS = new G4Tubs("QuartzCore", 0., capInnerRadius,
+                                  filamentLength/2, ...);   // NOTE: filamentLength (~15mm), not capLength
+   auto quartzS = new G4SubtractionSolid("Quartz", quartzRodS, quartzCoreS,
+                                          nullptr, G4ThreeVector(0,0,filamentCenterZ));
+   ```
+   The bore subtracted from the solid rod is only `filamentLength/2` long (~7.5 mm
+   half-length), not `capLength/2`. Outside that short shower-max band the
+   `Quartz` logical volume is the full solid `capOuterRadius` rod — exactly the
+   paper's "filled and fused with quartz rods" everywhere except the WLS region.
+   Inside the band, the bore is filled by the BCF-92 filament (placed separately,
+   radius `filamentRadius`=0.45mm < `capInnerRadius`=0.475mm, so a ~25 um vacuum
+   annulus separates filament from quartz wall — the same TIR-preserving air gap
+   our own `wlsFiberR`/`tCap_boreR` pair uses). **DURU's rod is solid outside the
+   filament, exactly like the paper and exactly like ours.** The error was mine:
+   I read the `capInnerRadius` comment ("100 um quartz wall") as describing the
+   whole rod rather than the localized shower-max bore, the same class of mistake
+   as the earlier DSB1/LuAG misread — parse the geometry construction, not an
+   isolated comment.
 2. **Wrong WLS material** — the filament is **BCF-92** (polystyrene, n=1.60,
    `WLSTIMECONSTANT 2.7 ns`, emission 492 nm), a Saint-Gobain commercial fiber,
    not the paper's DSB1. Behaviour is close (492 vs 495 nm, 2.7 vs 3.5 ns) but
