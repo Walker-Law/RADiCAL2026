@@ -60,6 +60,76 @@ physically honest reproduction. Until this is done, treat `paperJ` (timing) and
 the planned `fig17` LY=3e-3 run (energy shape) as two DIAGNOSTIC configs, not a
 final result.
 
+## ★★ LIGHT YIELD IS A PREDICTION, NOT A KNOB (2026-07-22) — READ BEFORE TUNING
+
+Prompted by Walker asking "what is the most realistic LY value? why does it sound
+like we have to manually find it?" — he was right, and the answer reframes the
+whole timing comparison.
+
+**1. `RADICAL_LYSO_SCINT_SCALE` is a MONTE CARLO THINNING FACTOR, not physics.**
+Full LYSO yield is ~5e8 optical photons/event at 120 GeV — untrackable, so the
+sim thins. Setting scale=1e-2 does NOT mean "the detector has 1% light"; it means
+we track 1% of the photons and **must correct analytically**. The documented rule
+(already in this file) is: *the emission-jitter part of σ_t scales as √scale;
+geometric floors don't.* Tuning the scale until output matches the paper is
+fitting the answer — do not do it.
+
+**2. The sim already PREDICTS the light yield: ~50 npe/MeV.** Measured from
+`optical_scan_1000_paperJ` by undoing the thinning (`PhotonsWLS`/`TotalLYSO`/s):
+46–54 npe/MeV, stable across 25–150 GeV (a good self-consistency sign). It falls
+out of LYSO 33200 ph/MeV (datasheet) + the sim's own computed transport/trapping
++ MicroFJ-30035 PDE 36% (datasheet). Nothing tuned. NOTE: the "paper's ~25
+npe/MeV" figure that appears in older notes is **not in the paper** — the paper
+quotes no measured light yield (verified 2026-07-21). Don't calibrate to it.
+
+**3. This makes the `paperJ` "reproduction" SUSPECT.** At scale 1e-2 we detect
+**0.5 npe/MeV** vs the predicted real **~50** → we run **100× photon-starved**,
+so our photostatistics are √100 = **10× worse than reality**. The 247.9 ps/√E
+that matched the paper was obtained under artificially degraded statistics. If
+that stochastic term were pure photostatistics, extrapolating to true light gives
+247.9·√(1e-2) ≈ **25 ps/√E — 10× BELOW the paper's 256**. So either the paper's
+stochastic term is NOT photostatistics (i.e. it is shower-sampling, which is
+light-independent and would not extrapolate), or our light-collection model is
+~10× off. **The apparent agreement may be two errors cancelling.**
+
+**4. COMPOSITION BUG (found while designing the ladder): 70% of the timing light
+is the wrong population.** At paperJ, 150 GeV: `PhotonsScint`(cat1+2)=27486 vs
+`PhotonsWLS`(cat2)=8372 → self-scint (cat 1) is **70%** of the scint-only timing
+population. Cause: `RADICAL_LYSO_SCINT_SCALE` thins ONLY the LYSO→WLS chain
+(cat 2) while `RADICAL_SCINT_YIELD`=1.0 leaves DSB1 self-scintillation
+**unthinned**. Unthinned on both, WLS would be ~100× larger → reality is ~98%
+WLS / ~2% self-scint. So our headline timing observable is currently driven by a
+population that is negligible in the real device, and the two populations have
+different time profiles (self-scint prompt ~3.5 ns; WLS gated by LYSO's 36 ns).
+**Fix this before quoting any timing number as final.**
+
+### The scale ladder — the measurement that decides it (no tuning)
+
+`run_scale_ladder.sh` + `analysis/plot_scale_ladder.C` (added 2026-07-22).
+Decomposes the stochastic term into light-dependent and light-independent parts:
+
+    a²(f) = A²/f + B²      (LINEAR in x = 1/f: slope = A², intercept = B²)
+
+- `f` = coherent light multiplier, f=1 ≡ the paperJ config.
+- **Both yield knobs are scaled together** (`LYSO_SCINT_SCALE`=1e-2·f AND
+  `SCINT_YIELD`=1.0·f). Moving only one would change the light COMPOSITION as
+  well as the total (see item 4) and confound the fit. Everything else is pinned
+  to paperJ so f is the only variable; f=1 is re-run, not reused, so all points
+  share one binary.
+- Ladder: f = 0.1, 0.3, 1, 3 (30× lever). f=3 is the expensive point (~60M
+  photons/event at 150 GeV → `MAX_OPT_PHOTONS=80M`); drop it via
+  `RADICAL_LADDER_FACTORS="0.1 0.3 1"` if wall time is tight.
+
+**Decision rule:**
+- **B dominates** → the paper's 256 ps/√E is shower-SAMPLING physics, light yield
+  is nearly irrelevant to timing, and the paperJ agreement was essentially real.
+- **A/10 dominates** → extrapolation to true light gives ~25 ps/√E, 10× under the
+  paper ⇒ our light-collection model is the bug, and paperJ was a coincidence.
+
+Either outcome is a measured number rather than a fitted knob. Run:
+`setsid nohup bash run_scale_ladder.sh 1000 > dsb_ladder.log 2>&1 &` then
+`root -l -b -q 'analysis/plot_scale_ladder.C(1000)'`.
+
 ## CURRENT STATE (July 2026) — timing puzzle SOLVED, validation run in flight
 
 **UPDATE (July 8 2026) — data-matched estimators added for direct test-beam
