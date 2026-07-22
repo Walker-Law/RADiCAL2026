@@ -115,12 +115,40 @@ the *topology* (which corners get which capillary type, square vs hex) differs.
    isolated comment.
 2. **Wrong WLS material** — the filament is **BCF-92** (polystyrene, n=1.60,
    `WLSTIMECONSTANT 2.7 ns`, emission 492 nm), a Saint-Gobain commercial fiber,
-   not the paper's DSB1. Behaviour is close (492 vs 495 nm, 2.7 vs 3.5 ns) but
-   it is not the paper's material.
-3. LYSO 32000 ph/MeV / 41 ns (vs datasheet 33200 / 36 ns); quartz ABSLENGTH 2 m
-   (vs 5-10 m for fused silica). Minor.
-4. No test-beam line -> no MCP reference, so the paper's MCP-referenced timing
-   method cannot be reproduced there.
+   not the paper's DSB1 (peak 495nm, tau=3.5ns per paper p.2). Behaviour is close
+   (492 vs 495 nm, 2.7 vs 3.5 ns) but it is not the paper's material, and the
+   faster 2.7ns decay will make DURU's pulses systematically sharper/faster than
+   the real DSB1 response — the opposite direction of error from discrete_sims'
+   40ns LYSO overestimate, but still a real-vs-model gap worth flagging.
+3. **SiPM PDE = 100%, explicitly a placeholder** —
+   `sipmPDE = 1.00; // 100% efficiency: register every re-emitted photon`. DURU
+   knows this (their own comment calls it a placeholder spec), but it means any
+   DURU photon-count or sigma_t-vs-light-yield number is ~3x optimistic vs a
+   real Hamamatsu HDR2-class device (~30-36% PDE at 495nm, same ballpark as the
+   MicroFJ-30035-TSV 36% this repo uses). Worth flagging alongside the
+   BCF-92/DSB1 point since both push detected light and pulse sharpness in the
+   same "too good" direction.
+4. LYSO 32000 ph/MeV / 41 ns (vs paper-implied ~33200 / 36 ns datasheet values
+   this repo uses); quartz ABSLENGTH flat 2m (vs 5-10m here, more representative
+   of fused silica's real multi-meter transmission). Minor, doesn't change the
+   physics discipline (both repos correctly treat SCINTILLATIONYIELD as an
+   MC-thinning knob, not a claimed real yield).
+5. **Filament axial position is a judgment call, not settled** — DURU's
+   `showerMaxFirstLayer=8, showerMaxLastLayer=11` spans 4 plates (~15.1mm,
+   layers 8-11). The paper's own Fig.7 caption says the *real hardware*
+   filament was "optimized for earlier studies at Fermilab FTBF... where shower
+   max occurred in layers 8-10, adequate (although not optimized) for higher
+   energy showers which occur deeper... in layers 11-13, and will be corrected
+   in future work." I.e. the actual beam-test filament sat at a FIXED position
+   somewhere around layers 8-10, un-corrected, while the beam-test data spans
+   25-150 GeV (shower max deepening with energy). DURU's 8-11 span is a
+   defensible compromise, not an error — but it's not a literal reproduction of
+   either the FTBF-optimized position or the un-corrected higher-energy case.
+   Worth a clarifying question to THolm144/DURU authors rather than a bug report.
+6. No test-beam line -> no MCP reference, so the paper's MCP-referenced fixed-
+   threshold + DW/UP corner-mean timing method (confirmed above) cannot be
+   reproduced there; `SiPMHit` stores raw arrival/flight times with no
+   threshold, digitizer, or amplifier-jitter model at all.
 
 ## What discrete_sims gets wrong
 
