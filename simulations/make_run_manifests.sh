@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+# make_run_manifests.sh — document every simulation run directory.
+#
+# WHY PER-RUN, NOT PER-.log: a scan produces ~500 per-chunk logs
+# (log_E<E>_c<N>.log), one per parallel single-thread Geant4 process. They are
+# identical in kind — same binary, same config, differing only in RNG seed and
+# which slice of events they ran. Documenting each individually would be ~15,700
+# files carrying one run's worth of information. The meaningful unit is the RUN
+# DIRECTORY, so this writes one README.txt per run.
+#
+# Facts are EXTRACTED from the logs themselves (the "[RADiCAL] ..." config
+# echoes the binary prints at startup, Geant4 version, event counts, merge
+# records) rather than reconstructed from memory, so a manifest cannot drift
+# from what the run actually did.
+#
+# NOTE: build/ is gitignored, so these README.txt files are local only. The
+# durable, tracked record is simulations/<sim>/RUNS.md (generated alongside).
+#
+#   bash simulations/make_run_manifests.sh
+set -u
+cd "$(dirname "$0")" || exit 1
+SIMROOT="$(pwd)"
+
+# Human context for run tags we know the story behind. Anything not listed gets
+# a neutral description built from its extracted config.
+describe_tag() {
+  case "$1" in
+    *paperJ)        echo "PAPER-MATCHED TIMING RUN. Paper energy grid (25-150 GeV) + 4-capillary-mean estimator + DRS4 timebase + 50ps/channel amplifier jitter. Produced sigma_t = 247.9 ps/sqrt(E) (+) 18.7 ps vs paper 256 (+) 17.5. NOTE: later shown by the scale ladder to be ~90% photostatistics at 100x-thinned light, i.e. NOT a clean reproduction." ;;
+    *paperLY)       echo "FAILED LY-CALIBRATION RUN (kept as a negative result). Cut light 36x chasing '25 npe/MeV'; sigma_t blew up 15x to 3830 ps/sqrt(E) (+) 223 - pure counting jitter. Confirms the standing rule: do NOT chase the paper with global light-yield knobs." ;;
+    *_paper183)     echo "PAPER-FIDELITY GEOMETRY RUN: center EJ309 capillary REMOVED (paper: 5th hole unused) and corner capillaries extended to the paper's full 183 mm with SiPMs outside the housing. Compare against paperJ to isolate the geometry effect." ;;
+    *_paper)        echo "First run on the paper's own energy grid (25/50/75/100/125/150 GeV), before amplifier jitter and the beam-core cut were added." ;;
+    *lad0.1|*lad0.3|*lad1|*lad3)
+                    echo "PHOTOSTATISTICS SCALE-LADDER point. Both light knobs (LYSO_SCINT_SCALE and SCINT_YIELD) scaled coherently by f so total light varies but composition does not. Used to fit a^2(f)=A^2/f+B^2, separating photostatistics from the light-independent shower/geometric floor. Result: A=233.6, B=93.7 ps/sqrt(E)." ;;
+    *fig17)         echo "Fig-17 ENERGY-SHAPE run: low light yield + tight beam-core COG cut, aimed at the paper's shower-max energy resolution (52.04%/sqrt(E) (+) 9.31%). Timing from this config is NOT meaningful (photon-starved)." ;;
+    *hole_scan*)    echo "HOLE-DIAMETER SCAN (RADiCALsimHoleScan): tile hole diameter swept 1.2-2.0 mm at fixed 50 GeV, all five capillaries scaling to fill their hole. Observable = detected light at the capillary ends." ;;
+    *_ly*)          echo "Fig-8 LIGHT-YIELD SWEEP point (RADiCALsimFig8): one LYSO_SCINT_SCALE setting at fixed 50 GeV, used to build timing resolution vs detected light yield." ;;
+    *yield_sweep*|*_ls*)
+                    echo "LYSO-yield sweep point. NOTE: points above scale 3e-3 in the original sweep were INVALIDATED by the 4M/event photon budget silently truncating (see CLAUDE.md YIELD-SWEEP POSTMORTEM)." ;;
+    *ck0.*)         echo "Cherenkov-thinning (RADICAL_QUARTZ_CHER_KEEP) test point, restoring the real ~1000:1 scint:Cherenkov ratio at low cost." ;;
+    *microfj)       echo "Run with the corrected SiPM: onsemi MicroFJ-30035-TSV, 5676 microcells (earlier runs used a guessed larger pixel count)." ;;
+    *hiyield|*lysowls5x|*lysowls)
+                    echo "LYSO->DSB1 WLS-chain run at raised LYSO scintillation yield (optically active LYSO feeding the DSB1 425nm absorption band)." ;;
+    *preLYSOoptical) echo "ARCHIVE: predates optically-active LYSO. The WLS chain was inert, so only Cherenkov + DSB1 self-scintillation produced light. Not comparable to later runs." ;;
+    *preBudgetFix)  echo "ARCHIVE: predates the photon-budget fix; affected by silent MAX_OPT_PHOTONS truncation. Treat as invalid." ;;
+    *faithful2pct)  echo "Run at 2% light scaling intended as a 'faithful' configuration at the time." ;;
+    *hollow2pct)    echo "ARCHIVE/INVALID: taken with the HOLLOW (air-bore) capillary model, which broke total internal reflection in the light guide. Superseded by the solid-quartz geometry." ;;
+    *cherreal)      echo "Run with Cherenkov at the realistic rate." ;;
+    *)              echo "Simulation run (see extracted configuration below)." ;;
+  esac
+}
+
+TOTAL=0
+for SIM in RADiCALsim*/; do
+  SIM="${SIM%/}"
+  [ -d "$SIM/build" ] || continue
+  RUNS_MD="$SIM/RUNS.md"
+
+  {
+    echo "# $SIM — run inventory"
+    echo ""
+    echo "Auto-generated by \`simulations/make_run_manifests.sh\` on $(date '+%Y-%m-%d %H:%M')."
+    echo "Configuration below is EXTRACTED from each run's own logs, not recalled."
+    echo ""
+    echo "**Why there is no per-.log file:** each run holds ~500 \`log_E<E>_c<N>.log\`"
+    echo "chunk logs — one per parallel single-thread Geant4 process, identical in kind"
+    echo "and differing only in RNG seed and event slice. The run directory is the"
+    echo "meaningful unit, so each gets one entry here and one \`README.txt\` in place."
+    echo ""
+  } > "$RUNS_MD"
+
+  # every directory under this sim's build/ that contains logs
+  find "$SIM/build" -name "*.log" | sed 's|/[^/]*$||' | sort -u | while read -r RUNDIR; do
+    TAG="$(basename "$RUNDIR")"
+    SAMPLE="$(find "$RUNDIR" -name 'log_*_c0.log' 2>/dev/null | head -1)"
+    [ -n "$SAMPLE" ] || SAMPLE="$(find "$RUNDIR" -name '*.log' 2>/dev/null | head -1)"
+
+    NCHUNK=$(find "$RUNDIR" -name 'log_*_c*.log' 2>/dev/null | wc -l | tr -d ' ')
+    NMERGE=$(find "$RUNDIR" -name '*merge*.log' 2>/dev/null | wc -l | tr -d ' ')
+    NROOT=$(find "$RUNDIR" -maxdepth 1 -name '*.root' 2>/dev/null | wc -l | tr -d ' ')
+    # energies / hole diameters actually present
+    POINTS=$(find "$RUNDIR" -name 'log_*_c*.log' 2>/dev/null | sed 's|.*/log_||;s|_c[0-9]*\.log||' | sort -uV | tr '\n' ' ')
+    G4VER=$(grep -m1 -h "Geant4 version" "$SAMPLE" 2>/dev/null | sed 's/^ *//')
+    EVPER=$(grep -m1 -h "Number of events processed" "$SAMPLE" 2>/dev/null | sed 's/^ *//')
+    MTIME=$(stat -f '%Sm' -t '%Y-%m-%d %H:%M' "$SAMPLE" 2>/dev/null)
+    CFG=$(grep -h "^\[RADiCAL\]" "$SAMPLE" 2>/dev/null | sort -u)
+
+    {
+      echo "RUN: $TAG"
+      echo "================================================================"
+      echo ""
+      echo "WHAT THIS IS"
+      echo "------------"
+      describe_tag "$TAG" | fold -s -w 76
+      echo ""
+      echo "WHEN"
+      echo "----"
+      echo "  logs written: ${MTIME:-unknown}"
+      echo ""
+      echo "CONTENTS"
+      echo "--------"
+      echo "  scan points present : ${POINTS:-none}"
+      echo "  per-chunk logs      : $NCHUNK   (log_*_c<N>.log — one per parallel"
+      echo "                        single-thread Geant4 process; same binary and"
+      echo "                        config, differing only by RNG seed + event slice)"
+      echo "  merge logs          : $NMERGE   (hadd combining the chunk ROOT files)"
+      echo "  merged ROOT files   : $NROOT"
+      echo ""
+      echo "CONFIGURATION (extracted from this run's own logs)"
+      echo "--------------------------------------------------"
+      if [ -n "$CFG" ]; then echo "$CFG" | sed 's/^/  /'; else echo "  (no [RADiCAL] config echoes found)"; fi
+      [ -n "$G4VER" ] && echo "  $G4VER"
+      [ -n "$EVPER" ] && echo "  per-chunk $EVPER"
+      echo ""
+      echo "HOW IT WAS PRODUCED"
+      echo "-------------------"
+      case "$TAG" in
+        hole_scan*) echo "  bash run_hole_scan.sh <NEVT>   (sweeps RADICAL_HOLE_DIAM_MM)" ;;
+        *_ly*)      echo "  bash run_fig8_sweep.sh <NEVT>  (sweeps RADICAL_LYSO_SCINT_SCALE)" ;;
+        *lad*)      echo "  bash run_scale_ladder.sh <NEVT> (sweeps the coherent light factor f)" ;;
+        *)          echo "  bash run_scan.sh <NEVT> 1      (one process per energy, chunked" ;;
+      esac
+      echo "  Chunks run in /tmp then hadd-merge back here. Beam energy is set per"
+      echo "  chunk via RADICAL_BEAM_ENERGY_GEV; physics knobs via the RADICAL_*"
+      echo "  environment variables echoed above."
+      echo ""
+      echo "GEOMETRY"
+      echo "--------"
+      echo "  See ../../CLAUDE.md for the authoritative geometry description."
+      echo "  IMPORTANT: runs before 2026-07-22 use the PRE-183mm geometry (capillaries"
+      echo "  flush with the 124.88 mm stack, and a center EJ309 capillary present)."
+      echo "  Runs tagged paper183 and later use the paper-fidelity geometry (183 mm"
+      echo "  capillaries protruding to external SiPMs, NO center capillary)."
+      echo "  Do not mix the two in one comparison."
+    } > "$RUNDIR/README.txt"
+
+    # append a compact entry to the tracked RUNS.md
+    {
+      echo "## \`$TAG\`"
+      echo ""
+      echo "- **What:** $(describe_tag "$TAG")"
+      echo "- **When:** ${MTIME:-unknown}"
+      echo "- **Points:** ${POINTS:-none}"
+      echo "- **Files:** $NCHUNK chunk logs, $NMERGE merge logs, $NROOT merged ROOT"
+      if [ -n "$CFG" ]; then
+        echo "- **Config (from logs):**"
+        echo "$CFG" | sed 's/^/    - `/;s/$/`/'
+      fi
+      echo ""
+    } >> "$RUNS_MD"
+
+    echo "  wrote $RUNDIR/README.txt"
+  done
+  echo "  -> $RUNS_MD"
+done
