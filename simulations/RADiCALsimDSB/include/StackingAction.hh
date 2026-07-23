@@ -27,9 +27,17 @@ public:
     G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track) override;
     void PrepareNewEvent() override;
 
+    // WLS photons EMITTED in the fibers this event (OpWLS creations, counted
+    // BEFORE any budget kill). With H1[30] PhotonsWLS (detected) this measures
+    // the sim's end-to-end capture x transport x PDE fraction — checkable
+    // against the physical TIR trapping limit (~5-6% per fiber end for n~1.5).
+    static G4int  WlsEmitted()      { return fgWlsEmitted; }
+    static void   ResetWlsEmitted() { fgWlsEmitted = 0; }
+
 private:
     G4int fNopt = 0;
     static G4int MaxOpt();
+    static G4ThreadLocal G4int fgWlsEmitted;
 };
 
 #endif
