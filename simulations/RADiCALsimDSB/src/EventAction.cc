@@ -100,13 +100,13 @@ void EventAction::BeginOfEventAction(const G4Event*) {
 //     photons land on already-fired cells with prob 1−exp(−Nfired/Npix).
 //     Optional recovery: RADICAL_SIPM_TAU_REC_NS (default 0 = none).
 //  3. SPR(t) = (1−e^{−t/τr})·e^{−t/τf}, τr=1, τf=3 ns, peak-normalized,
-//     × RADICAL_SPE_MV (high-gain mV per true pe, default 0.30 — tune so the
+//     × RADICAL_SPE_MV (high-gain mV per true pe, default 0.25 — tune so the
 //     H1[39] clipped fraction matches the DATA anchors: 3.8% @25, 74% @150 GeV).
 //  4. CR high-pass (AC-coupled fast amplifier), τd = RADICAL_AMP_TAU_D_NS
-//     (default 2.0 ns): numerically tuned so the summed WLS-light pulse FWHM
-//     matches the MEASURED 8.3 ns (unshaped it is ~38 ns with 36 ns LYSO
-//     gating — the old path could never reproduce the data's pulse shape).
-//     H1[23] PulseFWHM validates this against the data.
+//     (default 12 ns): EMPIRICALLY tuned on 25 GeV smoke runs so the summed
+//     WLS-light pulse FWHM matches the MEASURED 8.3 ns (τd 2→4.7 ns, 5→6.4,
+//     8→7.4, 12→8.55; unshaped it is ~38 ns with 36 ns LYSO gating — the old
+//     path could never reproduce the data's pulse shape). H1[23] validates.
 //  5. white noise, RADICAL_ELEC_NOISE_MV per 0.2 ns sample (default 0.5 mV).
 //  6. DRS4 digitization: clip at RADICAL_DRS4_VMAX_MV (default 830 mV, the
 //     rail observed in the test-beam data), quantize to RADICAL_DRS4_BITS
