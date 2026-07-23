@@ -48,7 +48,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
                 fEventAction->RecordPhoton(postVol->GetCopyNo(),
                                            pn == "PD_Upstream",
                                            step->GetPostStepPoint()->GetGlobalTime(),
-                                           cat);
+                                           cat,
+                                           track->GetTotalEnergy() / CLHEP::eV);
                 track->SetTrackStatus(fStopAndKill);
                 return;
             }
