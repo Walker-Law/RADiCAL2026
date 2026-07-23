@@ -37,6 +37,8 @@ G4int StackingAction::MaxOpt() {
     return v;
 }
 
+G4ThreadLocal G4int StackingAction::fgWlsEmitted = 0;
+
 void StackingAction::PrepareNewEvent() { fNopt = 0; }
 
 G4ClassificationOfNewTrack
@@ -45,6 +47,8 @@ StackingAction::ClassifyNewTrack(const G4Track* track) {
         // Kill decisions FIRST so killed photons don't consume the budget
         // (previously LYSO Cherenkov ate ~15% of the 4M budget at 150 GeV).
         const G4VProcess* cp = track->GetCreatorProcess();
+        // capture-fraction denominator: every OpWLS re-emission, pre-kill
+        if (cp && cp->GetProcessName() == "OpWLS") ++fgWlsEmitted;
         if (cp && cp->GetProcessName() == "Cerenkov") {
             const G4LogicalVolume* lv = track->GetLogicalVolumeAtVertex();
             if (!keepLysoCher() && lv && lv->GetName() == "LYSO") return fKill;
