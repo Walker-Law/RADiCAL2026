@@ -421,6 +421,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     double zeroHGE[N]={0};
     TGraphErrors* gtHGE=new TGraphErrors(nGoodHGE,EHGE,tResHGE,zeroHGE,tResHGEErr);
     gtHGE->SetName("TimingResolutionHighGainEbinned");
+    gtHGE->SetTitle("Timing resolution, high-gain (measured-energy binned);E_{beam} (GeV);#sigma_{t} (ps)");
     gtHGE->SetMarkerStyle(29); gtHGE->SetMarkerColor(kOrange+2); gtHGE->SetLineColor(kOrange+2);
     gtHGE->SetMarkerSize(1.8);
     // Fit from 15 GeV up: below that the E-binned estimator is still strongly
