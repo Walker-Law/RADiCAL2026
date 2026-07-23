@@ -139,8 +139,8 @@ static G4double buildWfmMV(const std::vector<G4double>& tns,
     static G4ThreadLocal G4double speMV = -1., tauD = 0., noise = 0.,
                                   vmax = 0., lsb = 0., npix = 0., tauRec = 0.;
     if (speMV < 0.) {
-        speMV  = envD("RADICAL_SPE_MV", 0.30);
-        tauD   = envD("RADICAL_AMP_TAU_D_NS", 2.0);
+        speMV  = envD("RADICAL_SPE_MV", 0.25);
+        tauD   = envD("RADICAL_AMP_TAU_D_NS", 12.0);
         noise  = envD("RADICAL_ELEC_NOISE_MV", 0.5);
         vmax   = envD("RADICAL_DRS4_VMAX_MV", 830.);
         const G4double bits = envD("RADICAL_DRS4_BITS", 12.);
