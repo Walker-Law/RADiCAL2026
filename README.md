@@ -131,6 +131,7 @@ distribution a σ/E number was drawn from.
 | `RADICAL_EJ309_SCINT_SCALE` | (HoleScan only) Scale EJ309 scintillation yield (center capillary) |
 | `RADICAL_QUARTZ_CHER_KEEP` | Binomial-thin quartz Cherenkov (restore real scint:Cher ratio) |
 | `RADICAL_SIPM_NPIX` | SiPM microcell count (default 5676 = MicroFJ-30035) |
+| `RADICAL_SIPM_QE` | Flat SiPM PDE override; unset (default) = MicroFJ-30035 PDE(λ) curve. `0.36` reproduces pre-2026-07-22 runs |
 | `RADICAL_SPTR_PS` | SiPM single-photon time resolution RMS (ps) |
 | `RADICAL_OPT_MAXSTEP` / `RADICAL_OPT_TMAX` | Optical-photon step / time caps (tractability) |
 | `RADICAL_MAX_OPT_PHOTONS` | Per-event optical-photon budget cap (raise for bright/large-hole events) |
