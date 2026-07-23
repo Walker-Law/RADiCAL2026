@@ -43,6 +43,19 @@ if [ -n "$G4CONFIG" ]; then
         echo "WARNING: G4ENSDFSTATEDATA unset after --datasets parse." >&2
         echo "         Run '$G4CONFIG --datasets' and check the column format." >&2
     fi
+    # The install can be MOVED after build (2026-07-22: ~/geant4-install ->
+    # ~/Research/geant4-install): --datasets paths are ABSOLUTE, baked at build
+    # time, and keep pointing at the old prefix -> "ENSDFSTATE.dat is not
+    # found". If the parsed path doesn't resolve, remap every G4*DATA var onto
+    # THIS geant4-config's actual prefix (dataset dir names are unchanged).
+    if [ ! -f "${G4ENSDFSTATEDATA:-/nonexistent}/ENSDFSTATE.dat" ]; then
+        G4DATA="$G4INSTALL/share/Geant4/data"
+        for _v in $(env | sed -n 's/^\(G4[A-Z]*DATA\)=.*/\1/p'); do
+            _old=$(eval echo "\$$_v")
+            export "$_v"="$G4DATA/$(basename "$_old")"
+        done
+        echo "Remapped stale --datasets paths onto $G4DATA"
+    fi
     echo "Geant4 environment loaded via $G4CONFIG from $G4INSTALL"
 else
     # Fallback: hardcoded local Mac installation
