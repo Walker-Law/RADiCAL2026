@@ -334,6 +334,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     double zeroS[N]={0};
     TGraphErrors* gtS=new TGraphErrors(nGoodS,ES,tResS,zeroS,tResSErr);
     gtS->SetName("TimingResolutionScint");
+    gtS->SetTitle("Timing resolution, scint-only (DW #minus UP);E_{beam} (GeV);#sigma_{t} (ps)");
     gtS->SetMarkerStyle(20); gtS->SetMarkerColor(kAzure+2); gtS->SetLineColor(kAzure+2);
     gtS->SetMarkerSize(1.3);
     ftS=new TF1("ftS","sqrt([0]*[0]/x+[1]*[1])",4,130);
