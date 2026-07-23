@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 # PHOTOSTATISTICS SCALE LADDER
 #
+# ── DEPRECATED (2026-07-23) — use run_ladder_paperR.sh instead ───────────────
+# This ladder is based on the paperJ config, whose light COMPOSITION was wrong
+# (70% DSB1 self-scint vs ~2% in reality: it scaled LYSO_SCINT_SCALE and
+# SCINT_YIELD from an incoherent base) and which predates the waveform-realism
+# chain (its RADICAL_ELEC_JITTER_PS=50 would now DOUBLE-COUNT amplifier noise).
+# Kept only as the provenance record of the 2026-07-22 lad0.1/0.3/1 runs.
+# ─────────────────────────────────────────────────────────────────────────────
+#
 # Purpose: decompose the timing stochastic term into a light-DEPENDENT
 # (photostatistics) part and a light-INDEPENDENT (shower-development /
 # geometric) part, so sigma_t can be extrapolated ANALYTICALLY to the true
