@@ -132,6 +132,13 @@ distribution a σ/E number was drawn from.
 | `RADICAL_QUARTZ_CHER_KEEP` | Binomial-thin quartz Cherenkov (restore real scint:Cher ratio) |
 | `RADICAL_SIPM_NPIX` | SiPM microcell count (default 5676 = MicroFJ-30035) |
 | `RADICAL_SIPM_QE` | Flat SiPM PDE override; unset (default) = MicroFJ-30035 PDE(λ) curve. `0.36` reproduces pre-2026-07-22 runs |
+| `RADICAL_WFM_REALISM` | `0` = legacy ideal pulse path (pre-2026-07-23). Default on: pulses built in mV with gain, microcell saturation, CR shaping, noise, DRS4 clip+quantization before the 5% CFD |
+| `RADICAL_SPE_MV` | High-gain mV per true photoelectron (waveform gain). Tune so H1[39] clipped fraction matches data (3.8% @25 GeV, 74% @150 GeV) |
+| `RADICAL_AMP_TAU_D_NS` | CR high-pass (AC-coupling) time constant; default 12 ns reproduces the measured 8.3 ns pulse FWHM |
+| `RADICAL_ELEC_NOISE_MV` | White noise per 0.2 ns sample (default 0.5 mV) — the physical noise-over-slope timing term |
+| `RADICAL_DRS4_VMAX_MV` / `RADICAL_DRS4_BITS` | Digitizer rail (830 mV) and quantization bits (12) |
+| `RADICAL_SIPM_TAU_REC_NS` | SiPM microcell recovery time for the saturation model (default 0 = no recovery) |
+| `RADICAL_WFM_PE_SCALE` | True-pe per detected photon override (default = 1/`RADICAL_LYSO_SCINT_SCALE`) |
 | `RADICAL_SPTR_PS` | SiPM single-photon time resolution RMS (ps) |
 | `RADICAL_OPT_MAXSTEP` / `RADICAL_OPT_TMAX` | Optical-photon step / time caps (tractability) |
 | `RADICAL_MAX_OPT_PHOTONS` | Per-event optical-photon budget cap (raise for bright/large-hole events) |
