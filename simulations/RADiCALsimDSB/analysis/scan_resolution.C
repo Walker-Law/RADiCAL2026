@@ -527,6 +527,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       double zeroPE[N]={0};
       gPE=new TGraphErrors(nGoodPE,EPE,peRes,zeroPE,peResErr);
       gPE->SetName("ShowerMaxResolution_PhotonCount");
+      gPE->SetTitle("Shower-max energy resolution (photon count);E_{beam} (GeV);#sigma/mean (%)");
       gPE->SetMarkerStyle(21); gPE->SetMarkerColor(kMagenta+1); gPE->SetLineColor(kMagenta+1);
       gPE->SetMarkerSize(1.3);
       fpe=new TF1("fpe","sqrt([0]*[0]+[1]*[1]/x+[2]*[2]/(x*x))",4,130);
