@@ -49,16 +49,40 @@ public:
     void AddPbGlassEdep(G4double edep) { fEdepPbGlass += edep; }
 
     // ── Optical-photon timing readout ───────────────────────────────────────
-    // Photon detection efficiency of the end SiPMs. 0.36 = onsemi MicroFJ-30035
-    // datasheet PDE at DSB1's 495 nm emission (Fig 1: 50% peak at 420 nm, ~36%
-    // at 495 nm at +6 V overvoltage; ~27% at +2.5 V OV — RADiCAL runs high OV
-    // for timing). cat = creation-process category: 0 Cherenkov, 1 fiber
-    // self-scint, 2 OpWLS (LYSO light re-emitted by DSB1 — realistic signal
-    // path). "Scint" population = cat 1+2 (non-Cherenkov); "WLS" = cat 2.
-    static constexpr G4double kQE = 0.36;
-    void RecordPhoton(G4int corner, bool isUpstream, G4double t0, G4int cat) {
+    // Photon detection efficiency of the end SiPMs: onsemi MicroFJ-30035
+    // PDE(λ) at +6 V overvoltage (RADiCAL runs high OV for timing), digitized
+    // from the datasheet PDE-vs-wavelength figure and anchored at the two
+    // values previously used here: 50% peak at 420 nm, 36% at DSB1's 495 nm
+    // emission. Wavelength-dependent (2026-07-22, replacing flat kQE=0.36): a
+    // real SiPM detects whatever light arrives per its PDE(λ) — no flat number
+    // is right for both the 495 nm WLS light and the blue-weighted (1/λ²)
+    // Cherenkov. Linear interpolation, clamped outside 300–800 nm.
+    // RADICAL_SIPM_QE=<v> overrides with a flat value (0.36 reproduces all
+    // runs before 2026-07-22).
+    // cat = creation-process category: 0 Cherenkov, 1 fiber self-scint,
+    // 2 OpWLS (LYSO light re-emitted by DSB1 — realistic signal path).
+    // "Scint" population = cat 1+2 (non-Cherenkov); "WLS" = cat 2.
+    static G4double sipmPDE(G4double phEeV) {
+        static G4ThreadLocal G4double flat = -2.;
+        if (flat < -1.) { const char* q = std::getenv("RADICAL_SIPM_QE");
+                          flat = q ? std::atof(q) : -1.; }
+        if (flat >= 0.) return flat;
+        static const G4double lam[] = {300, 320, 350, 380, 400, 420, 450, 470,
+                                       495, 520, 550, 600, 650, 700, 750, 800};
+        static const G4double pde[] = {0.14, 0.22, 0.33, 0.44, 0.48, 0.50, 0.46, 0.42,
+                                       0.36, 0.32, 0.27, 0.20, 0.15, 0.11, 0.08, 0.05};
+        constexpr G4int n = 16;
+        const G4double l = 1239.84193 / phEeV;        // eV -> nm
+        if (l <= lam[0])     return pde[0];
+        if (l >= lam[n - 1]) return pde[n - 1];
+        G4int i = 1; while (lam[i] < l) ++i;
+        const G4double f = (l - lam[i - 1]) / (lam[i] - lam[i - 1]);
+        return pde[i - 1] + f * (pde[i] - pde[i - 1]);
+    }
+    void RecordPhoton(G4int corner, bool isUpstream, G4double t0, G4int cat,
+                      G4double phEeV = 2.505 /* 495 nm if caller omits */) {
         if (corner < 0 || corner >= 4) return;
-        if (G4UniformRand() > kQE) return;            // apply QE
+        if (G4UniformRand() > sipmPDE(phEeV)) return; // apply PDE(lambda)
         // Single-Photon Time Resolution (SPTR): a real SiPM adds ~Gaussian jitter
         // to EACH detected photon's arrival time (avalanche transit-time spread,
         // ~80-150 ps FWHM for HDR2-class devices). Absent, our timing was
