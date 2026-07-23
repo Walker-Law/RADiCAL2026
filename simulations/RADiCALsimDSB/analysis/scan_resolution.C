@@ -407,6 +407,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     double zeroHG[N]={0};
     TGraphErrors* gtHG=new TGraphErrors(nGoodHG,EHG,tResHG,zeroHG,tResHGErr);
     gtHG->SetName("TimingResolutionHighGain");
+    gtHG->SetTitle("Timing resolution, high-gain leading edge;E_{beam} (GeV);#sigma_{t} (ps)");
     gtHG->SetMarkerStyle(33); gtHG->SetMarkerColor(kOrange+7); gtHG->SetLineColor(kOrange+7);
     gtHG->SetMarkerSize(1.7);
     ftHG=new TF1("ftHG","sqrt([0]*[0]/x+[1]*[1])",4,130);
