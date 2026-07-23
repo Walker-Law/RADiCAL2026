@@ -60,6 +60,45 @@ physically honest reproduction. Until this is done, treat `paperJ` (timing) and
 the planned `fig17` LY=3e-3 run (energy shape) as two DIAGNOSTIC configs, not a
 final result.
 
+## ★ DECISIONS LOCKED (2026-07-22, per Walker) + REALISTIC-COMPOSITION RUN `paperR`
+
+Walker's rulings on the reproduce-the-paper option list — do not re-litigate:
+- **Keep the 5% CFD estimator.** No switch to the paper's fixed absolute
+  threshold unless it becomes an obvious problem later.
+- **No origin-gated headline estimators.** A real SiPM detects whatever light
+  arrives, weighted by its PDE(lambda) — it cannot tag photon provenance. So the
+  headline is the ALL-light estimator, and realism must come from making the
+  light that ARRIVES realistic, not from gating detection.
+- **Keep MicroFJ-30035** (not Hamamatsu HDR2) for now.
+- Hole-wall TIR back into LYSO: believed fine as modeled (dropped).
+- Fused rod-joint losses: negligible for our purposes (dropped).
+- No email to the collaboration asking for measured npe — they don't know it
+  with certainty either.
+- Stay at 1000 evt/E for speed (error bars understood: ±2σ core fit keeps
+  ~37% effective statistics; COG cut keeps 27% of events for shower-max).
+
+Two code changes implement the "realistic light" directive:
+1. **PDE(lambda) replaces flat kQE=0.36** (`EventAction.hh::sipmPDE`,
+   photon energy now passed from SteppingAction). MicroFJ-30035 curve digitized
+   from the datasheet, anchored at 50% @ 420 nm peak / 36% @ 495 nm (the two
+   values the old comment already cited). Blue light (LYSO-direct, Cherenkov)
+   now detected at up to 50%, red tail less. `RADICAL_SIPM_QE=0.36` restores
+   the old flat behavior for reproducing pre-2026-07-22 runs.
+2. **`TimingResolution_4cAllDRS4`** added to `scan_resolution.C` — fits the
+   ALL-light + electronics histogram `DeltaT_CFD_4c_DRS4` that was filled but
+   never analyzed. Baseline on paper183 (WRONG mix, see below):
+   a = 170.5 ± 5.4, b = 10.02 ± 1.02 (chi2/ndf 12.2/4).
+
+**The `paperR` run — realistic composition.** The composition bug (70% of scint
+light = DSB1 self-scint, ~2% in reality) is a THINNING ASYMMETRY: LYSO chain
+x1e-2, Cherenkov x1e-2 (KEEP=0.01), but self-scint x1 (unthinned). Fix = thin
+all three coherently: add `RADICAL_SCINT_YIELD=0.01` to the paper183 config.
+Then the all-light estimator sees the physical mix at 100x-thinned intensity,
+and s (the coherent thinning) is a clean single light-lever on the NEW geometry
+— which also de-confounds the ladder (B=43.5 was measured across a geometry
+change). paperR vs paper183 differs by (self-scint thinning + PDE(lambda))
+only; geometry identical.
+
 ## ★★★ paper183 RESULT (2026-07-22) — the ladder's missing point, and the gap to the paper WIDENS
 
 Run `optical_scan_1000_paper183`: paper-fidelity geometry (183 mm rods, NO center
