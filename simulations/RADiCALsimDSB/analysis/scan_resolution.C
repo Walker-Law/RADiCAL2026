@@ -378,6 +378,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     double zero4a[N]={0};
     TGraphErrors* gt4a=new TGraphErrors(nGood4a,E4a,tRes4a,zero4a,tRes4aErr);
     gt4a->SetName("TimingResolution_4cAllDRS4");
+    gt4a->SetTitle("Timing resolution, 4-cap all-light + DRS4 (headline);E_{beam} (GeV);#sigma_{t} (ps)");
     gt4a->SetMarkerStyle(21); gt4a->SetMarkerColor(kAzure+2); gt4a->SetLineColor(kAzure+2);
     gt4a->SetMarkerSize(1.3);
     ft4a=new TF1("ft4a","sqrt([0]*[0]/x+[1]*[1])",20,160);
