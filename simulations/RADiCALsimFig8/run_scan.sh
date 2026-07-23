@@ -151,31 +151,33 @@ echo "[$(date '+%H:%M:%S')] $TOTAL_CHUNKS chunks launched ($EVTARGET events tota
 monitor() {
     while true; do
         sleep 30
-        local done=0 parts=""
+        # Progress from COMPLETED chunk files only — the one reliable signal.
+        # (Do NOT count "--> Event N" log lines: Geant4 prints "Event 0 starts"
+        #  ONCE per chunk at launch, so the old grep x10 read ~81% before a
+        #  single event had finished.) Chunks are ~equal wall-time by the
+        #  cost-weighted split, so completed-chunk fraction tracks real progress;
+        #  events-done = completed chunks x events/chunk is exact.
+        local cdone=0 evdone=0 parts=""
         for E in "${ENERGIES[@]}"; do
             [ -f "$OUTDIR/optical_E${E}GeV.root" ] && continue
-            local n
-            n=$(ls tmprun_${TAG}_E${E}_c*.root 2>/dev/null | wc -l | tr -d ' ')
-            done=$(( done + n ))
-            parts="$parts ${E}:${n}"
+            local c n cd
+            c=$(chunksFor "$E"); n=$(( (NEVT + c - 1) / c ))
+            cd=$(ls tmprun_${TAG}_E${E}_c*.root 2>/dev/null | wc -l | tr -d ' ')
+            cdone=$(( cdone + cd ))
+            evdone=$(( evdone + cd * n ))
+            parts="$parts ${E}:${cd}/${c}"
         done
-        # Event-level progress: each chunk logs a "--> Event N" line every 10
-        # events (/run/printProgress 10), so ~10 x (line count) events are done.
-        # This gives a live ETA long before any whole chunk completes.
-        local ev
-        ev=$(grep -sc -- "--> Event" "$OUTDIR"/log_E*_c*.log 2>/dev/null \
-             | awk -F: '{s+=$NF} END{print (s+0)*10}')
         local elapsed=$(( $(date +%s) - START_T ))
-        local pct=0
-        [ "$EVTARGET" -gt 0 ] && pct=$(( ev * 100 / EVTARGET ))
-        [ "$pct" -gt 100 ] && pct=100
-        local eta="--"
-        if [ "$ev" -gt 0 ] && [ "$ev" -lt "$EVTARGET" ]; then
-            local rem=$(( elapsed * (EVTARGET - ev) / ev ))
-            eta=$(printf '%dh%02dm' $(( rem/3600 )) $(( (rem%3600)/60 )))
+        local pct=0 eta="--"
+        if [ "$TOTAL_CHUNKS" -gt 0 ]; then
+            pct=$(( cdone * 100 / TOTAL_CHUNKS ))
+            if [ "$cdone" -gt 0 ] && [ "$cdone" -lt "$TOTAL_CHUNKS" ]; then
+                local rem=$(( elapsed * (TOTAL_CHUNKS - cdone) / cdone ))
+                eta=$(printf '%dh%02dm' $(( rem/3600 )) $(( (rem%3600)/60 )))
+            fi
         fi
-        printf "[%s] %3d%% (~%d/%d events, %d/%d chunks)  elapsed %dh%02dm  ETA %s | chunks done:%s\n" \
-            "$(date '+%H:%M:%S')" "$pct" "$ev" "$EVTARGET" "$done" "$TOTAL_CHUNKS" \
+        printf "[%s] %3d%% (%d/%d chunks, %d/%d evt done)  elapsed %dh%02dm  ETA %s | done:%s\n" \
+            "$(date '+%H:%M:%S')" "$pct" "$cdone" "$TOTAL_CHUNKS" "$evdone" "$EVTARGET" \
             $(( elapsed/3600 )) $(( (elapsed%3600)/60 )) "$eta" "$parts"
     done
 }
