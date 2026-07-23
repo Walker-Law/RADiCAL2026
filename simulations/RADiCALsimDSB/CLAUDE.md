@@ -60,6 +60,55 @@ physically honest reproduction. Until this is done, treat `paperJ` (timing) and
 the planned `fig17` LY=3e-3 run (energy shape) as two DIAGNOSTIC configs, not a
 final result.
 
+## ★★★ WAVEFORM-REALISM CHAIN (2026-07-23) — photons -> mV -> noise -> DRS4 -> CFD
+
+The timing estimators no longer run on idealized photon times. `pulseCFD()` /
+`leadingEdgeFixed()` (EventAction.cc) now build each SiPM channel's pulse in
+PHYSICAL mV at TRUE-light amplitude scale and digitize it before the 5% CFD —
+the same processing the test-beam data received. `RADICAL_WFM_REALISM=0`
+restores the legacy path (how everything before 2026-07-23 ran).
+
+The chain (all env-tunable):
+1. Each detected (thinned) photon carries peScale = 1/LYSO_SCINT_SCALE true pe
+   (override `RADICAL_WFM_PE_SCALE`) -> noise/saturation/quantization enter at
+   REAL relative size; only photon granularity remains a thinning artifact
+   (exactly what the scale ladder extrapolates away).
+2. Time-ordered SiPM microcell saturation (`RADICAL_SIPM_NPIX`=5676, optional
+   recovery `RADICAL_SIPM_TAU_REC_NS`, default 0). NOTE: at the predicted
+   ~90 npe/MeV true light, 25 GeV puts ~33k pe on 5676 cells — heavily
+   saturated. **The data's LINEAR E_meas vs E (paper Fig 17-left) is therefore
+   IN TENSION with our light prediction by ~1-2 orders of magnitude — an
+   independent clue the sim over-collects light** (see capture fraction below).
+3. SPR per pe x `RADICAL_SPE_MV` (default 0.25 mV/pe, high-gain).
+4. CR high-pass (AC-coupled amp), `RADICAL_AMP_TAU_D_NS` (default 12):
+   EMPIRICALLY tuned so the summed pulse FWHM matches the DATA's 8.3 ns
+   (smoke: tauD 2->4.7ns, 5->6.4, 8->7.4, 12->8.55). Unshaped the WLS pulse is
+   ~38 ns wide (LYSO 36 ns gating) — the old path could never match the data's
+   pulse shape; H1[23] PulseFWHM validates.
+5. White noise `RADICAL_ELEC_NOISE_MV` (default 0.5 mV/sample) -> the real
+   noise-over-slope timing term now exists. `RADICAL_ELEC_JITTER_PS` (ad-hoc,
+   scint-only estimators) should be left UNSET now — double-counting.
+6. DRS4 digitization: clip at `RADICAL_DRS4_VMAX_MV` (830, the observed data
+   rail), quantize `RADICAL_DRS4_BITS` (12) over 1 V.
+   Diagnostics: H1[38] PulsePeak_mV, H1[39] PulseSat (mean = clipped fraction;
+   DATA anchors: 3.8% @25 GeV, 74% @150 GeV — tune SPE_MV against these).
+   H1[40] PhotonsWLSEmitted: <PhotonsWLS>/<H1[40]> = capture x transport x PDE.
+   Smoke measured **10.7%** vs ~3% naive (bare-fiber TIR 5.4%/end x PDE) —
+   part legitimate (annulus/capillary guiding, PD spans full OD), but a prime
+   suspect for the light over-prediction. INVESTIGATE.
+7. HG threshold is physical: `RADICAL_HG_THR_MV` (default = 2.5 detected-pe
+   equivalents x peScale x SPE_MV).
+
+Also fixed: `setup_env.sh` now validates the geant4-config --datasets paths and
+remaps them onto the actual install prefix (the 2026-07-22 reorg moved the
+install; baked-in absolute paths pointed at the old location ->
+"ENSDFSTATE.dat is not found" on local Mac runs).
+
+**Ladder on this chain:** `run_ladder_paperR.sh` (f in {0.1,0.3,1,3} coherent,
+`MAX_OPT_PHOTONS=60e6` for f=3 headroom, no ELEC_JITTER) +
+`analysis/ladder_paperR.C` (fits a^2=A^2/f+B^2 with MEASURED light ratios,
+extrapolates to f=100 true light, prints capture fraction per point).
+
 ## ★★★ paperR RESULT (2026-07-23, `optical_scan_500_paperR`) — realistic composition makes timing 6-8x WORSE, in the honest direction
 
 500 evt x 6 E, paper183 geometry + `SCINT_YIELD=0.01` (coherent thinning) +
