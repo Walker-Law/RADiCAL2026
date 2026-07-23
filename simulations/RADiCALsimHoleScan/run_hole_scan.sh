@@ -136,19 +136,33 @@ echo "[$(date '+%H:%M:%S')] $TOTAL_CHUNKS chunks launched ($EVTARGET events tota
 monitor() {
     while true; do
         sleep 30
-        local ev
-        ev=$(grep -sc -- "--> Event" "$OUTDIR"/log_D*_c*.log 2>/dev/null \
-             | awk -F: '{s+=$NF} END{print (s+0)*10}')
-        local elapsed=$(( $(date +%s) - START_T )) pct=0
-        [ "$EVTARGET" -gt 0 ] && pct=$(( ev * 100 / EVTARGET )); [ "$pct" -gt 100 ] && pct=100
-        local eta="--"
-        if [ "$ev" -gt 0 ] && [ "$ev" -lt "$EVTARGET" ]; then
-            local rem=$(( elapsed * (EVTARGET - ev) / ev ))
-            eta=$(printf '%dh%02dm' $(( rem/3600 )) $(( (rem%3600)/60 )))
+        # Progress from COMPLETED chunk files only — the one reliable signal.
+        # (Do NOT count "--> Event N" log lines: Geant4 prints "Event 0 starts"
+        #  ONCE per chunk at launch, so the old grep x10 read a bogus % before a
+        #  single event had finished.) All holes share CHUNKS_PER x NPER, so
+        #  completed-chunk fraction tracks progress and events-done is exact.
+        local cdone=0 evdone=0 parts=""
+        for D in "${HOLES[@]}"; do
+            [ -f "$OUTDIR/hole_D${D}.root" ] && continue
+            local DT cd
+            DT=$(awk "BEGIN{printf \"%.0f\", $D*10}")
+            cd=$(ls tmphole_D${DT}_c*.root 2>/dev/null | wc -l | tr -d ' ')
+            cdone=$(( cdone + cd ))
+            evdone=$(( evdone + cd * NPER ))
+            parts="$parts ${D}:${cd}/${CHUNKS_PER}"
+        done
+        local elapsed=$(( $(date +%s) - START_T ))
+        local pct=0 eta="--"
+        if [ "$TOTAL_CHUNKS" -gt 0 ]; then
+            pct=$(( cdone * 100 / TOTAL_CHUNKS ))
+            if [ "$cdone" -gt 0 ] && [ "$cdone" -lt "$TOTAL_CHUNKS" ]; then
+                local rem=$(( elapsed * (TOTAL_CHUNKS - cdone) / cdone ))
+                eta=$(printf '%dh%02dm' $(( rem/3600 )) $(( (rem%3600)/60 )))
+            fi
         fi
-        printf "[%s] %3d%% (~%d/%d events)  elapsed %dh%02dm  ETA %s\n" \
-            "$(date '+%H:%M:%S')" "$pct" "$ev" "$EVTARGET" \
-            $(( elapsed/3600 )) $(( (elapsed%3600)/60 )) "$eta"
+        printf "[%s] %3d%% (%d/%d chunks, %d/%d evt done)  elapsed %dh%02dm  ETA %s | done:%s\n" \
+            "$(date '+%H:%M:%S')" "$pct" "$cdone" "$TOTAL_CHUNKS" "$evdone" "$EVTARGET" \
+            $(( elapsed/3600 )) $(( (elapsed%3600)/60 )) "$eta" "$parts"
     done
 }
 monitor & MONITOR_PID=$!
