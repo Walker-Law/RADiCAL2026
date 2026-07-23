@@ -266,23 +266,40 @@ static G4double sipmNfired(G4double nDet) {
 // Returns crossing time (ns) or -1 if the pulse never reaches thrPE.
 static G4double leadingEdgeFixed(const std::vector<G4double>& tns, G4double thrPE) {
     if (tns.empty()) return -1.;
-    const G4double tauR = 1.0, tauF = 3.0, dt = 0.2;      // ns, same SPR as pulseCFD
-    const G4double sprNorm = 1.0 / 0.472;                 // single-photon peak -> 1
-    G4double t0 = *std::min_element(tns.begin(), tns.end());
+    const G4double dt = 0.2;
     const int NS = 500;
     static G4ThreadLocal std::vector<G4double> wf;
-    wf.assign(NS, 0.);
-    for (G4double tp : tns) {
-        int s0 = (int)((tp - t0) / dt) + 1;
-        for (int s = s0; s < NS; s++) {
-            G4double td = t0 + s * dt - tp;
-            wf[s] += sprNorm * (1. - std::exp(-td / tauR)) * std::exp(-td / tauF);
+    G4double t0, thr;
+    if (wfmRealism()) {
+        // Realistic chain (same builder as pulseCFD). The fixed ABSOLUTE
+        // threshold becomes physical: RADICAL_HG_THR_MV if set, else thrPE
+        // detected-pe equivalents converted to mV (thrPE x peScale x SPE_MV) —
+        // same intent as the legacy pe threshold, now in the mV domain where
+        // noise/saturation/quantization act on the crossing.
+        buildWfmMV(tns, wf, &t0, nullptr);
+        static G4ThreadLocal G4double thrMV = -1.;
+        if (thrMV < 0.)
+            thrMV = envD("RADICAL_HG_THR_MV",
+                         thrPE * wfmPeScale() * envD("RADICAL_SPE_MV", 0.30));
+        thr = thrMV;
+    } else {                                              // legacy ideal path
+        const G4double tauR = 1.0, tauF = 3.0;
+        const G4double sprNorm = 1.0 / 0.472;             // single-photon peak -> 1
+        t0 = *std::min_element(tns.begin(), tns.end());
+        wf.assign(NS, 0.);
+        for (G4double tp : tns) {
+            int s0 = (int)((tp - t0) / dt) + 1;
+            for (int s = s0; s < NS; s++) {
+                G4double td = t0 + s * dt - tp;
+                wf[s] += sprNorm * (1. - std::exp(-td / tauR)) * std::exp(-td / tauF);
+            }
         }
+        thr = thrPE;
     }
     for (int s = 1; s < NS; s++) {                        // first upward crossing
-        if (wf[s] >= thrPE) {
+        if (wf[s] >= thr) {
             G4double v1 = wf[s - 1], v2 = wf[s];
-            return t0 + (s - 1 + (v2 > v1 ? (thrPE - v1) / (v2 - v1) : 0.)) * dt;
+            return t0 + (s - 1 + (v2 > v1 ? (thr - v1) / (v2 - v1) : 0.)) * dt;
         }
     }
     return -1.;
