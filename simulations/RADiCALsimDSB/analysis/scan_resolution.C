@@ -515,6 +515,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       double zeroSM[N]={0};
       gSM=new TGraphErrors(nGoodSM,ESM,smRes,zeroSM,smResErr);
       gSM->SetName("ShowerMaxResolution_dEdx");
+      gSM->SetTitle("Shower-max energy resolution (dE/dx);E_{beam} (GeV);#sigma/mean (%)");
       gSM->SetMarkerStyle(20); gSM->SetMarkerColor(kBlue+1); gSM->SetLineColor(kBlue+1);
       gSM->SetMarkerSize(1.3);
       fsm=new TF1("fsm","sqrt([0]*[0]+[1]*[1]/x+[2]*[2]/(x*x))",4,130);
