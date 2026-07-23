@@ -1,4 +1,5 @@
 #include "EventAction.hh"
+#include "StackingAction.hh"     // WLS-emitted counter (capture-fraction diag)
 #include "G4Event.hh"
 #include "G4AnalysisManager.hh"
 #include "G4SystemOfUnits.hh"
