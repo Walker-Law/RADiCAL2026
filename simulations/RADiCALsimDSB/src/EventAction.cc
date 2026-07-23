@@ -610,6 +610,11 @@ void EventAction::EndOfEventAction(const G4Event*) {
     // (gated by the same beam-core selection as H1[28] — this is the
     //  photon-count shower-max observable, the true Fig 17 analog)
     if (fNphWls > 0 && smInCore) am->FillH1(30, fNphWls);
+    // H1[40]: WLS photons EMITTED in the fibers (capture-fraction denominator;
+    // <H1[30]>/<H1[40]> = end-to-end capture x transport x PDE — sanity-check
+    // against the ~5-6%/end TIR trapping limit x PDE for an n~1.5 fiber).
+    if (StackingAction::WlsEmitted() > 0)
+        am->FillH1(40, (G4double)StackingAction::WlsEmitted());
 
     // 6f. DUAL-GAIN SiPM READOUT (experiment's high/low gain channels)
     //   Both channels use ALL detected light (Cherenkov INCLUDED) — the real
