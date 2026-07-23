@@ -60,6 +60,51 @@ physically honest reproduction. Until this is done, treat `paperJ` (timing) and
 the planned `fig17` LY=3e-3 run (energy shape) as two DIAGNOSTIC configs, not a
 final result.
 
+## ★★★ paperR RESULT (2026-07-23, `optical_scan_500_paperR`) — realistic composition makes timing 6-8x WORSE, in the honest direction
+
+500 evt x 6 E, paper183 geometry + `SCINT_YIELD=0.01` (coherent thinning) +
+PDE(lambda) + `MAX_OPT_PHOTONS=20e6`. All three intended effects confirmed:
+
+1. **Composition fixed.** Self-scint fell 70% -> ~0% of scint light; WLS is now
+   ~100% of the timing population (the realistic mix). Verified per-energy.
+2. **Truncation cured.** PhWLS climbs linearly to 15743 @ 150 GeV (was plateaued
+   at ~9500 in the 4M-capped 1000-evt paperR). No high-E saturation.
+3. **Energy path untouched.** EnergyResolution a=15.6% b=2.56% (paper183: 15.3/2.64)
+   — the composition/PDE change did not disturb the energy observable, as expected.
+
+**Headline all-light + DRS4 timing (H1: DeltaT_CFD_4c_DRS4):**
+
+    E [GeV]     25   50   75  100  125  150     fit a / b
+    paper183    38   26   21   19   18   18     a=170  b=10   (self-scint dominated)
+    paperR     318  236  227  191  192  183     a=1402 b=142  (WLS dominated, REALISTIC)
+    PAPER       54  ...  ...  ...  ...   27     a=256  b=17.5
+
+paper183's beautiful 18-38 ps was an **artifact of the composition bug**: 70% of
+its timing light was prompt DSB1 self-scint (tau=3.5 ns), a population that is ~2%
+in the real device. Remove it and the light is WLS, which inherits LYSO's 36 ns
+decay before the 3.5 ns re-emission -> slow leading edge -> 6-8x worse per-photon
+timing. **This is the correct direction** (we knew paper183 was too optimistic).
+
+**But paperR CANNOT be compared to the paper's 256/sqrt(E) at face value** — it is
+100x photon-thinned, so its a=1402 is dominated by photostatistics, not the
+physical resolution. 1402/sqrt(100) ~ 140 ps/sqrt(E) if that were pure photostat,
+but b=142 (the thinned "floor") is also photostat-inflated. The ONLY honest way to
+get the real-light number from this composition is the **scale ladder** — coherently
+thin all light knobs by f, fit a^2(f)=A^2/f+B^2, extrapolate to true light. A single
+thinned point does not decide it. Prior ladders were run on the WRONG (self-scint)
+composition and must be redone here.
+
+**NEXT (clean, no tuning): scale ladder on the paperR composition.** Coherently
+scale `LYSO_SCINT_SCALE`, `SCINT_YIELD`, `QUARTZ_CHER_KEEP` by f (base = paperR),
+same geometry, `MAX_OPT_PHOTONS=20e6` throughout. That measures A (photostat) and
+B (light-independent floor) for the realistic WLS-dominated timing, and its
+extrapolation to true light is the honest number to put beside 256/sqrt(E).
+
+**Minor anomaly to check:** WLS-only estimator is WORSE in paperR (a=600) than
+paper183 (a=386) despite MORE WLS light — investigate (500 vs 1000 evt stats on a
+first-photon estimator? SPTR interaction?); it is not the headline (real SiPM sees
+all light) so it does not block the ladder.
+
 ## ★ DECISIONS LOCKED (2026-07-22, per Walker) + REALISTIC-COMPOSITION RUN `paperR`
 
 Walker's rulings on the reproduce-the-paper option list — do not re-litigate:
