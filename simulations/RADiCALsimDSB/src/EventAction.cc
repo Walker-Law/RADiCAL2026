@@ -282,7 +282,7 @@ static G4double leadingEdgeFixed(const std::vector<G4double>& tns, G4double thrP
         static G4ThreadLocal G4double thrMV = -1.;
         if (thrMV < 0.)
             thrMV = envD("RADICAL_HG_THR_MV",
-                         thrPE * wfmPeScale() * envD("RADICAL_SPE_MV", 0.30));
+                         thrPE * wfmPeScale() * envD("RADICAL_SPE_MV", 0.25));
         thr = thrMV;
     } else {                                              // legacy ideal path
         const G4double tauR = 1.0, tauF = 3.0;
