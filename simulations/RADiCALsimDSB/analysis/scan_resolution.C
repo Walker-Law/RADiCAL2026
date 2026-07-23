@@ -363,6 +363,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     double zero4d[N]={0};
     TGraphErrors* gt4d=new TGraphErrors(nGood4d,E4d,tRes4d,zero4d,tRes4dErr);
     gt4d->SetName("TimingResolution_4cScintDRS4_paperMatched");
+    gt4d->SetTitle("Timing resolution, 4-cap scint-only + DRS4, paper-matched;E_{beam} (GeV);#sigma_{t} (ps)");
     gt4d->SetMarkerStyle(34); gt4d->SetMarkerColor(kBlack); gt4d->SetLineColor(kBlack);
     gt4d->SetMarkerSize(1.6);
     ft4d=new TF1("ft4d","sqrt([0]*[0]/x+[1]*[1])",20,160);
