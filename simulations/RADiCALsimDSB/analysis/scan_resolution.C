@@ -392,6 +392,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     double zeroW[N]={0};
     TGraphErrors* gtW=new TGraphErrors(nGoodW,EW,tResW,zeroW,tResWErr);
     gtW->SetName("TimingResolutionWLS");
+    gtW->SetTitle("Timing resolution, WLS photons only;E_{beam} (GeV);#sigma_{t} (ps)");
     gtW->SetMarkerStyle(22); gtW->SetMarkerColor(kMagenta+1); gtW->SetLineColor(kMagenta+1);
     gtW->SetMarkerSize(1.4);
     ftW=new TF1("ftW","sqrt([0]*[0]/x+[1]*[1])",4,130);
