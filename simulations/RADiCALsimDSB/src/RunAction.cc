@@ -236,6 +236,22 @@ RunAction::RunAction() {
     am->CreateH1("DeltaT_HighGain",
                  "High-gain fixed-threshold #DeltaT (downstream #minus upstream);#DeltaT (ns);Corners",
                  4000, -0.2, 0.6);
+    // ── Realistic-electronics diagnostics (2026-07-23, waveform realism chain) ──
+    // H1[38]: digitized pulse peak per SiPM channel (mV). With the DRS4 rail at
+    // 830 mV, the shape vs energy anchors RADICAL_SPE_MV against the data.
+    am->CreateH1("PulsePeak_mV",
+                 "Digitized pulse peak per SiPM channel;peak (mV);pulses",
+                 220, 0., 1100.);
+    // H1[39]: DRS4 rail-clip flag per pulse; MEAN = clipped fraction.
+    // DATA anchors: 3.8% clipped @25 GeV, 74% @150 GeV.
+    am->CreateH1("PulseSat",
+                 "DRS4 rail-clip flag (mean = clipped fraction);clipped;pulses",
+                 2, 0., 2.);
+    // H1[40]: WLS photons EMITTED in the fibers per event (OpWLS creations,
+    // pre-budget). <PhotonsWLS>/<this> = end-to-end capture x transport x PDE.
+    am->CreateH1("PhotonsWLSEmitted",
+                 "WLS photons emitted in fibers per event;N_{emit};Events",
+                 200, 0., 2.0e6);
 
     // ── H2: EXISTING ─────────────────────────────────────────────────────────
 
