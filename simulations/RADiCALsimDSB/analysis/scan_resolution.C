@@ -439,6 +439,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   if(gTimingHGE)   mgT->Add(gTimingHGE,"P");
   if(gTiming4c)    mgT->Add(gTiming4c,"P");   // paper-matched estimator (light only)
   if(gTiming4d)    mgT->Add(gTiming4d,"P");   // paper-matched + electronics
+  if(gTiming4a)    mgT->Add(gTiming4a,"P");   // ALL-light + electronics
   mgT->SetTitle("Timing resolution (downstream #minus upstream);E_{beam} (GeV);#sigma_{t} (ps)");
   mgT->Draw("A");
   mgT->SetMinimum(0.);
