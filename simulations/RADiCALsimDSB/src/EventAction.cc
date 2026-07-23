@@ -82,29 +82,145 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     fNphWls = 0;
 }
 
-// ── DRS4-style waveform emulation (mirrors the CERN test-beam analysis) ─────
-// Build the analog pulse as a sum of single-photon responses
-//   SPR(t) = (1 − e^{−t/τ_r}) · e^{−t/τ_f},  τ_r = 1.0 ns, τ_f = 3.0 ns,
-// sample at 5 GS/s (0.2 ns) like the DRS4 digitizer, then apply the identical
-// 5% constant-fraction discriminator with linear interpolation that the
-// test-beam waveform analysis uses (per user: CFD fraction is 5%, not 50%).
-// Returns CFD time (ns) or −1; optionally reports pulse FWHM for validation.
-static G4double pulseCFD(const std::vector<G4double>& tns, G4double* fwhmOut) {
-    if (tns.size() < 5) return -1.;
-    const G4double tauR = 1.0, tauF = 3.0, dt = 0.2;     // ns
-    G4double t0 = *std::min_element(tns.begin(), tns.end());
-    const int NS = 500;                                   // 100 ns window
-    static G4ThreadLocal std::vector<G4double> wf;        // reused buffer
+// ── DRS4-style waveform emulation with a REALISTIC electronics chain ─────────
+// (2026-07-23. RADICAL_WFM_REALISM=0 restores the legacy ideal path: unit-SPR
+//  sum, no gain/shaping/noise/digitization — how all runs before this date ran.)
+//
+// The realistic path (default ON) builds each SiPM channel's pulse in PHYSICAL
+// millivolts at TRUE-light amplitude scale:
+//  1. each detected (thinned) photon represents peScale TRUE photoelectrons,
+//     peScale = 1/RADICAL_LYSO_SCINT_SCALE for coherently-thinned runs
+//     (override: RADICAL_WFM_PE_SCALE). Amplitude-domain effects — noise,
+//     microcell + DRS4 saturation, quantization — then enter at their REAL
+//     relative size; only photon GRANULARITY remains a thinning artifact,
+//     which the scale ladder extrapolates away.
+//  2. time-ordered SiPM microcell saturation (RADICAL_SIPM_NPIX cells): later
+//     photons land on already-fired cells with prob 1−exp(−Nfired/Npix).
+//     Optional recovery: RADICAL_SIPM_TAU_REC_NS (default 0 = none).
+//  3. SPR(t) = (1−e^{−t/τr})·e^{−t/τf}, τr=1, τf=3 ns, peak-normalized,
+//     × RADICAL_SPE_MV (high-gain mV per true pe, default 0.30 — tune so the
+//     H1[39] clipped fraction matches the DATA anchors: 3.8% @25, 74% @150 GeV).
+//  4. CR high-pass (AC-coupled fast amplifier), τd = RADICAL_AMP_TAU_D_NS
+//     (default 2.0 ns): numerically tuned so the summed WLS-light pulse FWHM
+//     matches the MEASURED 8.3 ns (unshaped it is ~38 ns with 36 ns LYSO
+//     gating — the old path could never reproduce the data's pulse shape).
+//     H1[23] PulseFWHM validates this against the data.
+//  5. white noise, RADICAL_ELEC_NOISE_MV per 0.2 ns sample (default 0.5 mV).
+//  6. DRS4 digitization: clip at RADICAL_DRS4_VMAX_MV (default 830 mV, the
+//     rail observed in the test-beam data), quantize to RADICAL_DRS4_BITS
+//     (default 12) over 1 V. H1[38] records the peak (mV), H1[39] a clip flag.
+// The 5% CFD then runs on the DIGITIZED waveform — exactly what the test-beam
+// analysis does to the real data.
+static G4double envD(const char* k, G4double dflt);        // defined below
+static bool wfmRealism() {
+    static const bool v = !(std::getenv("RADICAL_WFM_REALISM")
+                            && std::atof(std::getenv("RADICAL_WFM_REALISM")) == 0.);
+    return v;
+}
+static G4double wfmPeScale() {
+    static const G4double v = [] {
+        if (const char* s = std::getenv("RADICAL_WFM_PE_SCALE")) return std::atof(s);
+        const G4double ly = std::getenv("RADICAL_LYSO_SCINT_SCALE")
+                            ? std::atof(std::getenv("RADICAL_LYSO_SCINT_SCALE")) : 1e-3;
+        return (ly > 0.) ? 1. / ly : 1.;
+    }();
+    return v;
+}
+// Build the digitized waveform (mV) for one SiPM channel: NS samples of 0.2 ns
+// starting at the first photon time (returned via t0Out). Returns the peak (mV)
+// and sets *sat if the pulse hit the DRS4 rail.
+static G4double buildWfmMV(const std::vector<G4double>& tns,
+                           std::vector<G4double>& wf,
+                           G4double* t0Out, bool* sat) {
+    const G4double dt = 0.2, tauR = 1.0, tauF = 3.0, sprNorm = 1.0 / 0.472;
+    const int NS = 500;
+    static G4ThreadLocal G4double speMV = -1., tauD = 0., noise = 0.,
+                                  vmax = 0., lsb = 0., npix = 0., tauRec = 0.;
+    if (speMV < 0.) {
+        speMV  = envD("RADICAL_SPE_MV", 0.30);
+        tauD   = envD("RADICAL_AMP_TAU_D_NS", 2.0);
+        noise  = envD("RADICAL_ELEC_NOISE_MV", 0.5);
+        vmax   = envD("RADICAL_DRS4_VMAX_MV", 830.);
+        const G4double bits = envD("RADICAL_DRS4_BITS", 12.);
+        lsb    = (bits > 0.) ? 1000. / std::pow(2., bits) : 0.;
+        npix   = envD("RADICAL_SIPM_NPIX", 5676.);
+        tauRec = envD("RADICAL_SIPM_TAU_REC_NS", 0.);
+    }
     wf.assign(NS, 0.);
-    for (G4double tp : tns) {
+    const G4double t0 = *std::min_element(tns.begin(), tns.end());
+    if (t0Out) *t0Out = t0;
+    // time-ordered microcell saturation at true-light scale
+    static G4ThreadLocal std::vector<G4double> ts;
+    ts.assign(tns.begin(), tns.end());
+    std::sort(ts.begin(), ts.end());
+    const G4double w0 = wfmPeScale();
+    G4double nf = 0., tPrev = t0;
+    for (G4double tp : ts) {
+        G4double a = w0;
+        if (npix > 0.) {
+            if (tauRec > 0. && tp > tPrev)              // fired cells recover
+                nf *= std::exp(-(tp - tPrev) / tauRec);
+            a = w0 * std::exp(-nf / npix);
+            nf += a; tPrev = tp;
+        }
+        const G4double amp = a * sprNorm * speMV;
         int s0 = (int)((tp - t0) / dt) + 1;
         for (int s = s0; s < NS; s++) {
             G4double td = t0 + s * dt - tp;
-            wf[s] += (1. - std::exp(-td / tauR)) * std::exp(-td / tauF);
+            wf[s] += amp * (1. - std::exp(-td / tauR)) * std::exp(-td / tauF);
         }
     }
+    if (tauD > 0.) {                                    // CR high-pass (AC coupling)
+        const G4double al = tauD / (tauD + dt);
+        G4double yPrev = 0., xPrev = 0.;
+        for (int s = 0; s < NS; s++) {
+            const G4double x = wf[s], y = al * (yPrev + x - xPrev);
+            wf[s] = y; yPrev = y; xPrev = x;
+        }
+    }
+    if (noise > 0.)
+        for (int s = 0; s < NS; s++) wf[s] += G4RandGauss::shoot(0., noise);
+    bool clipped = false;
+    for (int s = 0; s < NS; s++) {
+        if (wf[s] > vmax) { wf[s] = vmax; clipped = true; }
+        if (lsb > 0.) wf[s] = std::round(wf[s] / lsb) * lsb;
+    }
+    if (sat) *sat = clipped;
+    return *std::max_element(wf.begin(), wf.end());
+}
+// 5% CFD on the (digitized, realistic — or legacy ideal) pulse. Returns CFD
+// time (ns) or −1; optionally reports pulse FWHM (H1[23], validate vs the
+// data's 8.3 ns), peak in mV, and the DRS4 clip flag.
+static G4double pulseCFD(const std::vector<G4double>& tns, G4double* fwhmOut,
+                         G4double* pkOut = nullptr, bool* satOut = nullptr) {
+    if (tns.size() < 5) return -1.;
+    const G4double dt = 0.2;                              // ns (5 GS/s)
+    const int NS = 500;                                   // 100 ns window
+    static G4ThreadLocal std::vector<G4double> wf;        // reused buffer
+    G4double t0, pk;
+    if (wfmRealism()) {
+        bool sat = false;
+        pk = buildWfmMV(tns, wf, &t0, &sat);
+        if (satOut) *satOut = sat;
+        if (pkOut)  *pkOut  = pk;
+        // a pulse buried in the noise floor is unmeasurable in the real system
+        static G4ThreadLocal G4double noiseMV = -1.;
+        if (noiseMV < 0.) noiseMV = envD("RADICAL_ELEC_NOISE_MV", 0.5);
+        if (pk < 8. * noiseMV) return -1.;
+    } else {                                              // legacy ideal path
+        const G4double tauR = 1.0, tauF = 3.0;
+        t0 = *std::min_element(tns.begin(), tns.end());
+        wf.assign(NS, 0.);
+        for (G4double tp : tns) {
+            int s0 = (int)((tp - t0) / dt) + 1;
+            for (int s = s0; s < NS; s++) {
+                G4double td = t0 + s * dt - tp;
+                wf[s] += (1. - std::exp(-td / tauR)) * std::exp(-td / tauF);
+            }
+        }
+        pk = *std::max_element(wf.begin(), wf.end());
+    }
     int ipk = std::max_element(wf.begin(), wf.end()) - wf.begin();
-    G4double pk = wf[ipk];
     if (pk <= 0. || ipk < 1) return -1.;
     if (fwhmOut) {                                        // FWHM for validation
         int s1 = ipk, s2 = ipk;
