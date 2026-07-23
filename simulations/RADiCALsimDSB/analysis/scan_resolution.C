@@ -62,6 +62,7 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
   // term is a with-electronics number, so THIS curve is the apples-to-apples
   // headline; the noiseless H1[32] curve shows what the light alone supports.
   double tRes4d[N],tRes4dErr[N], E4d[N]; int nGood4d=0;
+  double tRes4a[N],tRes4aErr[N], E4a[N]; int nGood4a=0;   // ALL-light DRS4 (H1: DeltaT_CFD_4c_DRS4)
   TGraphErrors* gTiming4d=nullptr;
   double tResW[N],tResWErr[N], EW[N]; int nGoodW=0;   // WLS-only timing (if present)
   TGraphErrors* gTimingWls=nullptr;
