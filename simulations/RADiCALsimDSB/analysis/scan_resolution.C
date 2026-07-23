@@ -368,6 +368,20 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
     gt4d->Fit(ft4d,"RQ");
     gTiming4d=gt4d;
   }
+  // ALL-light electronics-inclusive curve (H1: DeltaT_CFD_4c_DRS4) — the
+  // headline once composition is coherent (see comment at the fill above).
+  TF1* ft4a=nullptr; TGraphErrors* gTiming4a=nullptr;
+  if(nGood4a>=3){
+    double zero4a[N]={0};
+    TGraphErrors* gt4a=new TGraphErrors(nGood4a,E4a,tRes4a,zero4a,tRes4aErr);
+    gt4a->SetName("TimingResolution_4cAllDRS4");
+    gt4a->SetMarkerStyle(21); gt4a->SetMarkerColor(kAzure+2); gt4a->SetLineColor(kAzure+2);
+    gt4a->SetMarkerSize(1.3);
+    ft4a=new TF1("ft4a","sqrt([0]*[0]/x+[1]*[1])",20,160);
+    ft4a->SetParameters(256,17.5); ft4a->SetLineColor(kAzure+2); ft4a->SetLineWidth(2);
+    gt4a->Fit(ft4a,"RQ");
+    gTiming4a=gt4a;
+  }
   // WLS-only graph + fit (LYSO-optical runs only)
   TF1* ftW=nullptr;
   if(nGoodW>=3){
