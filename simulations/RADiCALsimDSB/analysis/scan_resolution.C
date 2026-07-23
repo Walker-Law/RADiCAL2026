@@ -157,6 +157,20 @@ void scan_resolution(const char* dir="build/scan", const char* prefix="radical")
       saveTimingFit(h4d, g4d, "DeltaT_CFD_4c_Scint_DRS4", E[i]);
       nGood4d++;
     }
+    // ALL-light electronics-inclusive twin: every photon the SiPM detects
+    // (Cherenkov + self-scint + OpWLS, PDE-weighted) — no origin gating, as a
+    // real SiPM cannot distinguish photon provenance. Realistic ONLY when the
+    // light composition is realistic, i.e. all sources coherently thinned
+    // (LYSO_SCINT_SCALE = SCINT_YIELD = QUARTZ_CHER_KEEP).
+    TH1D* h4a=(TH1D*)f->Get("DeltaT_CFD_4c_DRS4");
+    if(h4a && h4a->GetEntries()>50){
+      TF1* g4a=coreFit(h4a,2.5,4);
+      E4a[nGood4a]=E[i];
+      tRes4a[nGood4a]=g4a->GetParameter(2)*500;        // ns->ps, corner trick /2
+      tRes4aErr[nGood4a]=g4a->GetParError(2)*500;
+      saveTimingFit(h4a, g4a, "DeltaT_CFD_4c_DRS4", E[i]);
+      nGood4a++;
+    }
     TH1D* hTS=(TH1D*)f->Get("DeltaT_Scint");
     if(hTS && hTS->GetEntries()>50){
       TF1* gTS=coreFit(hTS,2.5,4);
