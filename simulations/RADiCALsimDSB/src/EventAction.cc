@@ -520,9 +520,15 @@ void EventAction::EndOfEventAction(const G4Event*) {
     G4double sumDT = 0., sumDT_drs4 = 0.; G4int nDT = 0;   // 4-corner accumulators (all light)
     const G4double sCellA = drs4CellSigmaNs();
     for (G4int c = 0; c < 4; c++) {
-        G4double fwUp = -1., fwDn = -1.;
-        G4double tUp = pulseCFD(fPhTUp[c],   &fwUp);
-        G4double tDn = pulseCFD(fPhTDown[c], &fwDn);
+        G4double fwUp = -1., fwDn = -1., pkUp = -1., pkDn = -1.;
+        bool satUp = false, satDn = false;
+        G4double tUp = pulseCFD(fPhTUp[c],   &fwUp, &pkUp, &satUp);
+        G4double tDn = pulseCFD(fPhTDown[c], &fwDn, &pkDn, &satDn);
+        // pulse-amplitude diagnostics (realism chain): H1[38] peak mV, H1[39]
+        // DRS4-rail clip flag (mean = clipped fraction; DATA: 3.8% @25 GeV,
+        // 74% @150 GeV — tune RADICAL_SPE_MV against these anchors).
+        if (pkUp > 0.) { am->FillH1(38, pkUp); am->FillH1(39, satUp ? 1.5 : 0.5); }
+        if (pkDn > 0.) { am->FillH1(38, pkDn); am->FillH1(39, satDn ? 1.5 : 0.5); }
         if (tUp > 0. && tDn > 0.) {
             G4double dtc = tDn - tUp;
             am->FillH1(22, dtc / 1.0);           // already in ns (per-corner)
