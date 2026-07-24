@@ -43,6 +43,15 @@ simulations/                 Geant4 simulations
                                from the light-independent floor, extrapolates to true
                                light. Found the sim over-collects light ~3–4×,
                                over-saturating the SiPM — see its README.
+  RADiCALsimSIMPLE/          ★ Standalone teaching sim — a ~6-file, hand-readable
+                               model of the LYSO/W + 4-corner WLS light chain with
+                               NO electronics (no CFD/DRS4/gain/saturation/jitter):
+                               timing = raw first-photon (t_down − t_up)/2. Own
+                               CMakeLists/binary (radsimple), not a fork of DSB.
+                               run.mac sweeps 5–120 GeV; analysis/scan.C fits
+                               σ_t(E) and σ_E/E(E) with per-energy fit plots.
+                               pull_results.sh syncs cluster output back. Start
+                               here to understand the physics before reading DSB.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
