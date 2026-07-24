@@ -1,6 +1,30 @@
-# run.mac — batch run. Usage:  ./radsimple run.mac  -> radsimple_output.root
-# Change the energy / event count here, or copy this file per energy for a scan.
+# run.mac — energy sweep. Usage:  ./radsimple run.mac
+# Writes one file per energy: build/E5GeV.root, E10GeV.root, ... E120GeV.root
+# (/analysis/setFileName is a built-in Geant4 UI command — no C++ needed to
+#  add/remove energies, just add or remove a block below.)
 /run/initialize
 /run/printProgress 100
+
+/analysis/setFileName E5GeV
+/gun/energy 5 GeV
+/run/beamOn 500
+
+/analysis/setFileName E10GeV
+/gun/energy 10 GeV
+/run/beamOn 500
+
+/analysis/setFileName E25GeV
+/gun/energy 25 GeV
+/run/beamOn 500
+
+/analysis/setFileName E50GeV
 /gun/energy 50 GeV
+/run/beamOn 500
+
+/analysis/setFileName E100GeV
+/gun/energy 100 GeV
+/run/beamOn 500
+
+/analysis/setFileName E120GeV
+/gun/energy 120 GeV
 /run/beamOn 500
