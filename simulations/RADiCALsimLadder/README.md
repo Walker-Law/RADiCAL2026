@@ -67,11 +67,17 @@ Taken at face value this says the simulation is far *too pessimistic*. But the
 same run carries two diagnostics that explain why, and point at a single root
 cause rather than a timing problem:
 
-1. **The sim over-collects light by ~3–4×.** The end-to-end WLS
-   capture×transport×PDE fraction is **~11 %**, where the physical limit for an
-   n≈1.5 fiber (≈5–6 % total-internal-reflection trapping per end × ~36 % PDE)
-   is **~3 %**. This is measured directly (H1 `PhotonsWLS` ÷ `PhotonsWLSEmitted`)
-   and is stable across all rungs.
+1. **The sim over-collects light — it sits at the theoretical trapping ceiling.**
+   The end-to-end WLS capture×PDE fraction is **~11 %**, i.e. **~31 % geometric
+   capture × ~36 % PDE**. The corner light guide is an *air-clad quartz rod*
+   (n=1.46 in a ~75 µm air gap), whose bare total-internal-reflection ceiling is
+   exactly `1 − 1/1.46 = 31.5 %` of isotropic light. The rods had **no optical
+   surface at all** — perfectly smooth walls — so every trapped ray reached the
+   end and the sim ran at that ideal ceiling. Real fused rods scatter the
+   near-critical rays out of the walls and fall below it. (Note: this is a quartz
+   *waveguide*, so the trapping is genuinely much higher than a clad plastic
+   fiber's ~3–4 % — the fix is surface-scatter loss, not a fiber cladding.)
+   Measured directly, H1 `PhotonsWLS` ÷ `PhotonsWLSEmitted`, stable across rungs.
 2. **That extra light over-saturates the SiPM.** The fired-pixel energy sags
    with beam energy (the "energy sag" column > 1, worsening as light rises) —
    i.e. the SiPM is running into its 5676-microcell ceiling. This **contradicts
