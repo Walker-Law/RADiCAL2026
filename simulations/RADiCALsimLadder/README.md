@@ -78,13 +78,21 @@ cause rather than a timing problem:
    *waveguide*, so the trapping is genuinely much higher than a clad plastic
    fiber's ~3–4 % — the fix is surface-scatter loss, not a fiber cladding.)
    Measured directly, H1 `PhotonsWLS` ÷ `PhotonsWLSEmitted`, stable across rungs.
-2. **That extra light over-saturates the SiPM.** The fired-pixel energy sags
-   with beam energy (the "energy sag" column > 1, worsening as light rises) —
-   i.e. the SiPM is running into its 5676-microcell ceiling. This **contradicts
-   the paper's linear energy response** (Fig. 17), an independent confirmation
-   that the modeled light level is unphysically high. A saturated pulse has a
-   coarse, jittery leading edge, which is exactly what inflates the
-   light-independent floor **B** and produces the pessimistic extrapolation.
+2. **That extra light over-saturates the SiPM.** The pulses slam into the DRS4
+   rail and the fired-pixel energy sags as the beam energy climbs — the SiPM is
+   hitting its 5676-microcell ceiling (at the f = 1 rung):
+
+   | E (GeV) | 25 | 50 | 75 | 100 | 125 | 150 |
+   |---|---|---|---|---|---|---|
+   | pulses clipped at rail | 1 % | 10 % | 56 % | 81 % | 93 % | 95 % |
+   | fired-pixels / E (flat = linear) | 109 | 105 | 97 | 91 | 88 | 83 |
+
+   A linear detector keeps a flat fired-pixels/E; ours falls, and 95 % of pulses
+   clip at 150 GeV. This **contradicts the paper's linear energy response**
+   (Fig. 17) — an independent confirmation that the modeled light is unphysically
+   high. A saturated, clipped pulse has a coarse, jittery leading edge, which is
+   exactly what inflates the light-independent floor **B** and produces the
+   pessimistic extrapolation.
 
 ## What we learned (the takeaway)
 
