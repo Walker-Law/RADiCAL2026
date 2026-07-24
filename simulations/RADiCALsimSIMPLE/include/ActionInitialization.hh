@@ -5,5 +5,6 @@
 class ActionInitialization : public G4VUserActionInitialization {
 public:
     void Build() const override;
+    void BuildForMaster() const override;   // master thread: owns the merged output
 };
 #endif
