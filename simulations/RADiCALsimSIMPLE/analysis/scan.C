@@ -120,13 +120,14 @@ void scan() {
         gr->SetTitle("SIMPLE energy resolution;E_{beam} (GeV);#sigma_{E}/E (%)");
         gr->SetMarkerStyle(21);
         auto fit = new TF1("fe", "sqrt([0]*[0]/x + [1]*[1])", E[0], E[N-1]);
-        fit->SetParName(0, "a  [%#sqrt{GeV}]");
-        fit->SetParName(1, "b  [%]");
+        fit->SetParName(0, "a");
+        fit->SetParName(1, "b");
         fit->SetParameters(15, 2);
         gr->Fit(fit, "Q");
+        gStyle->SetOptFit(1);
         auto c = new TCanvas("ce", "", 800, 600);
         gr->Draw("AP");
-        drawFormula("#sigma_{E}/E = a / #sqrt{E} #oplus b");
+        drawFormula("#sigma_{E}/E = a / #sqrt{E} #oplus b   [a: %#sqrt{GeV}, b: %]");
         c->SaveAs("build/plots/sigma_E_vs_E.png");
         printf("energy: sigma_E/E = %.1f%%/sqrt(E) (+) %.2f%%   (+- %.1f / %.2f)\n",
                fit->GetParameter(0), fabs(fit->GetParameter(1)),
