@@ -114,11 +114,14 @@ void EventAction::BeginOfEventAction(const G4Event*) {
 // The 5% CFD then runs on the DIGITIZED waveform — exactly what the test-beam
 // analysis does to the real data.
 static G4double envD(const char* k, G4double dflt);        // defined below
-static bool wfmRealism() {
-    static const bool v = !(std::getenv("RADICAL_WFM_REALISM")
-                            && std::atof(std::getenv("RADICAL_WFM_REALISM")) == 0.);
-    return v;
-}
+// ── NoElec variant: waveform-realism electronics chain REMOVED ──────────────
+// The DSB sim builds each pulse in physical mV with gain, microcell saturation,
+// CR shaping, electronic noise, and DRS4 clip/quantize before the 5% CFD. This
+// electronics-free variant HARDWIRES that off: all timing runs through the ideal
+// path — a sum of unit single-photon responses, 5% CFD, no gain/saturation/
+// noise/digitization. (buildWfmMV / wfmPeScale remain compiled but are never
+// reached.) RADICAL_WFM_REALISM is intentionally ignored.
+static bool wfmRealism() { return false; }
 static G4double wfmPeScale() {
     static const G4double v = [] {
         if (const char* s = std::getenv("RADICAL_WFM_PE_SCALE")) return std::atof(s);
