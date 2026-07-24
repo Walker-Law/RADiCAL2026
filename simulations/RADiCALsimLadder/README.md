@@ -98,11 +98,12 @@ cause rather than a timing problem:
 - **The three findings agree.** Over-collection (11 % capture), the energy
   nonlinearity (vs the paper's linear Fig. 17), and the pessimistic timing floor
   are one problem viewed three ways — not three separate issues.
-- **The fix is upstream of timing.** Bring the WLS capture fraction down to the
-  physical ~3 % (fiber-surface roughness / a corrected trapping model / a
-  PDE-and-coupling audit). That should linearize the energy response *and*
-  release the timing floor, at which point the ladder can be rerun to give a
-  trustworthy comparison to 256 ps/√E.
+- **The fix is upstream of timing.** The rods had no surface roughness, so the
+  guide ran at its ideal trapping ceiling. Adding realistic fused-silica surface
+  scatter (`RADICAL_ROD_SIGMA_ALPHA_DEG`, added 2026-07-24) leaks the
+  near-critical rays and lowers the capture toward a realistically lossy guide.
+  That should linearize the energy response *and* release the timing floor, at
+  which point the ladder is rerun for a trustworthy comparison to 256 ps/√E.
 
 If you need one config to quote as the current state, use **f = 3** (most light,
 best-behaved, `a = 1020 ps/√E`) — but flag it as saturation-limited, not final.
