@@ -55,7 +55,7 @@ void ladder(int nevt = 500) {
     TGraphErrors* g = (TGraphErrors*)fC->Get("TimingResolution_4cAllDRS4");
     TF1* ft = (TF1*)g->GetListOfFunctions()->First();
     a[i] = ft->GetParameter(0); ae[i] = ft->GetParError(0); b[i] = std::fabs(ft->GetParameter(1));
-    gST[i] = (TGraphErrors*)g->Clone(Form("gST%d", i)); gST[i]->SetDirectory(0);
+    gST[i] = (TGraphErrors*)g->Clone(Form("gST%d", i));
     fC->Close();
     double fm = 0;  // filled after normalization below
     P("%-6g %10.1f %8s %9.1f+-%4.1f %8.2f %10.2f%% %12.2f\n",
