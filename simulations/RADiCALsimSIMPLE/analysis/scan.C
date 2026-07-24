@@ -99,11 +99,14 @@ void scan() {
         gr->SetTitle("SIMPLE timing resolution;E_{beam} (GeV);#sigma_{t} (ps)");
         gr->SetMarkerStyle(20);
         auto fit = new TF1("ft", "sqrt([0]*[0]/x + [1]*[1])", E[0], E[N-1]);
+        fit->SetParName(0, "a  [ps#sqrt{GeV}]");
+        fit->SetParName(1, "b  [ps]");
         fit->SetParameters(300, 30);
         gr->Fit(fit, "Q");
         gStyle->SetOptFit(1);
         auto c = new TCanvas("ct", "", 800, 600);
         gr->Draw("AP");
+        drawFormula("#sigma_{t} = a / #sqrt{E} #oplus b");
         c->SaveAs("build/plots/sigma_t_vs_E.png");
         printf("\ntiming: sigma_t = %.1f/sqrt(E) (+) %.1f ps   (+- %.1f / %.1f)\n",
                fit->GetParameter(0), fabs(fit->GetParameter(1)),
