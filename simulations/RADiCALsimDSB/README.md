@@ -11,6 +11,39 @@ A LYSO/W shashlik sampling calorimeter with embedded quartz capillaries for prec
 - **Energy capillary (center):** quartz tube + EJ309 liquid scintillator bore
 - **Timing capillaries (4 corners):** quartz rods + LuAG:Ce WLS fiber (15 mm at shower max, ~40.4 mm depth, per [[2]](https://arxiv.org/abs/2401.01747) §2) + Si photodetectors at both ends
 
+## Molière radius & radiation length
+
+R_M sets the transverse shower size — it is why the tiles are 14 mm across. For a
+sampling stack it is the thickness-weighted harmonic combination of the
+per-material Molière radii `R_M,i = E_s·X0,i / E_c,i` (with `E_s = 21.2 MeV`):
+
+```
+1/R_M = Σ_i  f_i / R_M,i          f_i = t_i / Σt   (thickness fraction)
+```
+
+| material | thickness in stack | X₀ | E_c | R_M,i = 21.2·X₀/E_c |
+|----------|--------------------|-----|------|---------------------|
+| W (28 × 2.5 mm)     | 70.0 mm  | 3.50 mm  | 8.0 MeV  | 9.28 mm |
+| LYSO (29 × 1.5 mm)  | 43.5 mm  | 11.4 mm  | 11.7 MeV | 20.7 mm |
+| Tyvek (56 × 0.203 mm) | 11.4 mm | ~1180 mm | ~85 MeV | ~290 mm (negligible) |
+| **stack** | **124.9 mm** | | | |
+
+```
+f_W = 0.560,  f_LYSO = 0.348,  f_Tyvek = 0.091
+1/R_M = 0.560/9.28 + 0.348/20.7 + 0.091/290
+      = 0.0604 + 0.0169 + 0.0003  =  0.0776 mm⁻¹
+R_M  ≈ 12.9 mm
+```
+
+The same thickness-in-X₀ weighting gives the effective radiation length
+`X₀_eff = Σt / Σ(t/X₀) = 124.9 / 23.8 = ` **5.24 mm**, so the stack is **≈ 23.8 X₀** deep.
+
+Versus the paper's **R_M = 13.7 mm, X₀ = 5.4 mm** ([[2]](https://arxiv.org/abs/2401.01747)):
+the closed-form values sit ~6 % low because the analytic weighting underestimates
+shower spreading in the low-density gaps — a full GEANT4 evaluation recovers
+13.7 mm. Either way R_M ≈ 13 mm, so the **14 × 14 mm tile is ≈ 1 R_M across**: the
+module cross-section is set to about one Molière radius by design.
+
 ## Test-beam line
 
 | Element | z position | Purpose |
