@@ -33,11 +33,9 @@ static bool gTimingOn() {
 // σ_cell = per-cell width RMS in ps via RADICAL_DRS4_CELL_PS; default 50 ps
 // (≈ half the ±100 ps datasheet max, i.e. a plausible RMS). Set 0 to disable.
 // This is a grounded approximation, NOT a free tune to the data's 35 ps floor.
-static G4double drs4CellSigmaNs() {
-    static const G4double v = (std::getenv("RADICAL_DRS4_CELL_PS")
-                               ? std::atof(std::getenv("RADICAL_DRS4_CELL_PS")) : 50.0) * 1e-3;
-    return v;
-}
+// NoElec variant: DRS4 uncalibrated-timebase residual REMOVED (return 0), so the
+// "_DRS4" timing histograms equal their ideal-CFD counterparts. RADICAL_DRS4_CELL_PS ignored.
+static G4double drs4CellSigmaNs() { return 0.0; }
 
 EventAction::EventAction() {
     fEdepLYSO.fill(0.);
