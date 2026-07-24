@@ -151,6 +151,38 @@ setsid nohup env RADICAL_OPTICAL=1 RADICAL_ENERGIES="25 50 75 100 125 150" \
 ≈1 h. Sync `optical_scan_300_roughtest/` back; the comparison to `lad1` shows
 whether capture dropped, Fig. 17 flattened, and the timing floor `b` fell.
 
+### Result (2026-07-24) — the fix works, and it confirms the diagnosis
+
+`roughtest` (σα = 1.3°) vs `lad1` (polished), identical f = 1 config, only the
+rod surface differs:
+
+| metric | polished (`lad1`) | rough 1.3° |
+|---|---|---|
+| capture × PDE | 11.5 % | **6.9 %** |
+| DRS4 clip fraction @ 100 GeV | 81 % | **39 %** |
+| fired-pixels/E sag (25 → 150) | 1.32 | **1.21** |
+| σ_t @ 150 GeV (100×-thinned) | 229 ps | **94 ps** |
+| all-light timing fit: a / b [ps] | 1525 / 218 | **1223 / ~0** |
+
+Per-energy σ_t makes the mechanism visible — the polished curve is nearly flat
+(saturation-capped), the rough one recovers the expected steep `a/√E` fall:
+
+| σ_t [ps] | 25 | 50 | 75 | 100 | 125 | 150 GeV |
+|---|---|---|---|---|---|---|
+| polished | 352 | 333 | 289 | 275 | 265 | 229 |
+| rough 1.3° | 304 | 193 | 139 | 115 | 102 | 94 |
+
+**The payoff: the light-independent floor `b` collapsed 218 → ~0 ps.** Timing is
+now cleanly photon-statistics-limited, not floored by a saturation artifact —
+which means **the pessimistic ladder floor B was that artifact, not shower
+physics.** Reducing the over-collected light restored the physics.
+
+Not yet fully fixed: Fig. 17 still sags (1.21) and clips 83 % at 150 GeV, so
+halving capture is not enough alone — trimming the unmeasured DSB1 yield is the
+remaining lever. And a clean **true-light number still needs a fresh full ladder
+with roughness on** (this is one f = 1 point): the floor is gone, but the
+extrapolation slope must be re-measured.
+
 If you need one existing config to quote meanwhile, use **f = 3** (most light,
 best-behaved, `a = 1020 ps/√E`) — but flag it as saturation-limited, not final.
 
