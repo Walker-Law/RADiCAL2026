@@ -43,6 +43,16 @@ void coreFitAndSave(TH1* h, const char* title, const char* png,
     delete c;
 }
 
+// Draws the fit's functional form (e.g. "sigma_t = a/sqrt(E) (+) b") on the
+// current pad, so it's legible next to the stat box's numeric a/b values
+// (ROOT's default box would otherwise just say "p0"/"p1" with no formula).
+void drawFormula(const char* latex, double x = 0.15, double y = 0.82) {
+    TLatex t;
+    t.SetNDC(true);
+    t.SetTextSize(0.045);
+    t.DrawLatex(x, y, latex);
+}
+
 void scan() {
     // must match the energies (and order) in run.mac
     const int N = 6;
