@@ -93,19 +93,57 @@ cause rather than a timing problem:
   corroborating diagnostics.
 - **The headline number (958 ps/√E) is not a physics result — it is a symptom.**
   The dominant floor B is an artifact of SiPM over-saturation, which is caused by
-  the simulation collecting **~3–4× too much light** (11 % capture vs ~3 %
-  physical). The timing floor cannot be trusted until the light budget is right.
-- **The three findings agree.** Over-collection (11 % capture), the energy
-  nonlinearity (vs the paper's linear Fig. 17), and the pessimistic timing floor
-  are one problem viewed three ways — not three separate issues.
-- **The fix is upstream of timing.** The rods had no surface roughness, so the
-  guide ran at its ideal trapping ceiling. Adding realistic fused-silica surface
-  scatter (`RADICAL_ROD_SIGMA_ALPHA_DEG`, added 2026-07-24) leaks the
-  near-critical rays and lowers the capture toward a realistically lossy guide.
-  That should linearize the energy response *and* release the timing floor, at
-  which point the ladder is rerun for a trustworthy comparison to 256 ps/√E.
+  the simulation running at the **light-guide's ideal trapping ceiling** (rods
+  had no surface at all). The timing floor cannot be trusted until the light
+  budget is right.
+- **The three findings agree.** Over-collection (capture at the 31 % ceiling),
+  the energy nonlinearity (vs the paper's linear Fig. 17), and the pessimistic
+  timing floor are one problem viewed three ways — not three separate issues.
 
-If you need one config to quote as the current state, use **f = 3** (most light,
+## The fix (2026-07-24) and its validation
+
+The rods had **no optical surface**, so the air-clad quartz guide ran at its
+theoretical trapping maximum. The missing physics is **surface-scatter loss**:
+real fused rods leak the near-critical guided rays out of the walls. Added a
+ground dielectric surface (specular-lobe reflection so TIR still guides; only the
+`RADICAL_ROD_SIGMA_ALPHA_DEG` micro-facet tilt leaks the near-critical rays).
+
+Validated — capture×PDE at 5 GeV falls smoothly with roughness:
+
+| σα (deg) | 0 | 0.3 | 0.7 | **1.3** | 3 |
+|---|---|---|---|---|---|
+| capture×PDE | 10.8 % | 10.0 % | 7.9 % | **5.6 %** | 4.2 % |
+
+**Default σα = 1.3°** halves the capture — a defensible "real polished-but-
+imperfect fused rod." (A first attempt with a plain *ground* surface was a bug:
+it defaulted to Lambertian reflection and killed the guide entirely, capture → 0
+at any roughness; the specular-lobe constant fixes that.)
+
+**σα = 1.3° is a starting value, not a calibration.** The physical anchor is the
+paper's linear Fig. 17: rerun and check that the fired-pixel energy no longer
+sags. If it still saturates, the **unmeasured DSB1 light yield** (10000 ph/MeV,
+an estimate) is the other lever on total light. Halving capture likely is *not*
+enough on its own to fully linearize — expect to also trim the DSB1 yield.
+
+## Lean next step (validate the fix without the full 4-point ladder)
+
+One f = 1 scan with the fix, compared to the pre-fix `lad1` (identical config,
+σα = 0). On curiosity:
+
+```bash
+conda activate g4 && cd ~/RADiCAL2026 && git pull
+cd simulations/RADiCALsimDSB/build && make -j$(nproc)
+setsid nohup env RADICAL_OPTICAL=1 RADICAL_ENERGIES="25 50 75 100 125 150" \
+  RADICAL_LYSO_SCINT_SCALE=1e-2 RADICAL_SCINT_YIELD=1e-2 RADICAL_QUARTZ_CHER_KEEP=1e-2 \
+  RADICAL_MAX_OPT_PHOTONS=20000000 RADICAL_SPTR_PS=60 RADICAL_SIPM_NPIX=5676 \
+  RADICAL_SM_COG_CUT_MM=2 RADICAL_ROD_SIGMA_ALPHA_DEG=1.3 RADICAL_RUN_TAG=roughtest \
+  bash ../run_scan.sh 300 1 > roughtest.log 2>&1 &
+```
+
+≈1 h. Sync `optical_scan_300_roughtest/` back; the comparison to `lad1` shows
+whether capture dropped, Fig. 17 flattened, and the timing floor `b` fell.
+
+If you need one existing config to quote meanwhile, use **f = 3** (most light,
 best-behaved, `a = 1020 ps/√E`) — but flag it as saturation-limited, not final.
 
 ## Files
