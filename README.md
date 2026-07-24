@@ -37,6 +37,12 @@ simulations/                 Geant4 simulations
                                EJ309 capillary made optically active (with its
                                own end PDs) so it counts as the 5th light source
                                alongside the 4 corner WLS caps. run_hole_scan.sh.
+  RADiCALsimLadder/          Photostatistics scale-ladder timing study (reuses the
+                               RADiCALsimDSB binary): sweeps a coherent light factor
+                               f, fits σ_t²(f)=A²/f+B² to separate photon-counting
+                               from the light-independent floor, extrapolates to true
+                               light. Found the sim over-collects light ~3–4×,
+                               over-saturating the SiPM — see its README.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
