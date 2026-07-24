@@ -9,4 +9,4 @@
 /vis/scene/endOfEventAction accumulate 3
 # Fire a couple of showers so you can see the beam + optical photons:
 /gun/energy 50 GeV
-/run/beamOn 2
+#/run/beamOn 2

@@ -1,7 +1,7 @@
-# RADiCALsimSIMPLE — a minimal, hand-readable RADiCAL timing simulation
+# RADiCALsimSIMPLE — a RADiCAL timing simulation
 
-A deliberately small model of the RADiCAL module, built to be **understood and
-modified by hand**. It keeps the real physics (LYSO/W shower + 4-corner WLS
+A deliberately small model of the RADiCAL module, built to be **modified by hand**.
+ It keeps the real physics (LYSO/W shower + 4-corner WLS
 timing fibres) but throws away every layer of accreted complexity:
 **no electronics, no beam-line, no waveform/CFD/DRS4, no SiPM saturation or
 jitter.** The whole thing is ~6 short source files.

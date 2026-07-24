@@ -5,6 +5,10 @@
 RunAction::RunAction() {
     auto a = G4AnalysisManager::Instance();
     a->SetDefaultFileType("root");
+    a->SetFileName("radsimple_output");   // default; a macro can override with
+                                           // /analysis/setFileName before /run/beamOn
+                                           // (Geant4's built-in UI command) — used
+                                           // by run.mac to write one file per energy.
     a->SetVerboseLevel(0);
     a->SetNtupleMerging(true);          // merge per-thread ntuples on MT runs
 
