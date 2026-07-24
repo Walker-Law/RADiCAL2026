@@ -2,12 +2,12 @@
 
 A deliberately small model of the RADiCAL module, built to be **modified by hand**.
  It keeps the real physics (LYSO/W shower + 4-corner WLS
-timing fibres) but throws away every layer of accreted complexity:
+timing fibers) but throws away every layer of accreted complexity:
 **no electronics, no beam-line, no waveform/CFD/DRS4, no SiPM saturation or
 jitter.** The whole thing is ~6 short source files.
 
 The timing observable is the **raw first-photon arrival-time difference** between
-the two ends of a fibre — nothing else.
+the two ends of a fiber — nothing else.
 
 ---
 
@@ -16,8 +16,8 @@ the two ends of a fibre — nothing else.
 ```
  e- ─► LYSO/W stack ─► LYSO scintillates (420 nm blue)
                           │
-                          ▼  a blue photon reaches a corner fibre
-                       quartz guide ──► DSB1 (15 mm at shower max)
+                          ▼  a blue photon reaches a corner fiber
+                         quartz guide ──► DSB1 (15 mm at shower max)
                           │                 │  absorbs blue, re-emits GREEN (495 nm) = "OpWLS"
                           ▼                 ▼
                      guided by TIR ──► SiPM (PD) at each end ──► record FIRST photon time
@@ -25,7 +25,7 @@ the two ends of a fibre — nothing else.
 
 1. the shower deposits energy in the LYSO plates,
 2. LYSO scintillates → 420 nm photons,
-3. a photon reaching a corner fibre enters the quartz; at the 15 mm **DSB1**
+3. a photon reaching a corner fiber enters the quartz; at the 15 mm **DSB1**
    section (placed at shower max) it is absorbed and re-emitted at 495 nm
    (Geant4 process `OpWLS`),
 4. the green photon is guided by total internal reflection to the SiPM at each end,
@@ -35,8 +35,8 @@ the two ends of a fibre — nothing else.
 The single-ended timing resolution is `σ_t = σ(dT) / 2` (the ÷2 because dT is a
 symmetric down−up difference about the shower-max source).
 
-> **Design choice:** the DSB1 fibre is a **pure wavelength shifter** (no self-
-> scintillation). So the fibre light is unambiguously the LYSO→WLS chain — this
+> **Design choice:** the DSB1 fiber is a **pure wavelength shifter** (no self-
+> scintillation). So the fiber light is unambiguously the LYSO→WLS chain — this
 > also sidesteps the self-scint/WLS composition ambiguity that complicated the
 > full DSB sim.
 
@@ -48,10 +48,10 @@ symmetric down−up difference about the shower-max source).
 |------|-------|
 | tile | 14 × 14 mm |
 | stack | 29 LYSO (1.5 mm) + 28 W (2.5 mm) + 56 Tyvek foils (0.2032 mm) = **124.88 mm** |
-| Tyvek | reflective (98%) foils between plates, with holes for the fibres |
-| fibres | 4, at (±3.5, ±3.5) mm; quartz guide + **DSB1 15 mm at shower max (40.4 mm deep)** |
-| fibre radius | 0.575 mm in a 0.65 mm hole (75 µm air gap → quartz-air TIR guiding) |
-| SiPMs | thin Si discs at both stack ends, one per fibre end (8 total) |
+| Tyvek | reflective (98%) foils between plates, with holes for the fibers |
+| fibers | 4, at (±3.5, ±3.5) mm; quartz guide + **DSB1 15 mm at shower max (40.4 mm deep)** |
+| fiber radius | 0.575 mm in a 0.65 mm hole (75 µm air gap → quartz-air TIR guiding) |
+| SiPMs | thin Si discs at both stack ends, one per fiber end (8 total) |
 
 Beam: one electron per event, `+z`, set the energy in the macro with `/gun/energy`.
 
