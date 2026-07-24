@@ -81,15 +81,21 @@ source ../setup_env.sh                       # Geant4 environment
 cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX && make -j
 
 ./radsimple                                  # OpenGL viewer (fires 2 showers)
-./radsimple run.mac                          # batch -> radsimple_output.root
+./radsimple run.mac                          # batch energy sweep (see below)
 ```
 
-Output histograms (`radsimple_output.root`):
-`Elyso` (GeV), `Npe` (photons/event), `dT` (ns, 4-corner mean), `dTc` (per corner),
-plus an `ev` ntuple `(Elyso, Npe, dT)`.
+`run.mac` sweeps `E = 5, 10, 25, 50, 100, 120 GeV`, 500 events each, writing one
+file per energy: `E5GeV.root`, `E10GeV.root`, ... `E120GeV.root`. It uses
+Geant4's built-in `/analysis/setFileName` command — add or remove a
+`/analysis/setFileName` + `/gun/energy` + `/run/beamOn` block to change the
+energy list, no C++ needed.
 
-Analyze one file: `root -l -b -q 'analysis/fit.C("build/radsimple_output.root")'`
-→ prints `σ_t = σ(dT)/2` and `σ/E`.
+Each file's histograms: `Elyso` (GeV), `Npe` (photons/event), `dT` (ns,
+4-corner mean), `dTc` (per corner), plus an `ev` ntuple `(Elyso, Npe, dT)`.
+
+Analyze one file: `root -l -b -q 'analysis/fit.C("build/E50GeV.root")'`
+→ prints `σ_t = σ(dT)/2` and `σ/E`. Analyze the whole sweep:
+`for f in build/E*GeV.root; do root -l -b -q "analysis/fit.C(\"$f\")"; done`
 
 ---
 
