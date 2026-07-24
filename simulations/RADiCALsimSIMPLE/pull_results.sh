@@ -12,6 +12,7 @@ HOST="wlaw@172.16.17.188"
 PORT=10022
 REMOTE_DIR="~/RADiCAL2026/simulations/RADiCALsimSIMPLE"
 HERE="$(cd "$(dirname "$0")" && pwd)"
+mkdir -p "$HERE/build/plots"
 
 rsync -avz -e "ssh -p $PORT" \
   "$HOST:$REMOTE_DIR/build/"'*GeV.root' \
