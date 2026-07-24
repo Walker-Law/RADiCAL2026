@@ -1,0 +1,6 @@
+# run.mac — batch run. Usage:  ./radsimple run.mac  -> radsimple_output.root
+# Change the energy / event count here, or copy this file per energy for a scan.
+/run/initialize
+/run/printProgress 100
+/gun/energy 50 GeV
+/run/beamOn 500
