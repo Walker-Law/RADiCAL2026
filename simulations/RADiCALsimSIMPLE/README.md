@@ -94,8 +94,22 @@ Each file's histograms: `Elyso` (GeV), `Npe` (photons/event), `dT` (ns,
 4-corner mean), `dTc` (per corner), plus an `ev` ntuple `(Elyso, Npe, dT)`.
 
 Analyze one file: `root -l -b -q 'analysis/fit.C("build/E50GeV.root")'`
-→ prints `σ_t = σ(dT)/2` and `σ/E`. Analyze the whole sweep:
-`for f in build/E*GeV.root; do root -l -b -q "analysis/fit.C(\"$f\")"; done`
+→ prints `σ_t = σ(dT)/2` and `σ/E`.
+
+Analyze the whole sweep: `root -l -b -q analysis/scan.C` → `build/plots/`:
+
+| plot | what it shows |
+|------|---------------|
+| `sigma_t_vs_E.png` | timing resolution σ_t vs E, fitted to `a/√E ⊕ b` |
+| `sigma_E_vs_E.png` | energy resolution σ_E/E vs E (%), fitted to `a/√E ⊕ b` |
+| `fits/dT_E<N>GeV.png` | the ΔT distribution **at each energy** with its Gaussian-core fit — the histogram each σ_t point came from |
+| `fits/Elyso_E<N>GeV.png` | the LYSO-energy spread **at each energy** with its fit — the histogram each σ_E/E point came from |
+
+Every point is a two-pass Gaussian **core** fit (full-range fit, then refit
+within µ ± 2σ) so leakage tails don't inflate the widths. σ_E/E is width ÷ mean
+of the energy histogram **at one fixed beam energy** — resolution, not linearity.
+Note σ_t depends on the photon thinning (`RADSIMPLE_LYSO_SCALE`); σ_E/E does not
+(it is pure dE/dx, no optical photons involved).
 
 ---
 
