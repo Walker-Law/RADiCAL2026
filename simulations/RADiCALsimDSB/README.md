@@ -44,6 +44,32 @@ shower spreading in the low-density gaps — a full GEANT4 evaluation recovers
 13.7 mm. Either way R_M ≈ 13 mm, so the **14 × 14 mm tile is ≈ 1 R_M across**: the
 module cross-section is set to about one Molière radius by design.
 
+### Transverse shower containment
+
+Lateral EM-shower containment scales with R_M — the energy inside a cylinder of
+radius `r` about the shower axis (standard approximation):
+
+| r / R_M | energy contained |
+|---------|------------------|
+| 0.5 | ~70 % |
+| 1.0 | 90 % |
+| 2.0 | 95 % |
+| 3.5 | 99 % |
+
+The 14 × 14 mm tile reaches **±0.51 R_M** at its flat edge and **±0.72 R_M** at a
+corner (R_M = 13.7 mm), so a single isolated tower transversely contains
+**≈ 75 %** of a full high-energy shower. The remaining ~25 % leaks sideways —
+recovered by neighbouring towers in a 3 × 3+ array (as the paper notes), or in
+this single-module test-beam setup by the Pb-glass tail-catcher via the
+`ECombined = E_LYSO + 0.18·E_PbGlass` estimator.
+
+**At shower max — the depth the timing fibres read out — the shower is far more
+compact than the full-shower R_M.** The paper measures a radius **r ≤ 5 mm** there
+(≈ 0.36 R_M, approaching the radiation length X₀ = 5.4 mm), so **≳ 90 %** of the
+shower-max energy sits inside the tile. That compactness — one to two orders of
+magnitude more charged particles than a MIP in a few-mm spot — is exactly what
+makes the corner-WLS shower-max timing work.
+
 ## Test-beam line
 
 | Element | z position | Purpose |
