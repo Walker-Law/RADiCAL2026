@@ -27,7 +27,8 @@ RunAction::RunAction() {
 }
 
 void RunAction::BeginOfRunAction(const G4Run*) {
-    G4AnalysisManager::Instance()->OpenFile("radsimple_output.root");
+    G4AnalysisManager::Instance()->OpenFile();   // no name -> uses whatever
+                                                  // SetFileName()/setFileName gave it
 }
 
 void RunAction::EndOfRunAction(const G4Run*) {
