@@ -113,6 +113,24 @@ Note σ_t depends on the photon thinning (`RADSIMPLE_LYSO_SCALE`); σ_E/E does n
 
 ---
 
+## Running on the cluster
+
+Build and run `run.mac` on curiosity exactly as above (same commands, just
+over SSH). To pull the results back to this Mac without hand-writing an rsync
+command each time:
+
+```bash
+cd RADiCALsimSIMPLE
+bash pull_results.sh
+```
+
+This syncs `build/E*GeV.root` and `build/plots/` from the cluster copy of this
+repo into the matching local paths, so `root -l -b -q analysis/scan.C` (or
+`fit.C` on any one file) works locally right after. Host/port/remote path are
+hardcoded at the top of the script — edit them there if the cluster changes.
+
+---
+
 ## Knobs (environment variables)
 
 | var | default | meaning |
