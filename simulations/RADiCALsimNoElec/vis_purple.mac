@@ -1,0 +1,28 @@
+# 1 GeV optical-photon visualization — optical photons drawn purple.
+# Run from build/:
+#   RADICAL_OPTICAL=1 RADICAL_BEAM_ENERGY_GEV=1 ./radical ../vis_purple.mac
+#
+# No auto /run/beamOn: bare `./radical` used to fire one event before you even
+# got a prompt, so a track was already drawn (and accumulating, since
+# endOfEventAction is "accumulate 5") before you could type anything to stop
+# it — that's why `/tracking/storeTrajectory 0` typed afterward did nothing
+# (or crashed the accumulated-scene state). Geometry now opens track-free;
+# type `/run/beamOn 1` yourself whenever you actually want to see photon paths.
+
+/run/initialize
+
+/vis/open OGL 1000x800
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 90 0
+/vis/viewer/zoom 2.0
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate 5
+/vis/viewer/set/background 0.02 0.02 0.08
+
+# Optical photons purple; EM shower in standard colours
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/setRGBA opticalphoton 0.6 0.1 0.9 1.0
+/vis/modeling/trajectories/drawByParticleID-0/set e- red
+/vis/modeling/trajectories/drawByParticleID-0/set e+ blue
+/vis/modeling/trajectories/drawByParticleID-0/set gamma green
+/vis/modeling/trajectories/select drawByParticleID-0
