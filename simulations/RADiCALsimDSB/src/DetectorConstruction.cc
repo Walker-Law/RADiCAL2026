@@ -535,6 +535,38 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     wlsVis->SetForceAuxEdgeVisible(true);
     logicTMidWLS->SetVisAttributes(wlsVis);
 
+    // ── Quartz light-guide surface roughness (capture-fraction realism, 2026-07-24)
+    // The corner rods are an AIR-CLAD QUARTZ WAVEGUIDE (n=1.46 in the ~75 um air
+    // gap): their bare-TIR trapping ceiling is 1 - 1/1.46 = 31.5% of isotropic
+    // WLS light (both ends). With PERFECTLY SMOOTH walls (no surface was defined
+    // before this) the sim sat AT that ceiling -> ~11% capture x PDE, which
+    // over-saturated the SiPMs vs the paper's LINEAR Fig 17 and inflated the
+    // scale-ladder timing floor (see ../RADiCALsimLadder). Real fused-silica rods
+    // scatter the near-critical-angle guided light (which bounces most often) out
+    // of the walls over the ~90 mm path. Model it with a ground
+    // dielectric_dielectric surface: each wall bounce perturbs the facet normal
+    // by ~sigma_alpha, so the highest-angle rays leak out instead of guiding.
+    //   RADICAL_ROD_SIGMA_ALPHA_DEG = RMS microfacet slope in degrees.
+    //   0 = polished (legacy, at the trapping ceiling). Default 1.3 deg brings
+    //   the capture down toward a realistically lossy guide; CALIBRATE against
+    //   the Fig-17 energy linearity (fired-pixel/E flat) with a ladder rerun.
+    G4double rodSigmaDeg = 1.3;
+    if (const char* s = std::getenv("RADICAL_ROD_SIGMA_ALPHA_DEG")) {
+        G4double v = std::atof(s); if (v >= 0.) rodSigmaDeg = v;
+    }
+    if (rodSigmaDeg > 0.) {
+        auto rodSurf = new G4OpticalSurface("QuartzRodSurface");
+        rodSurf->SetType(dielectric_dielectric);
+        rodSurf->SetModel(unified);
+        rodSurf->SetFinish(ground);
+        rodSurf->SetSigmaAlpha(rodSigmaDeg * deg);
+        for (auto lv : {logicTUpstream, logicTDownstream, logicTMidTube, logicTExt})
+            new G4LogicalSkinSurface("RodSurf_" + lv->GetName(), lv, rodSurf);
+        G4cout << "[RADiCAL] quartz rod surface: ground, sigma_alpha = "
+               << rodSigmaDeg << " deg (RADICAL_ROD_SIGMA_ALPHA_DEG; 0=polished)"
+               << G4endl;
+    }
+
     // --- Photodetectors at the upstream & downstream ends of each capillary ---
     // Thin Si pads, abutting the quartz rod ends, that detect optical photons
     // (SteppingAction applies the quantum efficiency and records arrival time).
