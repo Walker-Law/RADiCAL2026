@@ -113,10 +113,23 @@ but this is a SYMPTOM, not a result. The run's own diagnostics show the sim
 PhotonsWLSEmitted vs H1[30] PhotonsWLS), which **over-saturates the SiPM** (H1[36]
 fired-pixel energy sags with E, contradicting the paper's LINEAR Fig 17) and
 that saturation is what inflates the timing floor B. **Root cause = light
-over-collection, upstream of timing.** Fix the fiber capture fraction (surface
-roughness / trapping model / PDE+coupling audit) to ~3% -> should linearize the
-energy response AND release the timing floor; THEN rerun the ladder. See
-`../RADiCALsimLadder/README.md`.
+over-collection, upstream of timing.** See `../RADiCALsimLadder/README.md`.
+
+**FIX IMPLEMENTED (2026-07-24): quartz light-guide surface roughness.** The
+corner rods are an AIR-CLAD QUARTZ WAVEGUIDE (n=1.46 in the 75 um air gap), bare-
+TIR ceiling 1-1/1.46 = 31.5% both ends. They had NO optical surface -> perfectly
+smooth walls -> sim ran AT the 31% ceiling (~11% capture x PDE). NOTE: this is a
+quartz WAVEGUIDE, so ~31% is genuinely far above a clad plastic fiber's ~3-4% —
+the earlier "~3% physical" benchmark was the wrong comparison. The physical
+missing loss is surface SCATTER: real fused rods leak the near-critical guided
+rays out of the walls. Added a ground dielectric_dielectric skin surface on the 4
+quartz rod LVs (Upstream/Downstream/MidTube/Ext), `RADICAL_ROD_SIGMA_ALPHA_DEG`
+(RMS microfacet slope, deg; **0 = polished/legacy**, default 1.3). Lower capture
+-> less SiPM saturation -> linear-er Fig 17 -> released timing floor. **Calibrate
+sigma_alpha against the Fig-17 energy linearity (H1[36] fired-pixel/E flat), then
+rerun the ladder.** DSB1 intrinsic yield (10000 ph/MeV, an UNMEASURED estimate)
+is the other lever on total light — if roughness alone can't linearize Fig 17,
+it is the co-suspect.
 
 ## ★★★ paperR RESULT (2026-07-23, `optical_scan_500_paperR`) — realistic composition makes timing 6-8x WORSE, in the honest direction
 
