@@ -22,12 +22,19 @@
 // resolution is a pure dE/dx quantity and does NOT depend on f.
 
 // Two-pass Gaussian core fit. Fills mu, sigma, sigmaErr; draws h + fit into png.
-void coreFitAndSave(TH1* h, const char* title, const char* png,
+// Returns false if the histogram is too empty to fit (so the point is skipped).
+//   pass 1: fit within the histogram's mean +- 3*RMS (focuses on the bulk so a
+//           few stray photons in the tails don't wreck the seed),
+//   pass 2: refit within mu +- 2*sigma (the Gaussian CORE, tails excluded).
+bool coreFitAndSave(TH1* h, const char* title, const char* png,
                     double& mu, double& sg, double& sgErr) {
-    h->Fit("gaus", "Q0");                                    // pass 1: full range
+    if (h->GetEntries() < 20) return false;                  // too few to fit
+    double m = h->GetMean(), r = h->GetRMS();
+    if (h->Fit("gaus", "Q0", "", m - 3*r, m + 3*r) != 0) return false;
     TF1* g = h->GetFunction("gaus");
     mu = g->GetParameter(1); sg = g->GetParameter(2);
-    h->Fit("gaus", "Q0", "", mu - 2*sg, mu + 2*sg);          // pass 2: core only
+    if (sg <= 0) return false;
+    h->Fit("gaus", "Q0", "", mu - 2*sg, mu + 2*sg);          // core only
     g = h->GetFunction("gaus");
     mu = g->GetParameter(1); sg = g->GetParameter(2); sgErr = g->GetParError(2);
 
@@ -38,6 +45,7 @@ void coreFitAndSave(TH1* h, const char* title, const char* png,
     g->SetLineColor(kRed); g->Draw("same");
     c->SaveAs(png);
     delete c;
+    return true;
 }
 
 void scan() {
