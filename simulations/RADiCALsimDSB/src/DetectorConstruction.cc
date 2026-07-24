@@ -547,9 +547,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // dielectric_dielectric surface: each wall bounce perturbs the facet normal
     // by ~sigma_alpha, so the highest-angle rays leak out instead of guiding.
     //   RADICAL_ROD_SIGMA_ALPHA_DEG = RMS microfacet slope in degrees.
-    //   0 = polished (legacy, at the trapping ceiling). Default 1.3 deg brings
-    //   the capture down toward a realistically lossy guide; CALIBRATE against
-    //   the Fig-17 energy linearity (fired-pixel/E flat) with a ladder rerun.
+    //   0 = polished (legacy, at the trapping ceiling). Measured capture x PDE
+    //   at 5 GeV (2026-07-24): 0 -> 10.8%, 0.3 -> 10.0%, 0.7 -> 7.9%,
+    //   1.3 -> 5.6%, 3 -> 4.2%. Default 1.3 deg HALVES the capture (a real
+    //   polished-but-imperfect fused rod). This is a starting value: CALIBRATE
+    //   against the Fig-17 energy linearity (H1[36] fired-pixel/E flat); if it
+    //   still saturates, the UNMEASURED DSB1 yield (10000 ph/MeV) is the other
+    //   lever on total light.
     G4double rodSigmaDeg = 1.3;
     if (const char* s = std::getenv("RADICAL_ROD_SIGMA_ALPHA_DEG")) {
         G4double v = std::atof(s); if (v >= 0.) rodSigmaDeg = v;
