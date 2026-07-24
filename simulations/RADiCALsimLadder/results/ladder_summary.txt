@@ -1,0 +1,19 @@
+RADiCAL timing scale ladder — realistic composition + electronics (500 evt/point)
+================================================================
+
+f_nom     <PhWLS>   f_meas   a [ps/sqrtE]    b [ps] capture*PDE Nfired/E sag
+0.1         584.8        -    2895.3+-191.1   362.14      11.53%         1.16
+0.3        1728.6        -    1686.0+-168.2   343.47      11.30%         1.19
+1          5732.3        -    1524.7+-103.2   217.49      11.27%         1.32
+3         17383.2        -    1020.2+-75.3   159.44      11.64%         1.65
+
+(f_meas = <PhWLS>/<PhWLS(f=1)>; capture*PDE ~11% vs ~3% physical => over-collection;
+ Nfired/E sag > 1 => SiPM saturating with energy, UNLIKE the paper's linear Fig 17)
+
+a^2(f) = A^2/f + B^2 :  A = 867  B = 954  ps/sqrt(E)   chi2/ndf = 6.0/2
+EXTRAPOLATION to true light (f=100):  a = 958 ps/sqrt(E)
+PAPER:                                 a = 256 ps/sqrt(E) (+) 17.5 ps
+=> sim ~3.7x the paper's stochastic term; fit chi2/ndf=3.0 (poor) and B
+   dominates => the floor, not photon counting, sets the number.
+
+wrote results/ladder_summary.txt and results/ladder.png

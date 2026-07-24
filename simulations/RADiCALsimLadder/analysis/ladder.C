@@ -18,6 +18,8 @@
 //
 // Writes results/ladder_summary.txt and results/ladder.png.
 
+#pragma GCC diagnostic ignored "-Wformat-security"   // P() forwards our own literals
+
 void ladder(int nevt = 500) {
   const int NF = 4;
   const double fnom[NF] = {0.1, 0.3, 1., 3.};
