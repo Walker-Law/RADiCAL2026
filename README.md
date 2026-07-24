@@ -134,6 +134,7 @@ distribution a σ/E number was drawn from.
 | `RADICAL_HOLE_DIAM_MM` | (HoleScan only) common tile-hole diameter; all capillaries scale to fill it |
 | `RADICAL_LYSO_SCINT_SCALE` | Scale LYSO scintillation yield (tractability; default 1e-3) |
 | `RADICAL_SCINT_YIELD` | Scale DSB1 self-scintillation yield |
+| `RADICAL_ROD_SIGMA_ALPHA_DEG` | Quartz light-guide surface roughness (RMS microfacet slope, deg). 0 = polished/legacy (trapping ceiling); default 1.3 leaks near-critical rays for a realistically lossy guide. Lower capture → less SiPM saturation |
 | `RADICAL_EJ309_SCINT_SCALE` | (HoleScan only) Scale EJ309 scintillation yield (center capillary) |
 | `RADICAL_QUARTZ_CHER_KEEP` | Binomial-thin quartz Cherenkov (restore real scint:Cher ratio) |
 | `RADICAL_SIPM_NPIX` | SiPM microcell count (default 5676 = MicroFJ-30035) |
