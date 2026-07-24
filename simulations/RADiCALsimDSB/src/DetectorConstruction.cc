@@ -560,9 +560,21 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         rodSurf->SetModel(unified);
         rodSurf->SetFinish(ground);
         rodSurf->SetSigmaAlpha(rodSigmaDeg * deg);
+        // CRITICAL: put ALL reflected light in the SPECULAR LOBE (about the
+        // perturbed micro-facet normal). Without this the unified model defaults
+        // to LAMBERTIAN reflection, which randomizes every guided ray and kills
+        // the light guide entirely (capture -> 0 at any roughness). With
+        // specularlobe=1 the guide stays a near-mirror: TIR still works, and only
+        // the sigma_alpha facet tilt drops the near-critical rays below the
+        // critical angle so they refract out and are lost — the physical
+        // surface-scatter loss we want.
+        auto rodSurfMPT = new G4MaterialPropertiesTable();
+        std::vector<G4double> specLobe(phE.size(), 1.0);
+        rodSurfMPT->AddProperty("SPECULARLOBECONSTANT", phE, specLobe);
+        rodSurf->SetMaterialPropertiesTable(rodSurfMPT);
         for (auto lv : {logicTUpstream, logicTDownstream, logicTMidTube, logicTExt})
             new G4LogicalSkinSurface("RodSurf_" + lv->GetName(), lv, rodSurf);
-        G4cout << "[RADiCAL] quartz rod surface: ground, sigma_alpha = "
+        G4cout << "[RADiCAL] quartz rod surface: ground (specular-lobe), sigma_alpha = "
                << rodSigmaDeg << " deg (RADICAL_ROD_SIGMA_ALPHA_DEG; 0=polished)"
                << G4endl;
     }
