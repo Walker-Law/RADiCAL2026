@@ -104,10 +104,19 @@ remaps them onto the actual install prefix (the 2026-07-22 reorg moved the
 install; baked-in absolute paths pointed at the old location ->
 "ENSDFSTATE.dat is not found" on local Mac runs).
 
-**Ladder on this chain:** `run_ladder_paperR.sh` (f in {0.1,0.3,1,3} coherent,
-`MAX_OPT_PHOTONS=60e6` for f=3 headroom, no ELEC_JITTER) +
-`analysis/ladder_paperR.C` (fits a^2=A^2/f+B^2 with MEASURED light ratios,
-extrapolates to f=100 true light, prints capture fraction per point).
+**Ladder on this chain — RESULT (2026-07-24): moved to `../RADiCALsimLadder/`.**
+The scale ladder (f in {0.1,0.3,1,3} coherent) now lives in its own study folder
+(`simulations/RADiCALsimLadder/`: run_ladder.sh + analysis/ladder.C + README).
+Headline: extrapolated true-light a ~ 958 ps/sqrt(E), **3.7x the paper's 256** —
+but this is a SYMPTOM, not a result. The run's own diagnostics show the sim
+**over-collects light ~3-4x** (WLS capture*PDE ~11% vs ~3% physical: H1[40]
+PhotonsWLSEmitted vs H1[30] PhotonsWLS), which **over-saturates the SiPM** (H1[36]
+fired-pixel energy sags with E, contradicting the paper's LINEAR Fig 17) and
+that saturation is what inflates the timing floor B. **Root cause = light
+over-collection, upstream of timing.** Fix the fiber capture fraction (surface
+roughness / trapping model / PDE+coupling audit) to ~3% -> should linearize the
+energy response AND release the timing floor; THEN rerun the ladder. See
+`../RADiCALsimLadder/README.md`.
 
 ## ★★★ paperR RESULT (2026-07-23, `optical_scan_500_paperR`) — realistic composition makes timing 6-8x WORSE, in the honest direction
 
