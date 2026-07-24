@@ -255,9 +255,9 @@ static G4double envD(const char* k, G4double dflt) {
 // the nonlinearity the low-gain energy channel must handle. (NOTE: crosstalk
 // 8-25% and afterpulsing are NOT modeled — they would raise N_fired ~10-20%.)
 static G4double sipmNfired(G4double nDet) {
-    static G4double npix = envD("RADICAL_SIPM_NPIX", 5676.);
-    if (npix <= 0.) return nDet;
-    return npix * (1. - std::exp(-nDet / npix));
+    // NoElec variant: SiPM microcell saturation REMOVED — ideal linear sensor.
+    // (DSB uses npix*(1-exp(-nDet/npix)); here the low-gain energy is linear.)
+    return nDet;
 }
 
 // High-gain leading-edge timing: the SPR-sum pulse (normalized to unit peak per
