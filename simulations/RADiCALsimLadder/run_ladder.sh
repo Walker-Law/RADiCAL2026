@@ -42,6 +42,7 @@ for f in $FACTORS; do
       RADICAL_LYSO_SCINT_SCALE=$LY RADICAL_SCINT_YIELD=$LY RADICAL_QUARTZ_CHER_KEEP=$LY \
       RADICAL_MAX_OPT_PHOTONS=60000000 \
       RADICAL_SPTR_PS=60 RADICAL_SIPM_NPIX=5676 RADICAL_SM_COG_CUT_MM=2 \
+      RADICAL_ROD_SIGMA_ALPHA_DEG=${RADICAL_ROD_SIGMA_ALPHA_DEG:-1.3} \
       RADICAL_RUN_TAG=paperR_lad$f \
       bash "$DSB/run_scan.sh" "$NEVT" 1 )
     # copy the merged result here (root files only — drop ~500 per-chunk logs)
