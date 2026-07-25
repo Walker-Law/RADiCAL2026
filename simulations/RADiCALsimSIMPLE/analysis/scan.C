@@ -81,7 +81,19 @@ void scan() {
         sigTerr[i] = 1000 * sgErr / 2;
 
         // --- energy: Elyso spread -> sigma/mean at this fixed beam energy ---
-        TH1* e = (TH1*)f.Get("Elyso");
+        // The stored Elyso H1 has a FIXED 100 MeV bin width (250 bins over
+        // 0-25 GeV) so it can hold any energy — but at 5 GeV the whole peak
+        // (sigma ~ 40 MeV) lands in 2-3 bins and the Gaussian fit is quantized
+        // garbage. Rebuild a per-energy histogram from the UNBINNED per-event
+        // values in the ev ntuple instead: range = mean +- 5*RMS, 100 bins,
+        // so every energy gets a well-resolved peak.
+        TTree* t = (TTree*)f.Get("ev");
+        double m0  = t->GetMinimum("Elyso"), m1 = t->GetMaximum("Elyso");
+        TH1D* e = new TH1D("ElysoFine", "", 100, m0, m1);
+        t->Draw("Elyso>>ElysoFine", "", "goff");
+        double mE = e->GetMean(), rE = e->GetRMS();
+        e->SetBins(100, mE - 5*rE, mE + 5*rE);
+        t->Draw("Elyso>>ElysoFine", "", "goff");             // refill, focused range
         double muE, sgE, sgEErr;
         coreFitAndSave(e, Form("E_{LYSO} at %.0f GeV;E_{LYSO} (GeV);events", E[i]),
                        Form("build/plots/fits/Elyso_E%.0fGeV.png", E[i]), muE, sgE, sgEErr);
