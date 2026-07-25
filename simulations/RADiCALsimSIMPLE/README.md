@@ -111,6 +111,40 @@ of the energy histogram **at one fixed beam energy** — resolution, not lineari
 Note σ_t depends on the photon thinning (`RADSIMPLE_LYSO_SCALE`); σ_E/E does not
 (it is pure dE/dx, no optical photons involved).
 
+(For the energy fits, `scan.C` rebuilds each per-energy histogram from the
+unbinned `ev` ntuple rather than using the stored `Elyso` H1 — the H1's fixed
+100 MeV bins leave only 2–3 bins across the 5 GeV peak and quantize the fit.
+Found 2026-07-25 when 10k-event statistics exposed a χ²/ndf ≈ 26 energy curve;
+the rebuild dropped it to ≈ 0.6 and moved the 5 GeV point 6.6 % → 5.1 %.)
+
+---
+
+## Results (2026-07-25 — 10 000 events/energy, `RADSIMPLE_LYSO_SCALE=1e-2`)
+
+| E (GeV) | σ_t (ps) | σ_E/E (%) |
+|---|---|---|
+| 5   | 38.7 ± 0.7 | 5.09 ± 0.06 |
+| 10  | 29.9 ± 0.4 | 3.66 ± 0.04 |
+| 25  | 21.0 ± 0.2 | 2.30 ± 0.03 |
+| 50  | 17.2 ± 0.2 | 1.65 ± 0.02 |
+| 100 | 15.2 ± 0.2 | 1.23 ± 0.01 |
+| 120 | 14.6 ± 0.2 | 1.12 ± 0.01 |
+
+Fits (both χ²/ndf ≈ 1, every point on the curve):
+
+- **σ_E/E = 11.4 %/√E ⊕ 0.44 %** — *solid.* Pure dE/dx sampling, independent of
+  photon thinning, and close to the RADiCAL design target of ~10 %/√E. This is
+  the honest sampling resolution of the LYSO/W stack itself.
+- **σ_t = 84.4/√E ⊕ 12.5 ps** at 1e-2 thinned light — *fits beautifully but
+  carries an open composition caveat:* Cherenkov light (LYSO + quartz rods) is
+  generated at its **full physical rate** here while scintillation is thinned
+  100×, so the race for "first photon" is likely won by **prompt Cherenkov**
+  rather than the 36 ns-gated WLS light the real device times on — the exact
+  inverted-ratio trap documented in RADiCALsimDSB. Until the composition is
+  fixed (thin Cherenkov coherently, as DSB's `StackingAction` does) or the
+  first-photon origin is tagged and checked, do **not** √f-extrapolate this
+  number to true light or compare it to the paper's 256 ps/√E.
+
 ---
 
 ## Running on the cluster
