@@ -65,6 +65,7 @@ Beam: one electron per event, `+z`, set the energy in the macro with `/gun/energ
 | `src/DetectorConstruction.cc` | **materials + geometry** — the physics inputs |
 | `src/PrimaryGeneratorAction.cc` | the electron beam |
 | `src/SteppingAction.cc` | at each step: sum LYSO energy, detect photons at SiPMs |
+| `src/StackingAction.cc` | coherent Cherenkov thinning (same factor as the LYSO yield) |
 | `src/EventAction.cc` | per event: form dT, fill histograms |
 | `src/RunAction.cc` | define histograms + ntuple, write the output file |
 
