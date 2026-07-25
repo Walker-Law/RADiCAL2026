@@ -170,7 +170,7 @@ hardcoded at the top of the script — edit them there if the cluster changes.
 | var | default | meaning |
 |-----|---------|---------|
 | `RADSIMPLE_OPTICAL` | 1 | 0 = skip optical photons (fast, energy only) |
-| `RADSIMPLE_LYSO_SCALE` | 1e-2 | **photon thinning** — tracks this fraction of LYSO light |
+| `RADSIMPLE_LYSO_SCALE` | 1e-2 | **coherent photon thinning of ALL light** — LYSO scintillation at the source (yield × scale) and Cherenkov at stacking (each photon kept with prob = scale, `StackingAction.cc`). One knob, so the scint:Cherenkov mix stays physical at any thinning |
 | `RADSIMPLE_PDE` | 0.36 | SiPM detection efficiency |
 
 **Why thinning exists:** full LYSO light is ~5×10⁸ photons per 120 GeV event —
