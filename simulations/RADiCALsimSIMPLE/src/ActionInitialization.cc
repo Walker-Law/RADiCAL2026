@@ -20,4 +20,5 @@ void ActionInitialization::Build() const {
     auto eventAction = new EventAction(runAction);
     SetUserAction(eventAction);
     SetUserAction(new SteppingAction(eventAction));
+    SetUserAction(new StackingAction());   // coherent Cherenkov thinning
 }
