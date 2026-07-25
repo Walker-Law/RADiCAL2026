@@ -135,15 +135,16 @@ Fits (both χ²/ndf ≈ 1, every point on the curve):
 - **σ_E/E = 11.4 %/√E ⊕ 0.44 %** — *solid.* Pure dE/dx sampling, independent of
   photon thinning, and close to the RADiCAL design target of ~10 %/√E. This is
   the honest sampling resolution of the LYSO/W stack itself.
-- **σ_t = 84.4/√E ⊕ 12.5 ps** at 1e-2 thinned light — *fits beautifully but
-  carries an open composition caveat:* Cherenkov light (LYSO + quartz rods) is
-  generated at its **full physical rate** here while scintillation is thinned
-  100×, so the race for "first photon" is likely won by **prompt Cherenkov**
-  rather than the 36 ns-gated WLS light the real device times on — the exact
-  inverted-ratio trap documented in RADiCALsimDSB. Until the composition is
-  fixed (thin Cherenkov coherently, as DSB's `StackingAction` does) or the
-  first-photon origin is tagged and checked, do **not** √f-extrapolate this
-  number to true light or compare it to the paper's 256 ps/√E.
+- **σ_t = 84.4/√E ⊕ 12.5 ps** at 1e-2 thinned light — *superseded.* This run
+  predates the coherent-thinning fix: Cherenkov was generated at its **full
+  physical rate** while scintillation was 100× thinned, so the first-photon
+  race was won by prompt Cherenkov rather than the 36 ns-gated WLS light the
+  real device times on (the inverted-ratio trap documented in RADiCALsimDSB).
+  **Fixed 2026-07-25**: `StackingAction.cc` now thins Cherenkov by the same
+  `RADSIMPLE_LYSO_SCALE`, so ALL light carries one coherent factor and the mix
+  is physical at any thinning. The timing row of the table above is the
+  pre-fix (Cherenkov-dominated) number — kept for the record; the 100k-event
+  rerun with the fix supersedes it. σ_E/E is unaffected (no photons involved).
 
 ---
 
