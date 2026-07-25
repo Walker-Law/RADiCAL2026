@@ -94,9 +94,11 @@ void scan() {
         double mE = e->GetMean(), rE = e->GetRMS();
         e->SetBins(100, mE - 5*rE, mE + 5*rE);
         t->Draw("Elyso>>ElysoFine", "", "goff");             // refill, focused range
+        e->SetDirectory(nullptr);                            // detach from the file
         double muE, sgE, sgEErr;
         coreFitAndSave(e, Form("E_{LYSO} at %.0f GeV;E_{LYSO} (GeV);events", E[i]),
                        Form("build/plots/fits/Elyso_E%.0fGeV.png", E[i]), muE, sgE, sgEErr);
+        delete e;
         resE[i]    = 100 * sgE / muE;
         resEerr[i] = resE[i] * sqrt(pow(sgEErr/sgE, 2));     // sigma error dominates
 
