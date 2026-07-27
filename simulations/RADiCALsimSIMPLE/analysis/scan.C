@@ -74,7 +74,8 @@ void scan(const char* dir = "build") {
     for (int i = 0; i < N; ++i) {
         TString fname = Form("%s/E%.0fGeV.root", dir, E[i]);
         TFile f(fname);
-        if (f.IsZombie()) { printf("  missing %s\n", fname.Data()); sigT[i]=resE[i]=0; sigTerr[i]=resEerr[i]=0; continue; }
+        if (f.IsZombie()) { printf("  missing %s\n", fname.Data());
+                            sigT[i]=resE[i]=resN[i]=0; sigTerr[i]=resEerr[i]=resNerr[i]=0; continue; }
         double mu, sg, sgErr;
 
         // --- timing: dT distribution -> sigma_t = sigma(dT)/2 ---
