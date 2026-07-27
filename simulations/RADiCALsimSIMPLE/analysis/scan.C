@@ -151,7 +151,8 @@ void scan(const char* dir = "build") {
         delete c;
     }
 
-    printf("\nplots: build/plots/sigma_t_vs_E.png, sigma_E_vs_E.png,"
+    printf("\nplots: %s/plots/sigma_t_vs_E.png, sigma_E_vs_E.png,", dir);
+    printf("
            " fits/dT_E*.png, fits/Elyso_E*.png\n"
            "(sigma_t is thinned by RADSIMPLE_LYSO_SCALE; sigma_E/E is not.)\n");
 }
