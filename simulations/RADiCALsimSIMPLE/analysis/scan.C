@@ -205,9 +205,9 @@ void scan(const char* dir = "build") {
         gr->Draw("AP");
         drawFormula("#sigma_{E}/E = a / #sqrt{E} #oplus b   [a: %#sqrt{GeV}, b: %]");
         c->SaveAs(Form("%s/plots/sigma_E_vs_E.png", dir));
-        printf("energy: sigma_E/E = %.1f%%/sqrt(E) (+) %.2f%%   (+- %.1f / %.2f)\n",
-               fit->GetParameter(0), fabs(fit->GetParameter(1)),
-               fit->GetParError(0), fit->GetParError(1));
+        printf("energy (TRUTH, full-stack dE/dx -- not a paper observable):"
+               " %.1f%%/sqrt(E) (+) %.2f%%\n",
+               fit->GetParameter(0), fabs(fit->GetParameter(1)));
         delete c;
     }
 
