@@ -1,0 +1,34 @@
+# run_short.mac — quick 1000-event/energy sweep (same 6 energies as run.mac).
+# For a fast turnaround / cross-check while a long run occupies the other cluster.
+#
+# NOTE the thread cap below: Geant4's MT ntuple merge does not scale to 512
+# threads (it chokes and leaves ~200-byte empty per-thread files), and at only
+# 1000 events/energy hundreds of threads would be pure spin-up overhead anyway.
+# 64 threads is plenty here. /run/numberOfThreads MUST precede /run/initialize.
+/run/numberOfThreads 64
+/run/initialize
+/run/printProgress 200
+
+/analysis/setFileName E5GeV
+/gun/energy 5 GeV
+/run/beamOn 1000
+
+/analysis/setFileName E10GeV
+/gun/energy 10 GeV
+/run/beamOn 1000
+
+/analysis/setFileName E25GeV
+/gun/energy 25 GeV
+/run/beamOn 1000
+
+/analysis/setFileName E50GeV
+/gun/energy 50 GeV
+/run/beamOn 1000
+
+/analysis/setFileName E100GeV
+/gun/energy 100 GeV
+/run/beamOn 1000
+
+/analysis/setFileName E120GeV
+/gun/energy 120 GeV
+/run/beamOn 1000
