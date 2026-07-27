@@ -162,27 +162,43 @@ void scan(const char* dir = "build") {
     }
 
     // --- graph 2: MEASURED energy resolution (from detected light) ---
-    // Fitted to the papers' 3-term form so it can be compared directly:
-    //   2401.01747:  52.04%/sqrt(E) (+) 31.62%/E (+) 9.31%
-    // The middle (noise) term should come out ~0 here: SIMPLE models no
-    // electronic noise, so a b/E contribution has nothing to come from. A
-    // fitted b consistent with zero is the expected, meaningful result.
+    // IMPORTANT: the resolution does NOT improve monotonically here — it bottoms
+    // out around 50 GeV and then gets WORSE (see the printed table). The papers'
+    // a/sqrt(E) (+) b/E (+) c form is monotonically decreasing and therefore
+    // CANNOT describe that, so fitting it over the full range returns a
+    // meaningless compromise. Fit only the monotonic region and report the
+    // turn-up separately, because the turn-up is a real physics result:
+    // the DSB1 window is a FIXED 15 mm at 40.4 mm, while shower max walks
+    // deeper with energy (2401.01747 Fig. 7: layers 8-10 at 25 GeV -> 11-13 at
+    // 125 GeV), so the sampled fraction degrades at high E. The paper flags
+    // exactly this ("adequate although not optimized ... corrected in future work").
+    // Two-term (no b/E): SIMPLE has no electronic noise for a b/E term to model.
+    const double EFITMAX = 50.;
     {
         auto gr = new TGraphErrors(N, E, resN, nullptr, resNerr);
         gr->SetTitle("SIMPLE energy resolution (detected light);E_{beam} (GeV);#sigma_{E}/E (%)");
         gr->SetMarkerStyle(20); gr->SetMarkerColor(kAzure+2); gr->SetLineColor(kAzure+2);
-        auto fit = new TF1("fn", "sqrt([0]*[0]/x + [1]*[1]/(x*x) + [2]*[2])", E[0], E[N-1]);
-        fit->SetParName(0, "a"); fit->SetParName(1, "b"); fit->SetParName(2, "c");
-        fit->SetParameters(40, 1, 9);
-        gr->Fit(fit, "Q");
+        auto fit = new TF1("fn", "sqrt([0]*[0]/x + [1]*[1])", E[0], EFITMAX);
+        fit->SetParName(0, "a"); fit->SetParName(1, "c");
+        fit->SetParameters(40, 9);
+        gr->Fit(fit, "Q", "", E[0], EFITMAX);       // monotonic region only
         gStyle->SetOptFit(1);
         auto c = new TCanvas("cn", "", 800, 600);
         gr->Draw("AP");
-        drawFormula("#sigma_{E}/E = a/#sqrt{E} #oplus b/E #oplus c   [%]");
+        drawFormula("#sigma_{E}/E = a/#sqrt{E} #oplus c   (fit #leq 50 GeV)   [%]");
         c->SaveAs(Form("%s/plots/sigma_E_Npe_vs_E.png", dir));
-        printf("energy (MEASURED, detected light): %.1f%%/sqrt(E) (+) %.1f%%/E (+) %.2f%%\n"
-               "        paper 2401.01747:          52.04%%/sqrt(E) (+) 31.62%%/E (+) 9.31%%\n",
-               fit->GetParameter(0), fabs(fit->GetParameter(1)), fabs(fit->GetParameter(2)));
+        printf("energy (MEASURED, detected light, fit <=%.0f GeV):"
+               " %.1f%%/sqrt(E) (+) %.2f%%\n"
+               "        paper 2401.01747: 52.04%%/sqrt(E) (+) 31.62%%/E (+) 9.31%%"
+               "  (their b/E is electronic noise, absent here)\n",
+               EFITMAX, fit->GetParameter(0), fabs(fit->GetParameter(1)));
+        // quantify the high-E degradation that the fit deliberately excludes
+        double best = 1e9; int ibest = 0;
+        for (int i = 0; i < N; ++i) if (resN[i] > 0 && resN[i] < best) { best = resN[i]; ibest = i; }
+        if (ibest < N-1)
+            printf("        TURN-UP: best %.2f%% at %.0f GeV, degrades to %.2f%% at %.0f GeV"
+                   " (+%.0f%% rel) -- shower max outgrowing the fixed 15 mm WLS window\n",
+                   best, E[ibest], resN[N-1], E[N-1], 100*(resN[N-1]-best)/best);
         delete c;
     }
 
