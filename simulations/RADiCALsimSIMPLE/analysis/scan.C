@@ -70,14 +70,15 @@ void scan(const char* dir = "build") {
 
     printf("%-8s %14s %16s\n", "E(GeV)", "sigma_t (ps)", "sigma_E/E (%)");
     for (int i = 0; i < N; ++i) {
-        TFile f(files[i]);
-        if (f.IsZombie()) { printf("  missing %s\n", files[i]); sigT[i]=resE[i]=0; sigTerr[i]=resEerr[i]=0; continue; }
+        TString fname = Form("%s/E%.0fGeV.root", dir, E[i]);
+        TFile f(fname);
+        if (f.IsZombie()) { printf("  missing %s\n", fname.Data()); sigT[i]=resE[i]=0; sigTerr[i]=resEerr[i]=0; continue; }
         double mu, sg, sgErr;
 
         // --- timing: dT distribution -> sigma_t = sigma(dT)/2 ---
         TH1* d = (TH1*)f.Get("dT");
         coreFitAndSave(d, Form("#DeltaT at %.0f GeV;#DeltaT = t_{down}-t_{up} (ns);events", E[i]),
-                       Form("build/plots/fits/dT_E%.0fGeV.png", E[i]), mu, sg, sgErr);
+                       Form("%s/plots/fits/dT_E%.0fGeV.png", dir, E[i]), mu, sg, sgErr);
         sigT[i]    = 1000 * sg    / 2;                       // ns->ps, /2 corner-trick
         sigTerr[i] = 1000 * sgErr / 2;
 
