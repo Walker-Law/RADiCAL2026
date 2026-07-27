@@ -66,9 +66,11 @@ void scan(const char* dir = "build") {
     gSystem->mkdir(Form("%s/plots/fits", dir), true);
 
     double sigT[N], sigTerr[N];      // timing:  sigma_t (ps)
-    double resE[N], resEerr[N];      // energy:  sigma_E/E (%)
+    double resE[N], resEerr[N];      // energy, TRUTH:    sigma(Elyso)/Elyso (%)
+    double resN[N], resNerr[N];      // energy, MEASURED: sigma(Npe)/Npe   (%)
 
-    printf("%-8s %14s %16s\n", "E(GeV)", "sigma_t (ps)", "sigma_E/E (%)");
+    printf("%-7s %14s %6s %14s %14s\n",
+           "E(GeV)", "sigma_t (ps)", "eff%", "Npe res (%)", "Elyso res (%)");
     for (int i = 0; i < N; ++i) {
         TString fname = Form("%s/E%.0fGeV.root", dir, E[i]);
         TFile f(fname);
