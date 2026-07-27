@@ -123,7 +123,7 @@ void scan(const char* dir = "build") {
         auto c = new TCanvas("ct", "", 800, 600);
         gr->Draw("AP");
         drawFormula("#sigma_{t} = a / #sqrt{E} #oplus b   [a: ps#sqrt{GeV}, b: ps]");
-        c->SaveAs("build/plots/sigma_t_vs_E.png");
+        c->SaveAs(Form("%s/plots/sigma_t_vs_E.png", dir));
         printf("\ntiming: sigma_t = %.1f/sqrt(E) (+) %.1f ps   (+- %.1f / %.1f)\n",
                fit->GetParameter(0), fabs(fit->GetParameter(1)),
                fit->GetParError(0), fit->GetParError(1));
