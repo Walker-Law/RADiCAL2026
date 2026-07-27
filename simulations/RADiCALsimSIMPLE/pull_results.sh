@@ -12,11 +12,15 @@
 set -eu
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PORT=10022
-REMOTE_DIR="~/RADiCAL2026/simulations/RADiCALsimSIMPLE"
 
+# NOTE: the two clusters do NOT have the repo at the same path (July 2026) —
+# curiosity: ~/RADiCAL2026, perseverence: ~/Research/RADiCAL2026. Do not
+# collapse this back into one shared REMOTE_DIR.
 case "${1:-curiosity}" in
-  curiosity)     HOST="wlaw@172.16.17.188"; DEST="$HERE/build" ;;
-  perseverence)  HOST="wlaw@172.16.17.252"; DEST="$HERE/build/short" ;;
+  curiosity)     HOST="wlaw@172.16.17.188"; DEST="$HERE/build"
+                 REMOTE_DIR="~/RADiCAL2026/simulations/RADiCALsimSIMPLE" ;;
+  perseverence)  HOST="wlaw@172.16.17.252"; DEST="$HERE/build/short"
+                 REMOTE_DIR="~/Research/RADiCAL2026/simulations/RADiCALsimSIMPLE" ;;
   *) echo "usage: bash pull_results.sh [curiosity|perseverence]"; exit 1 ;;
 esac
 
