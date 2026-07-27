@@ -1,25 +1,36 @@
 #!/usr/bin/env bash
-# pull_results.sh — rsync the sweep results from curiosity back to this Mac.
+# pull_results.sh — rsync sweep results from a cluster back to this Mac.
 #
 # Run from your Mac (not on the cluster):
-#   bash pull_results.sh
+#   bash pull_results.sh                # curiosity   -> build/        (the long run)
+#   bash pull_results.sh perseverence   # perseverence -> build/short/ (the quick run)
 #
-# Pulls build/E*GeV.root and build/plots/ from the cluster copy of this repo
-# into the matching local paths, so `root -l -b -q analysis/scan.C` (which
-# reads build/E*GeV.root) works locally right after this finishes.
+# Each cluster lands in its own local folder so the two runs never overwrite
+# each other. Analyze whichever you want:
+#   root -l -b -q analysis/scan.C                  # build/
+#   root -l -b -q 'analysis/scan.C("build/short")' # build/short/
 set -eu
-HOST="wlaw@172.16.17.188"
+HERE="$(cd "$(dirname "$0")" && pwd)"
 PORT=10022
 REMOTE_DIR="~/RADiCAL2026/simulations/RADiCALsimSIMPLE"
-HERE="$(cd "$(dirname "$0")" && pwd)"
-mkdir -p "$HERE/build/plots"
+
+case "${1:-curiosity}" in
+  curiosity)     HOST="wlaw@172.16.17.188"; DEST="$HERE/build" ;;
+  perseverence)  HOST="wlaw@172.16.17.252"; DEST="$HERE/build/short" ;;
+  *) echo "usage: bash pull_results.sh [curiosity|perseverence]"; exit 1 ;;
+esac
+
+mkdir -p "$DEST/plots"
+echo "pulling from ${1:-curiosity} -> $DEST"
 
 rsync -avz -e "ssh -p $PORT" \
   "$HOST:$REMOTE_DIR/build/"'*GeV.root' \
-  "$HERE/build/"
+  "$DEST/"
 
+# plots only exist if scan.C was run ON the cluster (perseverence has no usable
+# ROOT, so normally there are none — you analyze locally instead).
 rsync -avz -e "ssh -p $PORT" \
   "$HOST:$REMOTE_DIR/build/plots/" \
-  "$HERE/build/plots/" 2>/dev/null || echo "(no build/plots/ on the cluster yet — run analysis/scan.C there first, or skip and run it locally)"
+  "$DEST/plots/" 2>/dev/null || echo "(no build/plots/ on that cluster — analyze locally with scan.C)"
 
-echo "done -> $HERE/build/"
+echo "done -> $DEST"
