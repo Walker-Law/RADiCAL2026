@@ -53,16 +53,17 @@ void drawFormula(const char* latex, double x = 0.15, double y = 0.82) {
     t.DrawLatex(x, y, latex);
 }
 
-void scan() {
-    // must match the energies (and order) in run.mac
+// dir = folder holding E<N>GeV.root (default "build"). Pass another folder to
+// analyze a second run without clobbering the first, e.g.
+//   root -l -b -q 'analysis/scan.C("build/short")'
+// Plots are written to <dir>/plots/ so each run keeps its own.
+void scan(const char* dir = "build") {
+    // must match the energies (and order) in the macro that produced the files
     const int N = 6;
-    const double E[N]     = {5, 10, 25, 50, 100, 120};
-    const char* files[N]  = {"build/E5GeV.root",  "build/E10GeV.root",
-                             "build/E25GeV.root", "build/E50GeV.root",
-                             "build/E100GeV.root","build/E120GeV.root"};
+    const double E[N] = {5, 10, 25, 50, 100, 120};
 
     gStyle->SetOptStat(0);
-    gSystem->mkdir("build/plots/fits", true);
+    gSystem->mkdir(Form("%s/plots/fits", dir), true);
 
     double sigT[N], sigTerr[N];      // timing:  sigma_t (ps)
     double resE[N], resEerr[N];      // energy:  sigma_E/E (%)
