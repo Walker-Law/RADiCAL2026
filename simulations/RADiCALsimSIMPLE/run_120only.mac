@@ -1,0 +1,11 @@
+# run_120only.mac — rerun just the 120 GeV point (the block that hung due to
+# the missing photon step cap, fixed 2026-07-27 in SteppingAction.cc).
+# The other five E*GeV.root files from the earlier run_short.mac pass are
+# already complete and untouched by this.
+/run/numberOfThreads 64
+/run/initialize
+/run/printProgress 200
+
+/analysis/setFileName E120GeV
+/gun/energy 120 GeV
+/run/beamOn 1000
