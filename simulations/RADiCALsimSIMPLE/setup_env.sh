@@ -48,11 +48,18 @@ if [ -n "$G4CONFIG" ]; then
     # time, and keep pointing at the old prefix -> "ENSDFSTATE.dat is not
     # found". If the parsed path doesn't resolve, remap every G4*DATA var onto
     # THIS geant4-config's actual prefix (dataset dir names are unchanged).
+    # NOTE the dataset DIRECTORY NAMES differ between installs: a source build
+    # uses the upstream "G4ENSDFSTATE3.0" form, while conda-forge drops the
+    # prefix ("ENSDFSTATE3.0"). So try the name as-is, then without a leading
+    # "G4", then with one added, and only export a path that actually exists.
     if [ ! -f "${G4ENSDFSTATEDATA:-/nonexistent}/ENSDFSTATE.dat" ]; then
         G4DATA="$G4INSTALL/share/Geant4/data"
         for _v in $(env | sed -n 's/^\(G4[A-Z]*DATA\)=.*/\1/p'); do
             _old=$(eval echo "\$$_v")
-            export "$_v"="$G4DATA/$(basename "$_old")"
+            _b=$(basename "$_old")
+            for _cand in "$_b" "${_b#G4}" "G4$_b"; do
+                if [ -d "$G4DATA/$_cand" ]; then export "$_v"="$G4DATA/$_cand"; break; fi
+            done
         done
         echo "Remapped stale --datasets paths onto $G4DATA"
     fi
