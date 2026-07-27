@@ -161,10 +161,39 @@ void scan(const char* dir = "build") {
         delete c;
     }
 
-    // --- graph 2: sigma_E/E vs E,  fit a/sqrt(E) (+) b (in %) ---
+    // --- graph 2: MEASURED energy resolution (from detected light) ---
+    // Fitted to the papers' 3-term form so it can be compared directly:
+    //   2401.01747:  52.04%/sqrt(E) (+) 31.62%/E (+) 9.31%
+    // The middle (noise) term should come out ~0 here: SIMPLE models no
+    // electronic noise, so a b/E contribution has nothing to come from. A
+    // fitted b consistent with zero is the expected, meaningful result.
+    {
+        auto gr = new TGraphErrors(N, E, resN, nullptr, resNerr);
+        gr->SetTitle("SIMPLE energy resolution (detected light);E_{beam} (GeV);#sigma_{E}/E (%)");
+        gr->SetMarkerStyle(20); gr->SetMarkerColor(kAzure+2); gr->SetLineColor(kAzure+2);
+        auto fit = new TF1("fn", "sqrt([0]*[0]/x + [1]*[1]/(x*x) + [2]*[2])", E[0], E[N-1]);
+        fit->SetParName(0, "a"); fit->SetParName(1, "b"); fit->SetParName(2, "c");
+        fit->SetParameters(40, 1, 9);
+        gr->Fit(fit, "Q");
+        gStyle->SetOptFit(1);
+        auto c = new TCanvas("cn", "", 800, 600);
+        gr->Draw("AP");
+        drawFormula("#sigma_{E}/E = a/#sqrt{E} #oplus b/E #oplus c   [%]");
+        c->SaveAs(Form("%s/plots/sigma_E_Npe_vs_E.png", dir));
+        printf("energy (MEASURED, detected light): %.1f%%/sqrt(E) (+) %.1f%%/E (+) %.2f%%\n"
+               "        paper 2401.01747:          52.04%%/sqrt(E) (+) 31.62%%/E (+) 9.31%%\n",
+               fit->GetParameter(0), fabs(fit->GetParameter(1)), fabs(fit->GetParameter(2)));
+        delete c;
+    }
+
+    // --- graph 3: TRUTH energy resolution (full-module dE/dx) ---
+    // NOT the papers' observable — this is the intrinsic sampling resolution of
+    // the whole 29-plate stack, a truth quantity nobody measured. Kept because
+    // it is a clean characterization of the stack itself; do not compare it to
+    // either paper's energy number (or to the 3x3-array design goal).
     {
         auto gr = new TGraphErrors(N, E, resE, nullptr, resEerr);
-        gr->SetTitle("SIMPLE energy resolution;E_{beam} (GeV);#sigma_{E}/E (%)");
+        gr->SetTitle("SIMPLE intrinsic sampling resolution (truth dE/dx);E_{beam} (GeV);#sigma_{E}/E (%)");
         gr->SetMarkerStyle(21);
         auto fit = new TF1("fe", "sqrt([0]*[0]/x + [1]*[1])", E[0], E[N-1]);
         fit->SetParName(0, "a");
