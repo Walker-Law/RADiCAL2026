@@ -107,8 +107,36 @@ void scan(const char* dir = "build") {
         resE[i]    = 100 * sgE / muE;
         resEerr[i] = resE[i] * sqrt(pow(sgEErr/sgE, 2));     // sigma error dominates
 
-        printf("%-8.0f %8.1f +- %-5.1f %9.2f +- %-5.2f\n",
-               E[i], sigT[i], sigTerr[i], resE[i], resEerr[i]);
+        // --- energy, the MEASURED observable: spread of DETECTED LIGHT ---
+        // This is the papers' energy measurement: they sum the 8 low-gain SiPM
+        // amplitudes, i.e. the WLS light from the ~3 tiles at shower max, NOT
+        // the full-module dE/dx above. 2401.01747 sec 5.1.3 is explicit that
+        // their number "does not represent the energy resolution that would
+        // result from ... all 29 LYSO:Ce layers". Npe is the direct analog.
+        // Same ntuple rebuild as Elyso, for the same binning reason.
+        TH1D* nh = new TH1D("NpeFine", "", 100, t->GetMinimum("Npe"), t->GetMaximum("Npe"));
+        t->Draw("Npe>>NpeFine", "", "goff");
+        double mN = nh->GetMean(), rN = nh->GetRMS();
+        nh->SetBins(100, mN - 5*rN, mN + 5*rN);
+        t->Draw("Npe>>NpeFine", "", "goff");
+        nh->SetDirectory(nullptr);
+        double muN, sgN, sgNErr;
+        coreFitAndSave(nh, Form("N_{pe} at %.0f GeV;detected photons;events", E[i]),
+                       Form("%s/plots/fits/Npe_E%.0fGeV.png", dir, E[i]), muN, sgN, sgNErr);
+        delete nh;
+        resN[i]    = 100 * sgN / muN;
+        resNerr[i] = resN[i] * (sgNErr / sgN);
+
+        // --- timing EFFICIENCY: what fraction of events yielded a dT at all? ---
+        // EventAction only fills dT when some corner saw light at BOTH ends. Dim
+        // events silently vanish, and the survivors are the BRIGHTER ones — so a
+        // sigma_t quoted at low efficiency is biased optimistic. Print it so that
+        // bias can never hide (matters if light is thinned hard, or at low E).
+        double eff = 100.0 * d->GetEntries() / t->GetEntries();
+
+        printf("%-7.0f %7.1f +- %-4.1f %5.1f%% %7.2f +- %-4.2f %7.2f +- %-4.2f%s\n",
+               E[i], sigT[i], sigTerr[i], eff, resN[i], resNerr[i], resE[i], resEerr[i],
+               (eff < 99.0 ? "   <-- BIASED" : ""));
         f.Close();
     }
 
