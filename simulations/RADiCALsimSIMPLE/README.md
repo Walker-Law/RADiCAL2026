@@ -372,6 +372,7 @@ hardcoded at the top of the script — edit them there if the cluster changes.
 | `RADSIMPLE_BEAM_SPOT_MM` | 2.9 | Gaussian beam-spot σ; 0 = pencil (warning: a pencil beam dives down the central hole) |
 | `RADSIMPLE_PHOTON_STEP_CAP` | 20000 | kill any photon after this many steps (anti-hang safety valve; costs no measurable light). (old name `RADSIMPLE_OPT_MAXSTEP` accepted) |
 | `RADSIMPLE_THREADS` | all cores | worker threads. Lower it only if a host's ntuple merge misbehaves at high counts (symptom: ~200-byte per-thread files, empty merged output). **Never put `/run/numberOfThreads` in a macro** — it runs after this and silently throttles the machine |
+| `RADSIMPLE_STORE_PHOTON_TIMES` | **0** | 1 = also store EVERY detected photon's arrival time (`phT`/`phId` columns) — needed only to re-derive timing with a different estimator offline. ~1 GB per sweep instead of ~15 MB |
 
 **Optional components (1 = present):**
 
