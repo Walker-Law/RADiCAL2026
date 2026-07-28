@@ -111,6 +111,22 @@ Optical-photon tracking is enabled with `RADICAL_OPTICAL=1` and is far slower
 than the energy-only mode; the scan splits events into many single-thread chunks
 across all cores and hadd-merges them per energy.
 
+## Where the logs are
+
+**Every sim writes its live progress log to `<sim>/build/logs/`.** To watch any
+run in this repo:
+
+```bash
+tail -f <sim>/build/logs/*.log
+```
+
+Run scripts log themselves — `nohup bash run_whatever.sh &` is enough, no
+redirect needed. Scripts that drive a Geant4 binary write two files: the
+script's own progress log, and `*_geant4.log` holding Geant4's output — **the
+`_geant4.log` one is where the `--> Event N starts` lines are.** Full details,
+including the per-chunk-scan exception, in
+[simulations/README_LOGGING.md](simulations/README_LOGGING.md).
+
 See [simulations/RADiCALsimDSB/README.md](simulations/RADiCALsimDSB/README.md)
 and its `CLAUDE.md` for full detector, physics, and workflow documentation.
 
