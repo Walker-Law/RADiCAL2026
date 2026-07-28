@@ -66,15 +66,19 @@ control was run with different random seeds (a statistical baseline, not
 event-by-event — fine at thousands of events), and its physics flags
 (`RADSIMPLE_LIGHT_SCALE` etc.) must not have been overridden.
 
-## How long it takes (measured, not guessed)
+## How long it takes (measured on the cluster this time)
 
-Calibrated 2026-07-28 on one core: **1.24 core-seconds per event per GeV**
-without the wrap, and the wrap costs about **2.2x** that (measured: 149 s vs
-323 s for 12 events at 10 GeV). The script prints its own ETA from the actual
-core count at launch — about **1.2 h on 512 cores** for the default run.
+**~5–6 h on 512 cluster threads** for the default run (2500 events × 6
+energies with the wrap). From measured numbers: cluster logical cores do
+**6.0 core-s per event per GeV** (curiosity file-timestamp calibration,
+2026-07-28 — linear in energy to <1%), and the wrap costs **~2.2x** over
+no-wrap (measured: 149 s vs 323 s for 12 events). Runtime is ∝ events ×
+ΣE, so E50+E100+E120 are 87% of the total — trim high energies for speed.
 
-> An earlier draft claimed the wrap was ~100x slower. **That was wrong** — the
-> measured cost is ~2.2x.
+> Two earlier claims here were wrong, in opposite directions: "the wrap is
+> ~100x slower" (it's 2.2x) and "the sweep takes ~1.2 h" (that used the Mac's
+> per-core speed — cluster cores are ~5x slower for optical stepping). Both
+> numbers above are now from direct measurement.
 
 ---
 
