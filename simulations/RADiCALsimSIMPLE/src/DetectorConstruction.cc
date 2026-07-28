@@ -239,11 +239,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     const G4double upLen = dsbLo - front;                         // upstream quartz length
     const G4double dnLen = back - dsbHi;                          // downstream quartz length
-    auto qUpS  = new G4Tubs("qUp",  0, fibreR*mm, upLen/2, 0, 360*deg);
-    auto qDnS  = new G4Tubs("qDn",  0, fibreR*mm, dnLen/2, 0, 360*deg);
-    auto dsbS  = new G4Tubs("dsb",  0, fibreR*mm, wlsLen*mm/2, 0, 360*deg);
-    auto qUpLV = new G4LogicalVolume(qUpS, quartz, "QuartzUp");   qUpLV->SetVisAttributes(qVis);
-    auto qDnLV = new G4LogicalVolume(qDnS, quartz, "QuartzDn");   qDnLV->SetVisAttributes(qVis);
+    // In E-type the WLS fills the whole fibre, so the quartz stubs have zero
+    // length -> skip them entirely (a zero-half-length G4Tubs is invalid).
+    const bool haveStubs = (upLen > 1e-6 && dnLen > 1e-6);
+    G4LogicalVolume *qUpLV = nullptr, *qDnLV = nullptr;
+    if (haveStubs) {
+        auto qUpS = new G4Tubs("qUp", 0, fibreR*mm, upLen/2, 0, 360*deg);
+        auto qDnS = new G4Tubs("qDn", 0, fibreR*mm, dnLen/2, 0, 360*deg);
+        qUpLV = new G4LogicalVolume(qUpS, quartz, "QuartzUp"); qUpLV->SetVisAttributes(qVis);
+        qDnLV = new G4LogicalVolume(qDnS, quartz, "QuartzDn"); qDnLV->SetVisAttributes(qVis);
+    }
+    auto dsbS  = new G4Tubs("dsb",  0, fibreR*mm, wlsL/2, 0, 360*deg);
     auto dsbLV = new G4LogicalVolume(dsbS, dsb1,   "DSB1");       dsbLV->SetVisAttributes(dsbVis);
 
     // Photodetectors (SiPMs): thin silicon discs at each stack end.
