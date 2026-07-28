@@ -255,7 +255,7 @@ void scan(const char* dir = "build") {
         gStyle->SetOptFit(0);
         c->SetLogy();                       // 1% .. 20% spans a decade
         mg->Draw("A");
-        auto lg = new TLegend(0.42, 0.70, 0.88, 0.88);
+        auto lg = new TLegend(0.14, 0.14, 0.62, 0.29);   // bottom-left: the empty corner
         lg->AddEntry(gN, "shower-max slice (detected light)", "p");
         lg->AddEntry(gE, "whole module (29 plates, dE/dx truth)", "p");
         lg->Draw();
