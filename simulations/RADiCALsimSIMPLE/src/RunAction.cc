@@ -20,9 +20,14 @@ RunAction::RunAction() {
                 3000, -0.5, 1.0);
 
     a->CreateNtuple("ev", "one row per event");
-    a->CreateNtupleDColumn("Elyso");    // GeV
-    a->CreateNtupleDColumn("Npe");      // detected photons
-    a->CreateNtupleDColumn("dT");       // ns, 4-corner mean
+    a->CreateNtupleDColumn("Elyso");     // GeV, all 29 LYSO plates (truth dE/dx)
+    a->CreateNtupleDColumn("Npe");       // detected photons, 4 corner fibres
+    a->CreateNtupleDColumn("dT");        // ns, 4-corner mean (-1 = no timing)
+    a->CreateNtupleDColumn("NpeCenter"); // central E-type light (0 unless RADSIMPLE_CENTER_ETYPE=1)
+    a->CreateNtupleDColumn("tMCP");      // MCP particle-arrival time, ns (-1 = MCP off/missed)
+    a->CreateNtupleDColumn("eTrig1");    // trigger counter 1 deposit, MeV
+    a->CreateNtupleDColumn("eTrig2");    // trigger counter 2 deposit, MeV
+    a->CreateNtupleDColumn("ePbGlass");  // Pb-glass tail-catcher deposit, GeV
     a->FinishNtuple();
 }
 
