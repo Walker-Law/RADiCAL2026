@@ -1,4 +1,4 @@
-# vis.mac — geometry viewer. Run:  ./radsimple   (no argument)
+# vis.mac — geometry viewer. Run:  ./radwrap   (no argument)
 /run/initialize
 /vis/open OGL 900x700
 /vis/drawVolume

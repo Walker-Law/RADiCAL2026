@@ -1,127 +1,121 @@
 #!/usr/bin/env bash
-# run_wrap_scan.sh — the whole study in one command.
+# run_wrap_scan.sh — the whole wrap study in one command.
 #
-# Runs the SAME energy sweep once per wrap configuration and drops each one in
-# its own folder, so `analysis/wrap_scan.C` can compare them against the
-# no-wrap control.
+#   bash run_wrap_scan.sh                    # the standard run: 2500 events x 6 energies x 7 configs
+#   bash run_wrap_scan.sh 500                # quick look: 500 events per energy
+#   RADWRAP_CONFIGS="tyvek black" bash run_wrap_scan.sh    # only these configs
+#   RADWRAP_ENERGIES="25" bash run_wrap_scan.sh            # only this energy
 #
-# NO "none" CONFIG IS RUN BY DEFAULT. RADiCALsimSIMPLE's own sweep (run.mac,
-# no wrap flags — they don't exist there) IS this study's control already,
-# byte-identical geometry. Stage an already-completed SIMPLE run as "none"
-# instead of burning compute re-running it:
-#   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build
-# (see that script's header for the exact same-seed caveat). Only pass
-# RADWRAP_CONFIGS="none ..." below if you specifically want a fresh,
-# same-random-seed control run through THIS binary instead.
-#
-# RUN time_probe.sh FIRST. A highly-reflective wrap TRAPS photons in far more
-# boundary bounces before absorption/detection, so optical tracking is
-# genuinely much slower per event than the no-wrap control (confirmed:
-# roughly two orders of magnitude slower locally at default reflectivity) —
-# this is real physics, not a hang, but it means "match run.mac's 5000 events"
-# is NOT a safe default to just fire off. time_probe.sh reports sec/event per
-# config so you can pick NEV before committing cluster time:
-#   bash time_probe.sh && bash run_wrap_scan.sh <NEV you decided on>
-#
-# Defaults here are deliberately modest (500 events, one energy) — a
-# same-order-of-magnitude comparison, not a publication number. Scale up only
-# after time_probe.sh tells you what it costs:
-#   bash run_wrap_scan.sh                 # defaults: 500 events, 25 GeV only
-#   bash run_wrap_scan.sh 5000             # match run.mac's stats (check time_probe.sh first!)
-#   RADWRAP_CONFIGS="tyvek esr" bash run_wrap_scan.sh        # just two configs
-#   RADWRAP_ENERGIES="5 10 25 50 100 120" bash run_wrap_scan.sh 5000   # full grid, point-for-point vs a staged control
-#
-# On a cluster, run the whole thing under nohup:
+# On a cluster, always under nohup so it survives an SSH drop:
 #   nohup bash run_wrap_scan.sh > scan.log 2>&1 &
 #
-# Output: results/<config>/E<N>GeV.root  (+ sweep.mac and run.log per config,
-# so every number is traceable to the exact macro and banner that produced it).
+# THE CONTROL IS NOT RUN HERE. RADiCALsimWrap with no RADWRAP_* flags builds
+# geometry byte-identical to RADiCALsimSIMPLE, so a SIMPLE sweep you have
+# already IS the no-wrap control. Stage it instead of re-running it:
+#   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build
+# (Pass RADWRAP_CONFIGS="none" here only if you specifically want a fresh
+# same-random-seed control run through this binary.)
+#
+# Output: results/<config>/E<N>GeV.root, plus sweep.mac and run.log per config
+# so every number is traceable to the macro and the banner that produced it.
 set -eu
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 BIN="$HERE/build/radwrap"
-NEV="${1:-500}"
-ENERGIES="${RADWRAP_ENERGIES:-25}"
+NEV="${1:-2500}"
+ENERGIES="${RADWRAP_ENERGIES:-5 10 25 50 100 120}"
+WANT="${RADWRAP_CONFIGS:-}"
 
-# Each config is  name:sides:ends:reflectivity:finish:gap_mm
+# columns: name  sides  ends  reflectivity  finish  gap_mm
 #
-# REFLECTIVITY SOURCES — be honest about which of these are real numbers:
-#   tyvek  0.98  : the value already used for the inter-layer foils in this
-#                  project (standard detector-wrap spec, matches SIMPLE/DSB).
-#   esr    0.985 : 3M ESR / VM2000 specular film, manufacturer spec.
-#   mylar  0.90  : aluminized mylar, typical vendor spec for visible light.
-#   delrin 0.60  : ESTIMATE, not a measurement. Stands in for the milled Delrin
-#                  housing the real module actually sits in (2303.05580 sec II).
-#                  Treat it as "some diffuse reflection happens", not a number
-#                  to quote.
-#   black  0.02  : absorbing wrap — the pessimistic bound.
-ALL_CONFIGS=(
-  "none:0:0:0.98:diffuse:0.1"            # CONTROL, identical to RADiCALsimSIMPLE.
-                                          # SKIPPED BY DEFAULT (see header) — stage
-                                          # an existing SIMPLE run instead, or ask
-                                          # for this explicitly via RADWRAP_CONFIGS
-                                          # if you want a fresh same-seed control.
-  "tyvek:1:0:0.98:diffuse:0.1"           # the actual proposal: Tyvek on the 4 long faces
-  "tyvek_ends:1:1:0.98:diffuse:0.1"      # same + end caps (all 6 faces)
-  "esr:1:0:0.985:specular:0.1"           # 3M ESR / VM2000 specular film
-  "mylar:1:0:0.90:specular:0.1"          # aluminized mylar
-  "delrin:1:0:0.60:diffuse:0.1"          # the Delrin housing that is already there
-  "tyvek_contact:1:0:0.98:diffuse:0.0"   # gap=0: kills LYSO/air TIR (the trap)
-  "black:1:0:0.02:diffuse:0.1"           # absorbing wrap — pessimistic bound
-)
+# ORDER MATTERS — most informative first, so if you have to kill the job early
+# you already have the answer to the actual question.
+#
+# Where the reflectivity numbers come from (be honest about which are real):
+#   tyvek  0.98  same value this project already uses for the inter-layer foils
+#   black  0.02  absorbing bound; also the fast sanity check (runs at no-wrap speed)
+#   esr    0.985 3M ESR / VM2000 specular film, manufacturer spec
+#   mylar  0.90  aluminized mylar, typical vendor spec
+#   delrin 0.60  ESTIMATE, NOT a measurement. Stands in for the milled Delrin
+#                housing the real module already sits in (2303.05580 sec II).
+#                Read it as "some diffuse reflection happens", not a quotable number.
+CONFIG_TABLE="
+tyvek         1 0 0.98  diffuse  0.1
+black         1 0 0.02  diffuse  0.1
+esr           1 0 0.985 specular 0.1
+tyvek_ends    1 1 0.98  diffuse  0.1
+tyvek_contact 1 0 0.98  diffuse  0.0
+delrin        1 0 0.60  diffuse  0.1
+mylar         1 0 0.90  specular 0.1
+none          0 0 0.98  diffuse  0.1
+"
 
-# Optional subset: RADWRAP_CONFIGS="none tyvek esr"
-if [ -n "${RADWRAP_CONFIGS:-}" ]; then
-    SELECTED=()
-    for want in $RADWRAP_CONFIGS; do
-        found=""
-        for cfg in "${ALL_CONFIGS[@]}"; do
-            [ "${cfg%%:*}" = "$want" ] && { SELECTED+=("$cfg"); found=1; break; }
-        done
-        [ -n "$found" ] || { echo "unknown config '$want'"; exit 1; }
-    done
-    CONFIGS=("${SELECTED[@]}")
-else
-    # Default: every config EXCEPT "none" — see the header comment. It stays
-    # in ALL_CONFIGS so `RADWRAP_CONFIGS="none ..."` can still ask for a fresh,
-    # same-seed control run through this binary when that is actually wanted.
-    CONFIGS=()
-    for cfg in "${ALL_CONFIGS[@]}"; do
-        [ "${cfg%%:*}" = "none" ] || CONFIGS+=("$cfg")
-    done
-    echo "(skipping 'none' by default — stage an existing SIMPLE run instead:"
-    echo " bash stage_control.sh /path/to/RADiCALsimSIMPLE/build)"
-fi
+# Should this config run? Default: everything except the control.
+want_this() {
+    if [ -n "$WANT" ]; then
+        case " $WANT " in (*" $1 "*) return 0 ;; (*) return 1 ;; esac
+    fi
+    [ "$1" = "none" ] && return 1
+    return 0
+}
 
-[ -x "$BIN" ] || { echo "no binary at $BIN — build first (see README step 1)"; exit 1; }
+[ -x "$BIN" ] || { echo "ERROR: no binary at $BIN"; echo "Build it first — see README step 1."; exit 1; }
+
+NCFG=0
+while read -r name sides ends refl finish gap; do
+    [ -n "${name:-}" ] || continue
+    want_this "$name" && NCFG=$((NCFG + 1))
+done <<EOF
+$CONFIG_TABLE
+EOF
+[ "$NCFG" -gt 0 ] || { echo "ERROR: no configs selected (RADWRAP_CONFIGS='$WANT')"; exit 1; }
 
 NE=$(echo $ENERGIES | wc -w | tr -d ' ')
-echo "=========================================================="
-echo " wrap scan: ${#CONFIGS[@]} configs x $NE energies x $NEV events"
-echo " energies : $ENERGIES GeV"
-echo " threads  : ${RADSIMPLE_THREADS:-all cores}"
-echo " total    : $(( ${#CONFIGS[@]} * NE * NEV )) events"
-echo " NOTE: reflective configs run far slower per event than the no-wrap"
-echo "       control (light trapping, see header) — if you haven't already,"
-echo "       Ctrl-C and run 'bash time_probe.sh' first to sanity-check timing."
-echo "=========================================================="
+ESUM=$(echo $ENERGIES | tr ' ' '\n' | awk '{s+=$1} END {print s}')
 
-for cfg in "${CONFIGS[@]}"; do
-    IFS=: read -r name sides ends refl finish gap <<< "$cfg"
+# Rough ETA from a measured calibration (2026-07-28, 1 core, Apple M-series):
+# ~1.4 s/event per 10 GeV with no wrap, ~2.3x that with a reflective wrap.
+# Time scales roughly linearly with beam energy and event count. This is an
+# order-of-magnitude sanity check, not a promise — cluster cores are slower
+# per-core than a laptop, so treat it as optimistic.
+CORES="${RADSIMPLE_THREADS:-$( (nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1) )}"
+ETA=$(awk -v n="$NEV" -v es="$ESUM" -v c="$NCFG" -v k="$CORES" \
+      'BEGIN {printf "%.1f", (1.4/10)*n*es*2.3*c/k/3600}')
+
+echo "=================================================================="
+echo " wrap scan"
+echo "   configs   : $NCFG  (order: most informative first)"
+echo "   energies  : $ENERGIES GeV"
+echo "   events    : $NEV per energy per config"
+echo "   total     : $((NCFG * NE * NEV)) events"
+echo "   cores     : $CORES"
+echo "   rough ETA : ~${ETA} h  (optimistic; watch the per-config times below)"
+echo "=================================================================="
+if [ -z "$WANT" ]; then
+    echo "The no-wrap control is NOT run here (it would be redundant)."
+    echo "Stage it from an existing SIMPLE run when you analyze:"
+    echo "   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build"
+    echo ""
+fi
+
+while read -r name sides ends refl finish gap; do
+    [ -n "${name:-}" ] || continue
+    want_this "$name" || continue
+
     d="$HERE/results/$name"
     mkdir -p "$d"
 
-    # Generate the sweep macro next to its own output. Generated, not copied by
-    # CMake, so it can never go stale relative to what you asked for — and it is
-    # kept afterwards as a record of exactly what ran.
+    # The macro is GENERATED here, next to its own output — never copied by
+    # CMake. That removes RADiCALsimSIMPLE's most-repeated failure mode, where
+    # editing a .mac and running only `make` silently executes a stale copy.
     {
         echo "# generated by run_wrap_scan.sh for config '$name'"
+        echo "# $(date)"
         echo "/run/initialize"
-        echo "/random/setSeeds 20260728 1"   # same seeds every config -> the
-                                             # shower fluctuations are common
-                                             # mode, so config differences are
-                                             # not buried in beam statistics
-        echo "/run/printProgress $(( NEV / 4 + 1 ))"
+        # Same seeds for every config, so shower fluctuations are common mode
+        # and a config-to-config difference is the wrap, not the beam.
+        echo "/random/setSeeds 20260728 1"
+        echo "/run/printProgress $((NEV / 4 + 1))"
         for E in $ENERGIES; do
             echo ""
             echo "/analysis/setFileName E${E}GeV"
@@ -130,7 +124,6 @@ for cfg in "${CONFIGS[@]}"; do
         done
     } > "$d/sweep.mac"
 
-    echo ""
     echo "--- $name  (sides=$sides ends=$ends R=$refl $finish gap=${gap}mm) ---"
     start=$(date +%s)
     (
@@ -139,13 +132,16 @@ for cfg in "${CONFIGS[@]}"; do
         RADWRAP_REFLECTIVITY="$refl" RADWRAP_FINISH="$finish" \
         RADWRAP_GAP_MM="$gap" \
         "$BIN" sweep.mac > run.log 2>&1
-    )
-    echo "    done in $(( $(date +%s) - start ))s -> results/$name/"
-    grep -h "^\[WRAP\] outer wrap" "$d/run.log" | head -1 | sed 's/^/    /'
-done
+    ) || { echo "    FAILED — see results/$name/run.log"; continue; }
+    echo "    done in $(( $(date +%s) - start ))s  -> results/$name/"
+    grep -h "outer wrap" "$d/run.log" | head -1 | sed 's/^/    /' || true
+    echo ""
+done <<EOF
+$CONFIG_TABLE
+EOF
 
-echo ""
-echo "=========================================================="
-echo " all configs done. Analyze with:"
+echo "=================================================================="
+echo " all done. Next:"
+echo "   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build   # if not done"
 echo "   root -l -b -q analysis/wrap_scan.C"
-echo "=========================================================="
+echo "=================================================================="
