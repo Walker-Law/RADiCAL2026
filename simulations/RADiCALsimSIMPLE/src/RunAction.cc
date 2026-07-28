@@ -14,10 +14,14 @@ RunAction::RunAction() {
 
     a->CreateH1("Elyso", "LYSO energy;E_{LYSO} (GeV);events",      250, 0., 25.);
     a->CreateH1("Npe",   "photons detected;N_{pe};events",         200, 0., 40000.);
+    // dT range: with the realistic beam spot (RADSIMPLE_BEAM_SPOT_MM) the
+    // distribution is much wider than the old pencil-beam one (starved far
+    // corners at thinned light -> ns-scale tails), so the window must be wide
+    // or the tails silently overflow and bias the core fit. 2.5 ps bins.
     a->CreateH1("dT",    "t_{down}-t_{up}, 4-corner mean;#DeltaT (ns);events",
-                3000, -0.5, 1.0);       // 0.5 ps bins
+                4000, -5.0, 5.0);
     a->CreateH1("dTc",   "t_{down}-t_{up}, per corner;#DeltaT (ns);corners",
-                3000, -0.5, 1.0);
+                4000, -5.0, 5.0);
 
     a->CreateNtuple("ev", "one row per event");
     a->CreateNtupleDColumn("Elyso");     // GeV, all 29 LYSO plates (truth dE/dx)
