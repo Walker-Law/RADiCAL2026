@@ -1,4 +1,8 @@
-# run.mac — the standard energy sweep: 10 000 events at each of 6 energies.
+# run.mac — the standard energy sweep: 5 000 events at each of 6 energies.
+# Sized for FAST ITERATION (~1 h on a 512-core cluster): statistical errors are
+# ~1.4x wider than a 10k run but still far smaller than any change worth
+# noticing (sigma_E/E to ~+-0.3%, sigma_t to ~+-1 ps). Bump to 10000+ only when
+# you want a number to quote rather than a number to compare against yesterday.
 # Writes one file per energy: build/E5GeV.root ... E120GeV.root.
 # (/analysis/setFileName is a built-in Geant4 command — to change the energy
 #  list just add/remove a setFileName+energy+beamOn block, no C++ needed.)
