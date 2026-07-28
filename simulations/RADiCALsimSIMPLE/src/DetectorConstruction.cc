@@ -90,8 +90,13 @@ void DetectorConstruction::DefineMaterials() {
     //     (full yield = ~5e8 photons per 120 GeV event, untrackable). The
     //     photon-counting part of the timing scales as sqrt(scale), so you
     //     extrapolate a thinned run to true light by that factor. ---
+    // RADSIMPLE_LIGHT_SCALE — coherent thinning of ALL light (this scales the
+    // LYSO yield at the source; StackingAction applies the SAME factor to
+    // Cherenkov). Old name RADSIMPLE_LYSO_SCALE still accepted.
     G4double lysoScale = 1e-2;
-    if (const char* s = std::getenv("RADSIMPLE_LYSO_SCALE")) {
+    if (const char* s = std::getenv("RADSIMPLE_LIGHT_SCALE")) {
+        double v = std::atof(s); if (v > 0.) lysoScale = v;
+    } else if (const char* s = std::getenv("RADSIMPLE_LYSO_SCALE")) {
         double v = std::atof(s); if (v > 0.) lysoScale = v;
     }
     auto yMPT = new G4MaterialPropertiesTable();
