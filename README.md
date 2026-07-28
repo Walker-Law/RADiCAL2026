@@ -73,13 +73,13 @@ simulations/                 Geant4 simulations
                                re-running it). Runs on perseverence.
                                run_wrap_scan.sh sweeps several configs
                                (Tyvek/ESR/mylar/Delrin/absorbing/optical-
-                               contact); analysis/wrap_scan.C compares
-                               detected light, timing, and energy resolution
-                               against the control. time_probe.sh checks
-                               per-event wall-clock FIRST — highly reflective
-                               wraps trap photons in far more boundary
-                               bounces and run ~100x slower per event, a real
-                               finding, not a hang.
+                               contact) in priority order so you can stop
+                               early; analysis/wrap_scan.C compares detected
+                               light, timing, and energy resolution against
+                               the control, flagging low-statistics and
+                               efficiency-biased rows. Measured cost: a
+                               reflective wrap traps escape-cone light and
+                               runs ~2.2x slower per event than no wrap.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
