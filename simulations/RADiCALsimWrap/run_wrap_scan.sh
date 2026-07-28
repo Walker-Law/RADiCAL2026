@@ -37,13 +37,16 @@ ENERGIES="${RADWRAP_ENERGIES:-5 10 25 50 100 120}"
 NE=$(echo $ENERGIES | wc -w | tr -d ' ')
 ESUM=$(echo $ENERGIES | tr ' ' '\n' | awk '{s+=$1} END {print s}')
 
-# ETA from a MEASURED calibration (2026-07-28, 1 core): ~1.24 core-s per event
-# per GeV without the wrap, ~2.2x that with it. Scales ~linearly with energy
-# and event count. (Cross-checked against SIMPLE's real 1 h / 5000x6 / 512-core
-# curiosity run, so it transfers to cluster hardware.)
+# ETA from MEASURED cluster throughput (2026-07-28, curiosity E*GeV.root
+# timestamps): 6.0 core-s per event per GeV on cluster LOGICAL cores (58.6 s
+# per GeV per 5000 events across 512 threads — linear in E to <1%), times the
+# ~2.2x wrap slowdown (measured on the Mac: 149 s vs 323 s for 12 events).
+# NOTE an earlier version used the Mac's per-core speed (1.24) here and
+# under-predicted by ~5x — server logical cores are that much slower for
+# optical stepping. Perseverence is assumed curiosity-like.
 CORES="${RADSIMPLE_THREADS:-$( (nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1) )}"
 ETA=$(awk -v n="$NEV" -v es="$ESUM" -v k="$CORES" \
-      'BEGIN {printf "%.1f", 1.24*n*es*2.2/k/3600}')
+      'BEGIN {printf "%.1f", 6.0*n*es*2.2/k/3600}')
 
 echo "=================================================================="
 echo " Tyvek wrap run"
