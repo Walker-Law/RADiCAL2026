@@ -77,7 +77,12 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
     const G4String& vn = pre->GetLogicalVolume()->GetName();
     const G4double  e  = step->GetTotalEnergyDeposit();
 
-    if (vn == "LYSO")            { if (e > 0.) fEvt->AddLYSO(e); }
+    if (vn == "LYSO") {
+        // Plate copy numbers count ALL plates (LYSO even, W odd), so the LYSO
+        // layer index 0..28 is copyNo/2 — gives the longitudinal profile.
+        if (e > 0.) fEvt->AddLYSO(e, pre->GetCopyNo() / 2);
+    }
+    else if (vn == "W")          { if (e > 0.) fEvt->AddW(e); }
     else if (vn == "Trig1")      { if (e > 0.) fEvt->AddTrig(0, e); }
     else if (vn == "Trig2")      { if (e > 0.) fEvt->AddTrig(1, e); }
     else if (vn == "PbGlass")    { if (e > 0.) fEvt->AddPbGlass(e); }
