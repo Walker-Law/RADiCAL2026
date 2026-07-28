@@ -197,7 +197,7 @@ void scan(const char* dir = "build") {
         for (int i = 0; i < N; ++i) if (resN[i] > 0 && resN[i] < best) { best = resN[i]; ibest = i; }
         if (ibest < N-1)
             printf("        TURN-UP: best %.2f%% at %.0f GeV, degrades to %.2f%% at %.0f GeV"
-                   " (+%.0f%% rel) -- shower max outgrowing the fixed 15 mm WLS window\n",
+                   " (+%.0f%% rel) -- fixed 15 mm WLS window vs a deepening shower\n",
                    best, E[ibest], resN[N-1], E[N-1], 100*(resN[N-1]-best)/best);
         delete c;
     }
