@@ -121,6 +121,10 @@ void wrap_scan(const char* dir = "results") {
                                      sgtE(NC, std::vector<double>(NE, 0)),
                                      res(NC, std::vector<double>(NE, 0)),
                                      eff(NC, std::vector<double>(NE, 0));
+    // Distinguish "this config never ran at this energy" (no file) from
+    // "it ran but had too few events to fit" — they mean very different things
+    // and printing both as a blank row hides a real problem.
+    std::vector<std::vector<int>> nev(NC, std::vector<int>(NE, 0));   // 0 = no file
 
     for (int ic = 0; ic < NC; ++ic) {
         for (int ie = 0; ie < NE; ++ie) {
