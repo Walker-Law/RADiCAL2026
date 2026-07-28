@@ -303,7 +303,67 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,back +pdHz),      pdDnLV,"PD_Down",   worldLV, false, k);
     }
 
+    // ---- OPTIONAL: central E-type capillary (RADSIMPLE_CENTER_ETYPE=1) ------
+    // A full-length DSB1 WLS fibre in the (always-drilled) central hole, read
+    // out at both ends — the papers' E-type ENERGY capillary (2401.01747 sec 2:
+    // "the capillary cores are filled ... with a solid WLS filament that runs
+    // the full length of the module") placed in the centre slot that the
+    // tested module left free. SteppingAction sees these PDs as copy number 4;
+    // its light is recorded separately as NpeCenter (never mixed into the
+    // 4-corner timing average).
+    if (useCenter) {
+        auto cS  = new G4Tubs("cdsb", 0, fibreR*mm, stackZ*mm/2, 0, 360*deg);
+        auto cLV = new G4LogicalVolume(cS, dsb1, "DSB1");
+        cLV->SetVisAttributes(dsbVis);
+        new G4PVPlacement(nullptr, {0,0,0},               cLV,   "DSB1",    worldLV, false, 4);
+        new G4PVPlacement(nullptr, {0,0,front-pdHz},      pdUpLV,"PD_Up",   worldLV, false, 4);
+        new G4PVPlacement(nullptr, {0,0,back +pdHz},      pdDnLV,"PD_Down", worldLV, false, 4);
+    }
+
+    // ---- OPTIONAL: CERN H2 test-beam line ----------------------------------
+    // Layout per the papers (2401.01747 sec 4-5, Fig. 11; 2303.05580 sec 3):
+    // upstream trigger counters and an MCP-PMT timing reference, the module,
+    // and a Pb-glass array behind it as tail catcher. The papers give the
+    // trigger size (2 x 2 cm^2, 2401 Fig. 11 caption) but no z positions or
+    // thicknesses (photographs only) — those follow RADiCALsimDSB's replication.
+    // No electronics/noise anywhere: the MCP records a pure particle-arrival
+    // time, the counters and Pb-glass record pure energy deposits.
+    auto beamVis = new G4VisAttributes(G4Colour(0.4,1.0,0.4,0.5)); // green
+    beamVis->SetForceSolid(true);
+
+    if (useTrig) {
+        // Two 2 x 2 cm^2 plastic-scintillator coincidence counters (5 mm thick).
+        auto scint = G4NistManager::Instance()->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
+        auto tS  = new G4Box("trig", 10.*mm, 10.*mm, 2.5*mm);
+        auto t1LV = new G4LogicalVolume(tS, scint, "Trig1"); t1LV->SetVisAttributes(beamVis);
+        auto t2LV = new G4LogicalVolume(tS, scint, "Trig2"); t2LV->SetVisAttributes(beamVis);
+        new G4PVPlacement(nullptr, {0,0,-400.*mm}, t1LV, "Trig1", worldLV, false, 0);
+        new G4PVPlacement(nullptr, {0,0,-350.*mm}, t2LV, "Trig2", worldLV, false, 0);
+    }
+    if (useMCP) {
+        // MCP-PMT timing reference (2303.05580: Photek MCP): a fused-silica
+        // entrance window ("radiator") whose particle-arrival time is the event
+        // t0, plus a thin ceramic body. Kept thin so it is a negligible
+        // preshower (few % of X0).
+        auto alox = G4NistManager::Instance()->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
+        auto rS  = new G4Box("mcpr", 13.5*mm, 13.5*mm, 1.5*mm);
+        auto rLV = new G4LogicalVolume(rS, quartz, "MCPRadiator"); rLV->SetVisAttributes(beamVis);
+        auto bLV = new G4LogicalVolume(rS, alox,   "MCPBody");     bLV->SetVisAttributes(beamVis);
+        new G4PVPlacement(nullptr, {0,0,-250.*mm}, rLV, "MCPRadiator", worldLV, false, 0);
+        new G4PVPlacement(nullptr, {0,0,-247.*mm}, bLV, "MCPBody",     worldLV, false, 0);
+    }
+    if (usePbGlass) {
+        // Pb-glass array downstream (2401 Fig. 11: "the upstream end of the Pb
+        // glass array"): 10 x 10 x 40 cm block, ~30 X0 — catches longitudinal
+        // leakage out of the ~23 X0 module (tail catcher / leakage veto).
+        auto pbgl = G4NistManager::Instance()->FindOrBuildMaterial("G4_GLASS_LEAD");
+        auto gS  = new G4Box("pbg", 50.*mm, 50.*mm, 200.*mm);
+        auto gLV = new G4LogicalVolume(gS, pbgl, "PbGlass"); gLV->SetVisAttributes(beamVis);
+        new G4PVPlacement(nullptr, {0,0,+320.*mm}, gLV, "PbGlass", worldLV, false, 0);
+    }
+
     G4cout << "[SIMPLE] stack " << stackZ << " mm, DSB1 centre z = " << dsbC/mm
-           << " mm; 4 corner fibres, PDs at both ends." << G4endl;
+           << " mm; 4 corner fibres" << (useCenter ? " + central E-type" : "")
+           << ", PDs at both ends." << G4endl;
     return worldPV;
 }
