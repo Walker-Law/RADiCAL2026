@@ -33,6 +33,27 @@
 
 int main(int argc, char** argv) {
     auto runManager = G4RunManagerFactory::CreateRunManager();
+
+    // Thread count: ALL cores by default. Override with RADSIMPLE_THREADS=N.
+    // Set here (not in the macro) so it is tunable per machine without editing
+    // -- and thus re-cmake-ing -- a .mac file. NOTE: if a macro contains
+    // /run/numberOfThreads it runs later and WINS, so keep macros free of it.
+    // Lower it if a machine's ntuple merge misbehaves at high thread counts
+    // (symptom: ~200-byte per-thread files and an empty merged output); at very
+    // high counts with few events per thread, physics-table startup also starts
+    // to dominate, so more threads stop helping.
+    {
+        int nThreads = G4Threading::G4GetNumberOfCores();
+        if (const char* t = std::getenv("RADSIMPLE_THREADS")) {
+            int v = std::atoi(t);
+            if (v > 0) nThreads = v;
+        }
+        runManager->SetNumberOfThreads(nThreads);
+        G4cout << "[SIMPLE] threads: " << nThreads << " of "
+               << G4Threading::G4GetNumberOfCores() << " cores"
+               << "  (RADSIMPLE_THREADS)" << G4endl;
+    }
+
     runManager->SetUserInitialization(new DetectorConstruction());
 
     // Physics: standard EM shower (FTFP_BERT + option4 EM) plus optical photons.
