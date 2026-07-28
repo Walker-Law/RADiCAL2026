@@ -109,7 +109,7 @@ make -j
 
 ```bash
 ./radsimple                     # opens the 3D viewer, fires 2 showers
-./radsimple run.mac             # the standard sweep: 10k events x 6 energies
+./radsimple run.mac             # the standard sweep: 5k events x 6 energies (~1 h on a cluster)
 nohup ./radsimple run.mac > sweep.log 2>&1 &     # same, survives SSH drops (clusters)
 ```
 
