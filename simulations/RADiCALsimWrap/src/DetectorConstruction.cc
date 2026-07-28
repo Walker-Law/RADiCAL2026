@@ -1,7 +1,14 @@
-// DetectorConstruction.cc — the geometry and materials of the SIMPLE RADiCAL model.
+// DetectorConstruction.cc — geometry and materials for the WRAP study.
+//
+// Forked from RADiCALsimSIMPLE. The ONE physics addition is an optional
+// reflective wrap on the OUTSIDE of the assembled module (see "THE STUDY"
+// below, near the end of Construct()). With RADWRAP_SIDES=0 RADWRAP_ENDS=0
+// this file builds exactly SIMPLE's geometry — that is the control.
 //
 // THE PICTURE (beam travels +z):
 //
+//                 ,-- optional outer wrap on the 4 long faces (RADWRAP_SIDES)
+//                 v
 //     e- --->   [ LYSO | W | LYSO | W | ... | LYSO ]        (57 plates, Tyvek between)
 //                        |                     |
 //                 4 fibres run through the corners of every plate:
