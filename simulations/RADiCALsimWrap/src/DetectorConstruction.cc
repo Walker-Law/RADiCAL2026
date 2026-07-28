@@ -337,9 +337,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // =========================================================================
     // THE STUDY: an outer reflective wrap on the module's exposed faces.
     // =========================================================================
-    // Everything above this block is RADiCALsimSIMPLE, unchanged. With
-    // RADWRAP_SIDES=0 RADWRAP_ENDS=0 the geometry is byte-identical to SIMPLE,
-    // which is the CONTROL for every comparison here.
+    // Everything above this block is RADiCALsimSIMPLE, unchanged. BOTH flags
+    // below default OFF, so the bare binary with no env vars set builds a
+    // geometry byte-identical to SIMPLE — that IS the control, not a special
+    // case of it. This matters in practice: RADiCALsimSIMPLE's own run.mac,
+    // run with no RADWRAP_* vars (they don't exist there), is therefore a
+    // valid "none" config for this study as-is — no need to re-run a redundant
+    // no-wrap pass just to get a baseline (see stage_control.sh).
     //
     // WHAT IS BEING TESTED. The papers' module is a bare 14x14 mm stack in a
     // milled Delrin housing (2303.05580 sec II) — the Tyvek is only BETWEEN
