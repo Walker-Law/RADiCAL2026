@@ -25,8 +25,11 @@ static G4double PDE() {
 // reached a SiPM within a generous bounce budget, so it would not have set the
 // first-photon timing anyway. RADSIMPLE_OPT_MAXSTEP=0 disables the cap.
 static G4int OptMaxStep() {
-    static G4int v = (std::getenv("RADSIMPLE_OPT_MAXSTEP")
-                      ? std::atoi(std::getenv("RADSIMPLE_OPT_MAXSTEP")) : 20000);
+    static G4int v = [] {
+        if (const char* s = std::getenv("RADSIMPLE_PHOTON_STEP_CAP")) return std::atoi(s);
+        if (const char* s = std::getenv("RADSIMPLE_OPT_MAXSTEP"))     return std::atoi(s); // old name
+        return 20000;
+    }();
     return v;
 }
 
