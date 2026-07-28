@@ -259,15 +259,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // with it -- is completely unchanged.
     const G4double front = -stackZ/2.*mm;
     const G4double back  = +stackZ/2.*mm;
-    const bool eType = (std::getenv("RADSIMPLE_ETYPE") &&
-                        std::atof(std::getenv("RADSIMPLE_ETYPE")) != 0.);
+    // RADSIMPLE_CORNER_ETYPE=1 turns the 4 CORNER fibres into full-length
+    // E-type (the old name RADSIMPLE_ETYPE still works as a fallback).
+    const bool eType = flagOn("RADSIMPLE_CORNER_ETYPE",
+                              flagOn("RADSIMPLE_ETYPE", false));
     const G4double wlsL = eType ? stackZ*mm : wlsLen*mm;            // full stack, or 15 mm
     const G4double dsbC = eType ? 0.0 : front + showerMaxDepth*mm;  // centred, or at shower max
     const G4double dsbHi = dsbC + wlsL/2;                          // downstream edge
     const G4double dsbLo = dsbC - wlsL/2;                          // upstream edge
-    G4cout << "[SIMPLE] capillary type: " << (eType ? "E (full-length WLS, energy)"
+    G4cout << "[SIMPLE] corner capillary type: " << (eType ? "E (full-length WLS, energy)"
                                                    : "T (15 mm WLS at shower max, timing)")
-           << "  (RADSIMPLE_ETYPE)" << G4endl;
+           << "  (RADSIMPLE_CORNER_ETYPE)" << G4endl;
 
     const G4double upLen = dsbLo - front;                         // upstream quartz length
     const G4double dnLen = back - dsbHi;                          // downstream quartz length
