@@ -873,3 +873,5 @@ G4WT6 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
 G4WT0 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
 ### Run 0 starts on worker thread 0.
 G4WT1 > --> Event 8 starts with initial seeds (18800263,74815842).
+Graphics systems deleted.
+Visualization Manager deleting...

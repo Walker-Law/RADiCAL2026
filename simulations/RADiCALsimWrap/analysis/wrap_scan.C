@@ -159,10 +159,17 @@ void wrap_scan(const char* dir = "results") {
         printf("%-16s %9s %8s   %11s %8s   %10s %7s\n",
                "config", "Npe", "dNpe%", "sigma_t(ps)", "dsig%", "Npe res%", "eff%");
         for (int ic = 0; ic < NC; ++ic) {
+            if (!(npe[ic][ie] > 0) && !(sgt[ic][ie] > 0)) {
+                printf("%-16s %9s %8s   %11s %8s   %10s %7s   (not run at this energy)\n",
+                       cfg[ic].c_str(), "-", "-", "-", "-", "-", "-");
+                continue;
+            }
             TString dN = "--", dS = "--";
             if (haveBase && ic > 0) {
-                if (npe[0][ie] > 0) dN = Form("%+.1f", 100*(npe[ic][ie]-npe[0][ie])/npe[0][ie]);
-                if (sgt[0][ie] > 0) dS = Form("%+.1f", 100*(sgt[ic][ie]-sgt[0][ie])/sgt[0][ie]);
+                if (npe[0][ie] > 0 && npe[ic][ie] > 0)
+                    dN = Form("%+.1f", 100*(npe[ic][ie]-npe[0][ie])/npe[0][ie]);
+                if (sgt[0][ie] > 0 && sgt[ic][ie] > 0)
+                    dS = Form("%+.1f", 100*(sgt[ic][ie]-sgt[0][ie])/sgt[0][ie]);
             }
             printf("%-16s %9.0f %8s   %6.1f+-%-4.1f %8s   %10.2f %7.1f%s\n",
                    cfg[ic].c_str(), npe[ic][ie], dN.Data(),
