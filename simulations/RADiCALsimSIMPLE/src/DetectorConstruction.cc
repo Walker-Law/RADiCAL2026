@@ -210,13 +210,32 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
     }
 
-    // ---- Build the 4 corner fibres: quartz | DSB1(15mm @ shower max) | quartz ----
-    // z of the DSB1 centre = front + showerMaxDepth, measured from stack front.
+    // ---- Build the 4 corner fibres: quartz | DSB1 | quartz ----
+    //
+    // TWO CAPILLARY TYPES, per arXiv:2401.01747 sec 2:
+    //   T-TYPE (default, RADSIMPLE_ETYPE unset) — "solid WLS filaments of short
+    //     length ... inserted ... to a position corresponding to the region of
+    //     EM shower max", the rest of the core filled with quartz rod. This is
+    //     the TIMING capillary and is what the papers' beam test used.
+    //     -> light samples only the 15 mm window at 40.4 mm depth.
+    //   E-TYPE (RADSIMPLE_ETYPE=1) — "the capillary cores are filled ... with a
+    //     solid WLS filament that runs the full length of the module". This is
+    //     the ENERGY capillary: it collects light from the WHOLE stack, so its
+    //     resolution is a full-module LIGHT readout (neither the shower-max
+    //     light nor the truth dE/dx).
+    // E-type is opt-in so the default geometry -- and every run already taken
+    // with it -- is completely unchanged.
     const G4double front = -stackZ/2.*mm;
-    const G4double dsbC  = front + showerMaxDepth*mm;              // DSB1 centre z
-    const G4double dsbHi = dsbC + wlsLen*mm/2;                    // downstream edge
-    const G4double dsbLo = dsbC - wlsLen*mm/2;                    // upstream edge
     const G4double back  = +stackZ/2.*mm;
+    const bool eType = (std::getenv("RADSIMPLE_ETYPE") &&
+                        std::atof(std::getenv("RADSIMPLE_ETYPE")) != 0.);
+    const G4double wlsL = eType ? stackZ*mm : wlsLen*mm;            // full stack, or 15 mm
+    const G4double dsbC = eType ? 0.0 : front + showerMaxDepth*mm;  // centred, or at shower max
+    const G4double dsbHi = dsbC + wlsL/2;                          // downstream edge
+    const G4double dsbLo = dsbC - wlsL/2;                          // upstream edge
+    G4cout << "[SIMPLE] capillary type: " << (eType ? "E (full-length WLS, energy)"
+                                                   : "T (15 mm WLS at shower max, timing)")
+           << "  (RADSIMPLE_ETYPE)" << G4endl;
 
     const G4double upLen = dsbLo - front;                         // upstream quartz length
     const G4double dnLen = back - dsbHi;                          // downstream quartz length
