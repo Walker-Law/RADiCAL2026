@@ -3,6 +3,8 @@
 #include "G4ParticleTable.hh"
 #include "G4Event.hh"
 #include "G4SystemOfUnits.hh"
+#include "Randomize.hh"
+#include <cstdlib>
 
 // A single electron per event, fired straight down +z. Beam energy is set in
 // the macro with  /gun/energy 50 GeV. The electron starts at z = -450 mm,
