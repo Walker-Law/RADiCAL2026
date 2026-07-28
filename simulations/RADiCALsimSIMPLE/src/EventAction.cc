@@ -5,6 +5,10 @@
 void EventAction::BeginOfEventAction(const G4Event*) {
     fElyso = 0.;
     fNpe   = 0.;
+    fNpeCenter = 0.;
+    fTmcp  = kBig;
+    fEtrig.fill(0.);
+    fEpbGlass = 0.;
     fTup.fill(kBig);
     fTdn.fill(kBig);
 }
@@ -32,5 +36,11 @@ void EventAction::EndOfEventAction(const G4Event*) {
     a->FillNtupleDColumn(0, fElyso / GeV);
     a->FillNtupleDColumn(1, fNpe);
     a->FillNtupleDColumn(2, (n > 0) ? dTmean : -1.);
+    // Optional-component observables (all -1/0 when the component is off/idle):
+    a->FillNtupleDColumn(3, fNpeCenter);                       // central E-type light
+    a->FillNtupleDColumn(4, (fTmcp < kBig) ? fTmcp : -1.);     // MCP t0 (ns)
+    a->FillNtupleDColumn(5, fEtrig[0] / MeV);                  // trigger 1 dE
+    a->FillNtupleDColumn(6, fEtrig[1] / MeV);                  // trigger 2 dE
+    a->FillNtupleDColumn(7, fEpbGlass / GeV);                  // Pb-glass (leakage)
     a->AddNtupleRow();
 }
