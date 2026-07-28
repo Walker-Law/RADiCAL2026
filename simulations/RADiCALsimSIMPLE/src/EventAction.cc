@@ -35,7 +35,9 @@ void EventAction::EndOfEventAction(const G4Event*) {
 
     a->FillNtupleDColumn(0, fElyso / GeV);
     a->FillNtupleDColumn(1, fNpe);
-    a->FillNtupleDColumn(2, (n > 0) ? dTmean : -1.);
+    // no-timing sentinel is -999, NOT -1: with the realistic beam spot, real
+    // dT values of a few ns (either sign) occur, so -1 is a legal physics value
+    a->FillNtupleDColumn(2, (n > 0) ? dTmean : -999.);
     // Optional-component observables (all -1/0 when the component is off/idle):
     a->FillNtupleDColumn(3, fNpeCenter);                       // central E-type light
     a->FillNtupleDColumn(4, (fTmcp < kBig) ? fTmcp : -1.);     // MCP t0 (ns)
