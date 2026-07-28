@@ -363,7 +363,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // -- so the physical default here is a small but nonzero gap.
     // RADWRAP_GAP_MM=0 is deliberately allowed so that trap can be measured
     // rather than argued about.
-    const bool wrapSides = flagOn("RADWRAP_SIDES", true);
+    const bool wrapSides = flagOn("RADWRAP_SIDES", false);   // default OFF = control
     const bool wrapEnds  = flagOn("RADWRAP_ENDS",  false);
     G4double wrapRefl = 0.98;          // Tyvek, matching the inter-layer foils
     G4double wrapGap  = 0.1;           // mm of air between stack and wrap
