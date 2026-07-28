@@ -60,12 +60,30 @@ them where they are. The scan's *top-level* log still follows the standard rule.
 
 ## Sims driven by the binary directly
 
-`RADiCALsimSIMPLE` has no run script — you invoke `./radsimple run.mac` from
-`build/`. Same destination, you just name it yourself:
+`RADiCALsimSIMPLE` is normally launched through `run_simple.sh`, which follows
+the standard rule like everything else:
 
 ```bash
-mkdir -p logs && nohup ./radsimple run.mac > logs/sweep.log 2>&1 &
+nohup bash run_simple.sh &            # -> build/logs/run_simple.log
+nohup bash run_simple.sh run_short.mac &
 ```
+
+Invoking the binary by hand (`./radsimple run.mac` from `build/`) still works
+and is completely unaffected — it just doesn't log itself, so you name the
+destination:
+
+```bash
+mkdir -p build/logs && nohup ./radsimple run.mac > build/logs/sweep.log 2>&1 &
+```
+
+## Deliberate exceptions
+
+These are **intentionally not logged** — don't "fix" them:
+
+| file | why |
+|------|-----|
+| `*/setup_env.sh` | **sourced, not run** (`source setup_env.sh`). `start_logging` would redirect your *interactive shell's* stdout into a file — your terminal would go silent until you closed it. |
+| `describe_runs.sh`, `make_run_manifests.sh`, `install_cluster_env.sh` | Top-level utilities, not tied to any one sim, so there is no `<sim>/build/logs/` to write to. They're short and interactive — not the thing you're hunting for at 2am. |
 
 ## Implementation
 
