@@ -68,7 +68,15 @@ if [ -n "${RADWRAP_CONFIGS:-}" ]; then
     done
     CONFIGS=("${SELECTED[@]}")
 else
-    CONFIGS=("${ALL_CONFIGS[@]}")
+    # Default: every config EXCEPT "none" — see the header comment. It stays
+    # in ALL_CONFIGS so `RADWRAP_CONFIGS="none ..."` can still ask for a fresh,
+    # same-seed control run through this binary when that is actually wanted.
+    CONFIGS=()
+    for cfg in "${ALL_CONFIGS[@]}"; do
+        [ "${cfg%%:*}" = "none" ] || CONFIGS+=("$cfg")
+    done
+    echo "(skipping 'none' by default — stage an existing SIMPLE run instead:"
+    echo " bash stage_control.sh /path/to/RADiCALsimSIMPLE/build)"
 fi
 
 [ -x "$BIN" ] || { echo "no binary at $BIN — build first (see README step 1)"; exit 1; }
