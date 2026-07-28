@@ -189,11 +189,13 @@ void wrap_scan(const char* dir = "results") {
                 if (sgt[0][ie] > 0 && sgt[ic][ie] > 0)
                     dS = Form("%+.1f", 100*(sgt[ic][ie]-sgt[0][ie])/sgt[0][ie]);
             }
+            TString warn = "";
+            if (nev[ic][ie] < 100) warn += "  [LOW STATS, do not trust]";
+            if (eff[ic][ie] < 99.0) warn += "  [sigma_t BIASED: dim events dropped]";
             printf("%-16s %9.0f %8s   %6.1f+-%-4.1f %8s   %10.2f %7.1f%s\n",
                    cfg[ic].c_str(), npe[ic][ie], dN.Data(),
                    sgt[ic][ie], sgtE[ic][ie], dS.Data(),
-                   res[ic][ie], eff[ic][ie],
-                   (eff[ic][ie] < 99.0 ? "  <-- sigma_t BIASED" : ""));
+                   res[ic][ie], eff[ic][ie], warn.Data());
         }
     }
     if (!haveBase)
