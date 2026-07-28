@@ -14,12 +14,22 @@
 # RADWRAP_CONFIGS="none ..." below if you specifically want a fresh,
 # same-random-seed control run through THIS binary instead.
 #
-# Defaults match run.mac (RADiCALsimSIMPLE's standard sweep) exactly — 5000
-# events at the same 6 energies — so a staged control lines up point-for-point:
-#   bash run_wrap_scan.sh                 # defaults: 5000 events, 5/10/25/50/100/120 GeV
-#   bash run_wrap_scan.sh 1000            # quicker: 1000 events per energy
+# RUN time_probe.sh FIRST. A highly-reflective wrap TRAPS photons in far more
+# boundary bounces before absorption/detection, so optical tracking is
+# genuinely much slower per event than the no-wrap control (confirmed:
+# roughly two orders of magnitude slower locally at default reflectivity) —
+# this is real physics, not a hang, but it means "match run.mac's 5000 events"
+# is NOT a safe default to just fire off. time_probe.sh reports sec/event per
+# config so you can pick NEV before committing cluster time:
+#   bash time_probe.sh && bash run_wrap_scan.sh <NEV you decided on>
+#
+# Defaults here are deliberately modest (500 events, one energy) — a
+# same-order-of-magnitude comparison, not a publication number. Scale up only
+# after time_probe.sh tells you what it costs:
+#   bash run_wrap_scan.sh                 # defaults: 500 events, 25 GeV only
+#   bash run_wrap_scan.sh 5000             # match run.mac's stats (check time_probe.sh first!)
 #   RADWRAP_CONFIGS="tyvek esr" bash run_wrap_scan.sh        # just two configs
-#   RADWRAP_ENERGIES="50" bash run_wrap_scan.sh 5000         # one energy, deep
+#   RADWRAP_ENERGIES="5 10 25 50 100 120" bash run_wrap_scan.sh 5000   # full grid, point-for-point vs a staged control
 #
 # On a cluster, run the whole thing under nohup:
 #   nohup bash run_wrap_scan.sh > scan.log 2>&1 &
@@ -30,8 +40,8 @@ set -eu
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 BIN="$HERE/build/radwrap"
-NEV="${1:-5000}"
-ENERGIES="${RADWRAP_ENERGIES:-5 10 25 50 100 120}"
+NEV="${1:-500}"
+ENERGIES="${RADWRAP_ENERGIES:-25}"
 
 # Each config is  name:sides:ends:reflectivity:finish:gap_mm
 #
