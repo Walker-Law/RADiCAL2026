@@ -182,14 +182,18 @@ Plots are NEVER made on the clusters — perseverence has no working ROOT.
    `--> Event` lines instead; only 1-3 pegged threads in `top -H` with the rest
    idle means actually stuck.
 
-`run.mac` sweeps `E = 5, 10, 25, 50, 100, 120 GeV`, 500 events each, writing one
-file per energy: `E5GeV.root`, `E10GeV.root`, ... `E120GeV.root`. It uses
+`run.mac` sweeps `E = 5, 10, 25, 50, 100, 120 GeV`, 5 000 events each, writing
+one file per energy: `E5GeV.root`, `E10GeV.root`, ... `E120GeV.root`. It uses
 Geant4's built-in `/analysis/setFileName` command — add or remove a
 `/analysis/setFileName` + `/gun/energy` + `/run/beamOn` block to change the
-energy list, no C++ needed.
+energy list, no C++ needed. (`run_short.mac` is the same sweep at 1 000
+events/energy for a quick cross-check run.)
 
 Each file's histograms: `Elyso` (GeV), `Npe` (photons/event), `dT` (ns,
-4-corner mean), `dTc` (per corner), plus an `ev` ntuple `(Elyso, Npe, dT)`.
+4-corner mean), `dTc` (per corner), plus an `ev` ntuple with 8 columns:
+`Elyso, Npe, dT, NpeCenter, tMCP, eTrig1, eTrig2, ePbGlass`. `dT` uses `-999`
+as its "no timing achieved" sentinel (not `-1`, since real dT values can land
+near −1 ns with the beam spot in place).
 
 Analyze one file: `root -l -b -q 'analysis/fit.C("build/E50GeV.root")'`
 → prints `σ_t = σ(dT)/2` and `σ/E`.
