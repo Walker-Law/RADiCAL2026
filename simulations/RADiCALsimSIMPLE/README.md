@@ -212,13 +212,27 @@ hardcoded at the top of the script — edit them there if the cluster changes.
 
 ---
 
-## Knobs (environment variables)
+## Flags (environment variables — set before the command, e.g. `FLAG=0 ./radsimple run.mac`)
+
+**Physics / performance:**
 
 | var | default | meaning |
 |-----|---------|---------|
-| `RADSIMPLE_OPTICAL` | 1 | 0 = skip optical photons (fast, energy only) |
-| `RADSIMPLE_LYSO_SCALE` | 1e-2 | **coherent photon thinning of ALL light** — LYSO scintillation at the source (yield × scale) and Cherenkov at stacking (each photon kept with prob = scale, `StackingAction.cc`). One knob, so the scint:Cherenkov mix stays physical at any thinning |
+| `RADSIMPLE_OPTICAL` | 1 | 0 = skip optical photons entirely (fast, energy-only) |
+| `RADSIMPLE_LIGHT_SCALE` | 1e-2 | **coherent photon thinning of ALL light** — LYSO scintillation at the source and Cherenkov at stacking, one factor, so the light mix stays physical. (old name `RADSIMPLE_LYSO_SCALE` still accepted) |
 | `RADSIMPLE_PDE` | 0.36 | SiPM detection efficiency |
+| `RADSIMPLE_BEAM_SPOT_MM` | 2.9 | Gaussian beam-spot σ; 0 = pencil (warning: a pencil beam dives down the central hole) |
+| `RADSIMPLE_PHOTON_STEP_CAP` | 20000 | kill any photon after this many steps (anti-hang safety valve; costs no measurable light). (old name `RADSIMPLE_OPT_MAXSTEP` accepted) |
+
+**Optional components (1 = present):**
+
+| var | default | component |
+|-----|---------|-----------|
+| `RADSIMPLE_WITH_TRIGGERS` | 1 | the two 2×2 cm² coincidence counters |
+| `RADSIMPLE_WITH_MCP` | 1 | the MCP timing reference (its window is also ~real preshower material) |
+| `RADSIMPLE_WITH_PBGLASS` | 1 | the Pb-glass tail catcher |
+| `RADSIMPLE_CENTER_ETYPE` | **0** | full-length WLS fiber + SiPMs in the central hole. Default OFF because the papers' tested module left that hole empty — turn it on to study the future energy option |
+| `RADSIMPLE_CORNER_ETYPE` | 0 | turn the 4 **corner** fibers into full-length E-type (energy config; replaces the 15 mm timing window). (old name `RADSIMPLE_ETYPE` accepted) |
 
 **Why thinning exists:** full LYSO light is ~5×10⁸ photons per 120 GeV event —
 untrackable. We track a fraction `f = RADSIMPLE_LYSO_SCALE`. The photon-counting
