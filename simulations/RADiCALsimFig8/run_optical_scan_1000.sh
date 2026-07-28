@@ -9,6 +9,12 @@
 
 set -e
 
+# --- standard logging: writes to <sim>/build/logs/<script>.log --------------
+# Repo-wide convention, see simulations/README_LOGGING.md. No redirect needed:
+#   nohup bash THIS_SCRIPT.sh &     ->   tail -f build/logs/<script>.log
+. "$(cd "$(dirname "$0")" && pwd)/../lib/run_logging.sh"
+start_logging "$(cd "$(dirname "$0")" && pwd)"
+
 # ── Set Geant4 data-path environment by globbing the real data directory ──────
 # Do NOT trust geant4.sh — the build-tree copy has broken relative paths.
 # Find the directory that actually contains the data tables (G4ENSDFSTATE*, etc.)

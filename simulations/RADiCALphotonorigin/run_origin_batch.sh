@@ -10,6 +10,12 @@
 # Leaves RADICAL_BEAM_QUADRANT UNSET so every event samples a fresh random impact.
 # Needs ROOT for the merge/plot (any conda env with hadd/root is auto-detected).
 set -u
+
+# --- standard logging: writes to <sim>/build/logs/<script>.log --------------
+# Repo-wide convention, see simulations/README_LOGGING.md. No redirect needed:
+#   nohup bash THIS_SCRIPT.sh &     ->   tail -f build/logs/<script>.log
+. "$(cd "$(dirname "$0")" && pwd)/../lib/run_logging.sh"
+start_logging "$(cd "$(dirname "$0")" && pwd)"
 cd "$(dirname "$0")/build" || exit 1
 source ../setup_env.sh >/dev/null 2>&1
 

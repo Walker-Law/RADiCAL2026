@@ -22,6 +22,12 @@
 # into ./scan/ so this folder stays self-contained. Analyze with:
 #   root -l -b -q 'analysis/ladder.C(NEVT)'
 set -u
+
+# --- standard logging: writes to <sim>/build/logs/<script>.log --------------
+# Repo-wide convention, see simulations/README_LOGGING.md. No redirect needed:
+#   nohup bash THIS_SCRIPT.sh &     ->   tail -f build/logs/<script>.log
+. "$(cd "$(dirname "$0")" && pwd)/../lib/run_logging.sh"
+start_logging "$(cd "$(dirname "$0")" && pwd)"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 DSB="$HERE/../RADiCALsimDSB"
 NEVT=${1:-500}

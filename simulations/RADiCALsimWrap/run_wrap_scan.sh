@@ -19,6 +19,12 @@
 # number is traceable to the exact macro and banner that produced it.
 set -eu
 
+# --- standard logging: writes to <sim>/build/logs/<script>.log --------------
+# Repo-wide convention, see simulations/README_LOGGING.md. No redirect needed:
+#   nohup bash THIS_SCRIPT.sh &     ->   tail -f build/logs/<script>.log
+. "$(cd "$(dirname "$0")" && pwd)/../lib/run_logging.sh"
+start_logging "$(cd "$(dirname "$0")" && pwd)"
+
 HERE="$(cd "$(dirname "$0")" && pwd)"
 BIN="$HERE/build/radwrap"
 NEV="${1:-2500}"
@@ -68,13 +74,20 @@ mkdir -p "$d"
 } > "$d/sweep.mac"
 
 echo "--- tyvek  (sides, R=0.98 diffuse, 0.1 mm air gap) ---"
+# Geant4's own output — the actual live progress — goes to the standard log
+# location so it can be tailed without hunting through results/.
+G4LOG="$HERE/build/logs/tyvek_geant4.log"
+mkdir -p "$HERE/build/logs"
+echo "    Geant4 progress -> build/logs/tyvek_geant4.log  (tail -f that one)"
 start=$(date +%s)
 (
     cd "$d"
-    RADWRAP_SIDES=1 "$BIN" sweep.mac > run.log 2>&1
+    RADWRAP_SIDES=1 "$BIN" sweep.mac > "$G4LOG" 2>&1
 )
 echo "    done in $(( $(date +%s) - start ))s  -> results/tyvek/"
-grep -h "outer wrap" "$d/run.log" | head -1 | sed 's/^/    /' || true
+# Keep a copy next to the data so the result folder stays self-documenting.
+cp "$G4LOG" "$d/run.log"
+grep -h "outer wrap" "$G4LOG" | head -1 | sed 's/^/    /' || true
 
 echo "=================================================================="
 echo " done. Next (on the Mac):"

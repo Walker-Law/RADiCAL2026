@@ -12,6 +12,12 @@
 #
 # Estimated runtime on 512 cores, 500-step cap, 10k events/energy: ~3-5 hours.
 set -u
+
+# --- standard logging: writes to <sim>/build/logs/<script>.log --------------
+# Repo-wide convention, see simulations/README_LOGGING.md. No redirect needed:
+#   nohup bash THIS_SCRIPT.sh &     ->   tail -f build/logs/<script>.log
+. "$(cd "$(dirname "$0")" && pwd)/../lib/run_logging.sh"
+start_logging "$(cd "$(dirname "$0")" && pwd)"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE"
 
