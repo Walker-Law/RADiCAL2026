@@ -61,6 +61,25 @@ simulations/                 Geant4 simulations
                                pull_results.sh syncs cluster output back. See
                                its own README for the full flag table and an
                                idiot-proof usage guide.
+  RADiCALsimWrap/            Fork of RADiCALsimSIMPLE testing ONE question:
+                               does an outer reflective wrap on the module's
+                               exposed faces (which neither paper describes —
+                               Tyvek there is only BETWEEN layers) help or
+                               hurt? Flags for sides/ends/reflectivity/finish
+                               (diffuse vs specular)/air-gap; off by default,
+                               so a bare run is byte-identical to SIMPLE and
+                               doubles as the "none" control (stage_control.sh
+                               reuses an existing SIMPLE run instead of
+                               re-running it). Runs on perseverence.
+                               run_wrap_scan.sh sweeps several configs
+                               (Tyvek/ESR/mylar/Delrin/absorbing/optical-
+                               contact); analysis/wrap_scan.C compares
+                               detected light, timing, and energy resolution
+                               against the control. time_probe.sh checks
+                               per-event wall-clock FIRST — highly reflective
+                               wraps trap photons in far more boundary
+                               bounces and run ~100x slower per event, a real
+                               finding, not a hang.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
