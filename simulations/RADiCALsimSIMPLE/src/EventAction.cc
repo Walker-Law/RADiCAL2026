@@ -1,9 +1,12 @@
 #include "EventAction.hh"
 #include "G4AnalysisManager.hh"
+#include "G4Event.hh"
+#include "G4PrimaryVertex.hh"
 #include "G4SystemOfUnits.hh"
 
 void EventAction::BeginOfEventAction(const G4Event*) {
     fElyso = 0.;
+    fEw    = 0.;
     fNpe   = 0.;
     fNpeCenter = 0.;
     fTmcp  = kBig;
@@ -11,9 +14,13 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     fEpbGlass = 0.;
     fTup.fill(kBig);
     fTdn.fill(kBig);
+    fLayerEacc.fill(0.);
+    fCornerNpeAcc.fill(0.);
+    fPhT.clear();
+    fPhId.clear();
 }
 
-void EventAction::EndOfEventAction(const G4Event*) {
+void EventAction::EndOfEventAction(const G4Event* evt) {
     auto a = G4AnalysisManager::Instance();
 
     // Timing observable: for every corner that saw a photon at BOTH ends,
@@ -33,6 +40,10 @@ void EventAction::EndOfEventAction(const G4Event*) {
     a->FillH1(1, fNpe);
     if (n > 0) a->FillH1(2, dTmean);
 
+    // Beam-spot truth: where this event's primary actually started (mm).
+    G4double x = 0., y = 0.;
+    if (auto* v = evt->GetPrimaryVertex()) { x = v->GetX0()/mm; y = v->GetY0()/mm; }
+
     a->FillNtupleDColumn(0, fElyso / GeV);
     a->FillNtupleDColumn(1, fNpe);
     // no-timing sentinel is -999, NOT -1: with the realistic beam spot, real
@@ -44,5 +55,20 @@ void EventAction::EndOfEventAction(const G4Event*) {
     a->FillNtupleDColumn(5, fEtrig[0] / MeV);                  // trigger 1 dE
     a->FillNtupleDColumn(6, fEtrig[1] / MeV);                  // trigger 2 dE
     a->FillNtupleDColumn(7, fEpbGlass / GeV);                  // Pb-glass (leakage)
+    a->FillNtupleDColumn(8, x);                                // primary x (mm)
+    a->FillNtupleDColumn(9, y);                                // primary y (mm)
+    a->FillNtupleDColumn(10, fEw / GeV);                       // W absorber dE
+
+    // Vector columns (bound by reference in RunAction — fill, then row).
+    fLayerE.assign(fLayerEacc.begin(), fLayerEacc.end());
+    for (auto& e : fLayerE) e /= GeV;
+    fCornerNpe.assign(fCornerNpeAcc.begin(), fCornerNpeAcc.end());
+    fCornerTup.resize(4); fCornerTdn.resize(4);
+    for (int k = 0; k < 4; ++k) {
+        fCornerTup[k] = (fTup[k] < kBig) ? fTup[k] : -999.;
+        fCornerTdn[k] = (fTdn[k] < kBig) ? fTdn[k] : -999.;
+    }
+    // fPhT/fPhId already accumulated (empty unless RADSIMPLE_STORE_PHOTON_TIMES=1)
+
     a->AddNtupleRow();
 }
