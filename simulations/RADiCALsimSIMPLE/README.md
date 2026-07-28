@@ -147,7 +147,7 @@ make -j
 **2. Run it** (from this folder, not `build/`):
 
 ```bash
-bash run_simple.sh                     # the standard sweep: 5k events x 6 energies (~1 h on a cluster)
+bash run_simple.sh                     # the standard sweep: 5k events x 6 energies (~5 h on a 512-thread cluster, measured)
 nohup bash run_simple.sh &             # same, survives SSH drops (clusters)
 bash run_simple.sh run_short.mac       # any other macro
 ```
