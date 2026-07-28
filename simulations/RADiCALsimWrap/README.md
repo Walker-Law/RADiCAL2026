@@ -133,6 +133,12 @@ All of SIMPLE's flags (`RADSIMPLE_LIGHT_SCALE`, `RADSIMPLE_THREADS`, …) work
 identically here. The reflectivity/finish/gap knobs exist so a different wrap
 material can be tried later by just setting env vars — no code change.
 
+The output ntuple is SIMPLE's full schema (per-layer energies, per-corner
+light and times, beam-spot x/y, optional `RADSIMPLE_STORE_PHOTON_TIMES=1`
+photon dump) — see SIMPLE's README "What's in the ntuple". Files produced
+before 2026-07-28 (including the first tyvek run) have only the original 8
+columns; `wrap_scan.C` works with either.
+
 ---
 
 ## What is deliberately not modeled
