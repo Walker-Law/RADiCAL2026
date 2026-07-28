@@ -27,6 +27,12 @@
 set -eu
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
+
+# --- standard logging: writes to <sim>/build/logs/<script>.log --------------
+# Repo-wide convention, see simulations/README_LOGGING.md. No redirect needed.
+. "$HERE/../lib/run_logging.sh"
+start_logging "$HERE"
+
 SRC="${1:-$HERE/../RADiCALsimSIMPLE/build}"
 DST="$HERE/results/none"
 
