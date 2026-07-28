@@ -155,8 +155,13 @@ void wrap_scan(const char* dir = "results") {
             TH1D* nh = fineHist(t, "Npe", "NpeFine");
             if (nh) {
                 coreFit(nh, "", "", mu, sg, sgErr);
-                npe[ic][ie] = mu;
-                res[ic][ie] = (mu > 0) ? 100 * sg / mu : 0;
+                // A fitted mean <= 0 means the fit failed (it happens on very
+                // low statistics, where the Gaussian runs away). Treat it as
+                // no data rather than reporting a negative photon count.
+                if (mu > 0) {
+                    npe[ic][ie] = mu;
+                    res[ic][ie] = 100 * sg / mu;
+                }
                 delete nh;
             }
             f.Close();
