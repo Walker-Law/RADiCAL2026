@@ -46,7 +46,11 @@ ENERGIES="${RADWRAP_ENERGIES:-5 10 25 50 100 120}"
 #                  to quote.
 #   black  0.02  : absorbing wrap — the pessimistic bound.
 ALL_CONFIGS=(
-  "none:0:0:0.98:diffuse:0.1"            # CONTROL — identical to RADiCALsimSIMPLE
+  "none:0:0:0.98:diffuse:0.1"            # CONTROL, identical to RADiCALsimSIMPLE.
+                                          # SKIPPED BY DEFAULT (see header) — stage
+                                          # an existing SIMPLE run instead, or ask
+                                          # for this explicitly via RADWRAP_CONFIGS
+                                          # if you want a fresh same-seed control.
   "tyvek:1:0:0.98:diffuse:0.1"           # the actual proposal: Tyvek on the 4 long faces
   "tyvek_ends:1:1:0.98:diffuse:0.1"      # same + end caps (all 6 faces)
   "esr:1:0:0.985:specular:0.1"           # 3M ESR / VM2000 specular film
