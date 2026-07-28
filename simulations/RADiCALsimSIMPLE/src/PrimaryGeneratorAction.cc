@@ -23,5 +23,21 @@ PrimaryGeneratorAction::PrimaryGeneratorAction() {
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fGun; }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* evt) {
+    // Beam spot: Gaussian in x,y with sigma = RADSIMPLE_BEAM_SPOT_MM (default
+    // 2.9 mm, the measured H2 beam width used across this project; 0 = pencil).
+    // This is REQUIRED physics, not decoration: the tiles have a real central
+    // hole on the beam axis (papers' Fig. 2), and a zero-width beam at exactly
+    // (0,0) travels straight down that channel without showering — 2303.05580
+    // documents ("particles ... through the central hole") and cuts that
+    // pathology. A finite spot makes it the rare accident it is in the data.
+    static G4double sig = -1.;
+    if (sig < 0.) {
+        const char* s = std::getenv("RADSIMPLE_BEAM_SPOT_MM");
+        sig = s ? std::atof(s) : 2.9;
+        if (sig < 0.) sig = 0.;
+    }
+    const G4double x = (sig > 0.) ? G4RandGauss::shoot(0., sig*mm) : 0.;
+    const G4double y = (sig > 0.) ? G4RandGauss::shoot(0., sig*mm) : 0.;
+    fGun->SetParticlePosition(G4ThreeVector(x, y, -450.*mm));
     fGun->GeneratePrimaryVertex(evt);
 }
