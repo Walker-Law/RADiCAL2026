@@ -120,10 +120,13 @@ void wrap_scan(const char* dir = "results") {
     for (int ic = 0; ic < NC; ++ic) {
         for (int ie = 0; ie < NE; ++ie) {
             TString fn = Form("%s/%s/E%.0fGeV.root", dir, cfg[ic].c_str(), E[ie]);
+            // Not every config has every energy (see the union note above), so
+            // a missing file is normal, not an error — leave zeros and move on.
+            if (gSystem->AccessPathName(fn)) continue;
             TFile f(fn);
-            if (f.IsZombie()) { printf("  missing %s\n", fn.Data()); continue; }
+            if (f.IsZombie()) { printf("  [!] unreadable: %s\n", fn.Data()); continue; }
             TTree* t = (TTree*)f.Get("ev");
-            if (!t) { printf("  no ntuple in %s\n", fn.Data()); continue; }
+            if (!t) { printf("  [!] no ntuple in %s\n", fn.Data()); continue; }
 
             double mu, sg, sgErr;
 

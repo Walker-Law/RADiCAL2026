@@ -74,7 +74,7 @@ Some /vis commands (optionally) take a string to specify colour.
 [WRAP] light scale 0.01 -> 332 ph/MeV LYSO, Cherenkov thinned to match (RADSIMPLE_LIGHT_SCALE)
 [WRAP] beamline: MCP=1 triggers=1 PbGlass=1   center E-type capillary=0  (RADSIMPLE_WITH_MCP/_TRIGGERS/_PBGLASS, RADSIMPLE_CENTER_ETYPE)
 [WRAP] corner capillary type: T (15 mm WLS at shower max, timing)  (RADSIMPLE_CORNER_ETYPE)
-[WRAP] outer wrap: sides=1 ends=0  R=0.98  finish=diffuse  gap=0.1 mm  thick=0.2032 mm  (RADWRAP_SIDES/_ENDS/_REFLECTIVITY/_FINISH/_GAP_MM/_THICK_MM)
+[WRAP] outer wrap: sides=1 ends=0  R=0.02  finish=diffuse  gap=0.1 mm  thick=0.2032 mm  (RADWRAP_SIDES/_ENDS/_REFLECTIVITY/_FINISH/_GAP_MM/_THICK_MM)
 [WRAP] stack 124.879 mm, DSB1 centre z = -22.0396 mm; 4 corner fibres, PDs at both ends.
 
  hInelastic FTFP_BERT : threshold between BERT and FTFP is over the interval 
@@ -854,24 +854,22 @@ Event modulo is reduced to 1 (was 3) to distribute events to all threads.
 *** This is just a warning message. ***
 -------- WWWW -------- G4Exception-END --------- WWWW -------
 
-G4WT1 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
-### Run 0 starts on worker thread 1.
-G4WT1 > --> Event 0 starts with initial seeds (71475943,95194703).
-G4WT7 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
-### Run 0 starts on worker thread 7.
-G4WT2 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
-### Run 0 starts on worker thread 2.
 G4WT5 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
 ### Run 0 starts on worker thread 5.
+G4WT5 > --> Event 0 starts with initial seeds (71475943,95194703).
+G4WT1 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+### Run 0 starts on worker thread 1.
+G4WT3 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+### Run 0 starts on worker thread 3.
+G4WT2 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+### Run 0 starts on worker thread 2.
+G4WT7 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
+### Run 0 starts on worker thread 7.
+G4WT7 > --> Event 4 starts with initial seeds (7359518,4275449).
 G4WT4 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
 ### Run 0 starts on worker thread 4.
 G4WT6 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
 ### Run 0 starts on worker thread 6.
-G4WT3 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
-### Run 0 starts on worker thread 3.
 G4WT0 >      Cr_sctns:  Glauber-Gribov Nucl-nucl: 0 eV  ---> 25.6 PeV
 ### Run 0 starts on worker thread 0.
-G4WT4 > --> Event 4 starts with initial seeds (7359518,4275449).
-G4WT7 > --> Event 8 starts with initial seeds (18800263,74815842).
-Graphics systems deleted.
-Visualization Manager deleting...
+G4WT1 > --> Event 8 starts with initial seeds (18800263,74815842).
