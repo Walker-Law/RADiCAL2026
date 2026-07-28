@@ -101,6 +101,9 @@ echo " wrap scan: ${#CONFIGS[@]} configs x $NE energies x $NEV events"
 echo " energies : $ENERGIES GeV"
 echo " threads  : ${RADSIMPLE_THREADS:-all cores}"
 echo " total    : $(( ${#CONFIGS[@]} * NE * NEV )) events"
+echo " NOTE: reflective configs run far slower per event than the no-wrap"
+echo "       control (light trapping, see header) — if you haven't already,"
+echo "       Ctrl-C and run 'bash time_probe.sh' first to sanity-check timing."
 echo "=========================================================="
 
 for cfg in "${CONFIGS[@]}"; do
