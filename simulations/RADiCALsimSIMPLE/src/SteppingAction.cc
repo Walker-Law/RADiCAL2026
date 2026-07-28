@@ -58,10 +58,20 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
         return;                                                // photons deposit no ionisation
     }
 
-    // ---- charged/neutral: sum energy deposited in LYSO ----
+    // ---- charged/neutral: route energy deposits / times by volume name ----
     auto pre = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
-    if (pre && pre->GetLogicalVolume()->GetName() == "LYSO") {
-        const G4double e = step->GetTotalEnergyDeposit();
-        if (e > 0.) fEvt->AddLYSO(e);
+    if (!pre) return;
+    const G4String& vn = pre->GetLogicalVolume()->GetName();
+    const G4double  e  = step->GetTotalEnergyDeposit();
+
+    if (vn == "LYSO")            { if (e > 0.) fEvt->AddLYSO(e); }
+    else if (vn == "Trig1")      { if (e > 0.) fEvt->AddTrig(0, e); }
+    else if (vn == "Trig2")      { if (e > 0.) fEvt->AddTrig(1, e); }
+    else if (vn == "PbGlass")    { if (e > 0.) fEvt->AddPbGlass(e); }
+    else if (vn == "MCPRadiator") {
+        // MCP timing reference: earliest CHARGED-particle arrival = event t0.
+        // (Pure truth time — the MCP's own resolution is electronics, not here.)
+        if (track->GetDefinition()->GetPDGCharge() != 0.)
+            fEvt->RecordMCP(step->GetPreStepPoint()->GetGlobalTime()/ns);
     }
 }
