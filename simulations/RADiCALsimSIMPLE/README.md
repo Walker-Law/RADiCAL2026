@@ -269,6 +269,7 @@ hardcoded at the top of the script — edit them there if the cluster changes.
 | `RADSIMPLE_PDE` | 0.36 | SiPM detection efficiency |
 | `RADSIMPLE_BEAM_SPOT_MM` | 2.9 | Gaussian beam-spot σ; 0 = pencil (warning: a pencil beam dives down the central hole) |
 | `RADSIMPLE_PHOTON_STEP_CAP` | 20000 | kill any photon after this many steps (anti-hang safety valve; costs no measurable light). (old name `RADSIMPLE_OPT_MAXSTEP` accepted) |
+| `RADSIMPLE_THREADS` | all cores | worker threads. Lower it only if a host's ntuple merge misbehaves at high counts (symptom: ~200-byte per-thread files, empty merged output). **Never put `/run/numberOfThreads` in a macro** — it runs after this and silently throttles the machine |
 
 **Optional components (1 = present):**
 
