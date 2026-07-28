@@ -239,35 +239,14 @@ void scan(const char* dir = "build") {
     // an actual full-module light readout means E-type capillaries (WLS running
     // the FULL module length instead of 15 mm at shower max), which is a
     // geometry change + rerun, not an analysis change.
-    {
-        auto gN = new TGraphErrors(N, E, resN, nullptr, resNerr);
-        gN->SetMarkerStyle(20); gN->SetMarkerColor(kAzure+2);
-        gN->SetLineColor(kAzure+2); gN->SetMarkerSize(1.3);
-        auto gE = new TGraphErrors(N, E, resE, nullptr, resEerr);
-        gE->SetMarkerStyle(21); gE->SetMarkerColor(kRed+1);
-        gE->SetLineColor(kRed+1); gE->SetMarkerSize(1.3);
-
-        auto mg = new TMultiGraph();
-        mg->Add(gN, "P"); mg->Add(gE, "P");
-        mg->SetTitle("Shower-max slice vs whole module;E_{beam} (GeV);#sigma_{E}/E (%)");
-
-        auto c = new TCanvas("cc", "", 800, 600);
-        gStyle->SetOptFit(0);
-        c->SetLogy();                       // 1% .. 20% spans a decade
-        mg->Draw("A");
-        auto lg = new TLegend(0.14, 0.14, 0.62, 0.29);   // bottom-left: the empty corner
-        lg->AddEntry(gN, "shower-max slice (detected light)", "p");
-        lg->AddEntry(gE, "whole module (29 plates, dE/dx truth)", "p");
-        lg->Draw();
-        c->SaveAs(Form("%s/plots/sigma_E_compare.png", dir));
-        printf("\ncomparison plot: shower-max readout is ~%.0fx worse than the\n"
-               "  whole-module ceiling at %.0f GeV (%.2f%% vs %.2f%%) -- the price of\n"
-               "  sampling one 15 mm slice instead of all 29 plates.\n",
-               resN[N-1]/resE[N-1], E[N-1], resN[N-1], resE[N-1]);
-        delete c;
-    }
+    // (No combined/overlay plot is produced on purpose — each observable gets
+    //  its own standalone figure so nothing is visually conflated. The relative
+    //  size of the two is stated numerically below instead.)
+    printf("\nfor reference (NOT plotted together): at %.0f GeV the shower-max\n"
+           "  light readout is %.1fx the whole-module dE/dx floor (%.2f%% vs %.2f%%)\n",
+           E[N-1], resN[N-1]/resE[N-1], resN[N-1], resE[N-1]);
 
     printf("\nplots: %s/plots/  (sigma_t_vs_E.png, sigma_E_Npe_vs_E.png,"
-           " sigma_E_vs_E.png, sigma_E_compare.png, fits/*.png)\n"
+           " sigma_E_vs_E.png, fits/*.png)\n"
            "(sigma_t is thinned by RADSIMPLE_LYSO_SCALE; sigma_E/E is not.)\n", dir);
 }
