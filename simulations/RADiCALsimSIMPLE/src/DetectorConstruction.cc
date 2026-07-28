@@ -124,6 +124,14 @@ void DetectorConstruction::DefineMaterials() {
     tyvek->SetMaterialPropertiesTable(tMPT);
 }
 
+// On/off flags for optional components. Each reads an environment variable
+// once; "0" disables, anything else (or unset, if dflt=true) enables.
+static bool flagOn(const char* envName, bool dflt) {
+    const char* s = std::getenv(envName);
+    if (!s) return dflt;
+    return std::atof(s) != 0.;
+}
+
 // -------------------------------------------------------------------------
 // GEOMETRY.
 // -------------------------------------------------------------------------
@@ -139,8 +147,25 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     const G4double hXY = tileXY/2.*mm;
 
-    // World.
-    auto worldS = new G4Box("World", 40.*mm, 40.*mm, 110.*mm);
+    // ---- Optional-component flags (see README "Flags") ----------------------
+    // Beam line (default ON — exclude any piece with FLAG=0):
+    const bool useMCP     = flagOn("RADSIMPLE_WITH_MCP",      true);
+    const bool useTrig    = flagOn("RADSIMPLE_WITH_TRIGGERS", true);
+    const bool usePbGlass = flagOn("RADSIMPLE_WITH_PBGLASS",  true);
+    // Central E-type capillary (default OFF): the papers' TESTED module left the
+    // central hole "unused in these studies" (2401.01747 sec 2), so the faithful
+    // default is hole-drilled-but-empty. Set =1 to instrument it with a
+    // full-length WLS fibre + SiPMs (the paper's future energy option).
+    const bool useCenter  = flagOn("RADSIMPLE_CENTER_ETYPE",  false);
+    G4cout << "[SIMPLE] beamline: MCP=" << useMCP << " triggers=" << useTrig
+           << " PbGlass=" << usePbGlass
+           << "   center E-type capillary=" << useCenter
+           << "  (RADSIMPLE_WITH_MCP/_TRIGGERS/_PBGLASS, RADSIMPLE_CENTER_ETYPE)"
+           << G4endl;
+
+    // World: big enough for the full CERN H2 test-beam line
+    // (triggers at -400/-350 mm ... Pb-glass back face at +520 mm).
+    auto worldS = new G4Box("World", 70.*mm, 70.*mm, 620.*mm);
     auto worldLV = new G4LogicalVolume(worldS, air, "World");
     worldLV->SetVisAttributes(G4VisAttributes::GetInvisible());
     auto worldPV = new G4PVPlacement(nullptr, {}, worldLV, "World", nullptr, false, 0);
@@ -150,13 +175,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     const G4ThreeVector corner[4] =
         { {+c,+c,0}, {+c,-c,0}, {-c,+c,0}, {-c,-c,0} };
 
-    // Helper: drill the 4 corner holes through a plate solid (over-long in z).
+    // Helper: drill the FIVE capillary holes through a plate solid (over-long
+    // in z): 4 corners + the central one. The papers' tiles have all five holes
+    // (2401.01747 Fig. 2) — the central hole exists even when uninstrumented
+    // ("available for calibration or additional measurement ... not used in
+    // these tests"). 2303.05580 even needed an explicit cut against particles
+    // sneaking down it, so the empty hole is real physics, not decoration.
     auto drill = [&](G4VSolid* s, const G4String& nm) -> G4VSolid* {
         auto bore = new G4Tubs(nm+"_bore", 0, holeR*mm, 200.*mm, 0, 360*deg);
         G4VSolid* out = s;
         for (int k = 0; k < 4; ++k)
             out = new G4SubtractionSolid(nm+"_d"+std::to_string(k), out, bore,
                                          nullptr, corner[k]);
+        out = new G4SubtractionSolid(nm+"_dc", out, bore, nullptr,
+                                     G4ThreeVector(0,0,0));       // central hole
         return out;
     };
 
