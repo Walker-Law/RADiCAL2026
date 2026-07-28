@@ -28,6 +28,11 @@
 set -e
 cd "$(dirname "$(realpath "$0")")"   # RADiCALsim1 root
 
+# --- standard logging: writes to <sim>/build/logs/<script>.log --------------
+# Repo-wide convention, see simulations/README_LOGGING.md. No redirect needed.
+. "$PWD/../lib/run_logging.sh"
+start_logging "$PWD"
+
 # ── Parse args: a bare number = event count; --per-energy = extra plots ───────
 N="1000"
 PER_ENERGY=0

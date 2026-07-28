@@ -11,6 +11,12 @@
 #   root -l -b -q 'analysis/scan.C("build/short")' # build/short/
 set -eu
 HERE="$(cd "$(dirname "$0")" && pwd)"
+
+# --- standard logging: writes to <sim>/build/logs/<script>.log --------------
+# Repo-wide convention, see simulations/README_LOGGING.md. No redirect needed.
+. "$HERE/../lib/run_logging.sh"
+start_logging "$HERE"
+
 PORT=10022
 
 # NOTE: the two clusters do NOT have the repo at the same path (July 2026) —
