@@ -227,7 +227,47 @@ void scan(const char* dir = "build") {
         delete c;
     }
 
-    printf("\nplots: %s/plots/  (sigma_t_vs_E.png, sigma_E_vs_E.png,"
-           " fits/dT_E*.png, fits/Elyso_E*.png)\n"
+    // --- graph 4: the two side by side — SHOWER-MAX SLICE vs WHOLE MODULE ---
+    // This is the plot that answers "what does the shower-max readout cost me
+    // relative to reading out the entire module?".
+    //   blue  = what THIS detector measures: light from the 15 mm DSB1 window
+    //           at shower max (the papers' observable, and the one that turns up)
+    //   red   = the whole 29-plate stack's sampled energy (dE/dx truth), which
+    //           falls monotonically like a normal calorimeter and never turns up
+    // CAVEAT: the red curve is TRUTH, not a light readout — it is the ceiling a
+    // full-module readout could approach, not a simulated measurement. Building
+    // an actual full-module light readout means E-type capillaries (WLS running
+    // the FULL module length instead of 15 mm at shower max), which is a
+    // geometry change + rerun, not an analysis change.
+    {
+        auto gN = new TGraphErrors(N, E, resN, nullptr, resNerr);
+        gN->SetMarkerStyle(20); gN->SetMarkerColor(kAzure+2);
+        gN->SetLineColor(kAzure+2); gN->SetMarkerSize(1.3);
+        auto gE = new TGraphErrors(N, E, resE, nullptr, resEerr);
+        gE->SetMarkerStyle(21); gE->SetMarkerColor(kRed+1);
+        gE->SetLineColor(kRed+1); gE->SetMarkerSize(1.3);
+
+        auto mg = new TMultiGraph();
+        mg->Add(gN, "P"); mg->Add(gE, "P");
+        mg->SetTitle("Shower-max slice vs whole module;E_{beam} (GeV);#sigma_{E}/E (%)");
+
+        auto c = new TCanvas("cc", "", 800, 600);
+        gStyle->SetOptFit(0);
+        c->SetLogy();                       // 1% .. 20% spans a decade
+        mg->Draw("A");
+        auto lg = new TLegend(0.42, 0.70, 0.88, 0.88);
+        lg->AddEntry(gN, "shower-max slice (detected light)", "p");
+        lg->AddEntry(gE, "whole module (29 plates, dE/dx truth)", "p");
+        lg->Draw();
+        c->SaveAs(Form("%s/plots/sigma_E_compare.png", dir));
+        printf("\ncomparison plot: shower-max readout is ~%.0fx worse than the\n"
+               "  whole-module ceiling at %.0f GeV (%.2f%% vs %.2f%%) -- the price of\n"
+               "  sampling one 15 mm slice instead of all 29 plates.\n",
+               resN[N-1]/resE[N-1], E[N-1], resN[N-1], resE[N-1]);
+        delete c;
+    }
+
+    printf("\nplots: %s/plots/  (sigma_t_vs_E.png, sigma_E_Npe_vs_E.png,"
+           " sigma_E_vs_E.png, sigma_E_compare.png, fits/*.png)\n"
            "(sigma_t is thinned by RADSIMPLE_LYSO_SCALE; sigma_E/E is not.)\n", dir);
 }
