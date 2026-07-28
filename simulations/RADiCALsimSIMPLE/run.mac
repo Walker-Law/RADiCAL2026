@@ -7,10 +7,10 @@
 # (/analysis/setFileName is a built-in Geant4 command — to change the energy
 #  list just add/remove a setFileName+energy+beamOn block, no C++ needed.)
 #
-# Thread cap: Geant4's ntuple merge misbehaves at hundreds of threads (it can
-# choke and leave ~200-byte empty files), and at 10k events/energy more threads
-# are mostly spin-up overhead anyway. 64 works on every machine we use.
-/run/numberOfThreads 64
+# NOTE: no /run/numberOfThreads here on purpose — the thread count comes from
+# RADSIMPLE_THREADS (default: all cores). A macro line would override it and
+# silently throttle the machine. Set RADSIMPLE_THREADS=64 (or similar) only if
+# a host's ntuple merge misbehaves at high thread counts.
 /run/initialize
 /run/printProgress 500
 
