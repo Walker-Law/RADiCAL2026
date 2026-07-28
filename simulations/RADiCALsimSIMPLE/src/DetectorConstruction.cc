@@ -108,8 +108,9 @@ void DetectorConstruction::DefineMaterials() {
     yMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 36.*ns);
     yMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
     lyso->SetMaterialPropertiesTable(yMPT);
-    G4cout << "[SIMPLE] LYSO yield scale " << lysoScale << " -> "
-           << 33200.*lysoScale << " ph/MeV (RADSIMPLE_LYSO_SCALE)" << G4endl;
+    G4cout << "[SIMPLE] light scale " << lysoScale << " -> "
+           << 33200.*lysoScale << " ph/MeV LYSO, Cherenkov thinned to match"
+           << " (RADSIMPLE_LIGHT_SCALE)" << G4endl;
 
     // --- DSB1: PURE WLS SHIFTER (no self-scintillation, on purpose — keeps the
     //     detected light 100% LYSO->WLS, the clean chain). Absorbs blue (short
