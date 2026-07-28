@@ -260,9 +260,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     for (int k = 0; k < 4; ++k) {
         G4ThreeVector p = corner[k];
-        new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,(front+dsbLo)/2), qUpLV, "QuartzUp",  worldLV, false, k);
+        if (haveStubs) {
+            new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,(front+dsbLo)/2), qUpLV, "QuartzUp", worldLV, false, k);
+            new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,(dsbHi+back)/2),  qDnLV, "QuartzDn", worldLV, false, k);
+        }
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,dsbC),            dsbLV, "DSB1",      worldLV, false, k);
-        new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,(dsbHi+back)/2),  qDnLV, "QuartzDn",  worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,front-pdHz),      pdUpLV,"PD_Up",     worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,back +pdHz),      pdDnLV,"PD_Down",   worldLV, false, k);
     }
