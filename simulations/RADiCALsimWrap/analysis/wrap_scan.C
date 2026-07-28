@@ -254,19 +254,36 @@ void wrap_scan(const char* dir = "results") {
              "sigma_E_Npe_vs_E.png", false);
 
     // ---- the one-line answer ---------------------------------------------
+    // Pick the energy where the MOST configs can actually be compared against
+    // the control — not just the middle of the list, which can easily be an
+    // energy only the (6-energy) staged control was run at.
     if (haveBase && NE > 0) {
-        printf("\n---------------------------------------------------------------\n");
-        int ie = NE / 2;                                  // a mid-range energy
-        printf("VERDICT at %.0f GeV (vs no wrap):\n", E[ie]);
-        for (int ic = 1; ic < NC; ++ic) {
-            if (!(npe[0][ie] > 0) || !(sgt[0][ie] > 0)) continue;
-            printf("  %-16s light %+6.1f%%   sigma_t %+6.1f%%   energy res %+6.1f%%\n",
-                   cfg[ic].c_str(),
-                   100*(npe[ic][ie]-npe[0][ie])/npe[0][ie],
-                   100*(sgt[ic][ie]-sgt[0][ie])/sgt[0][ie],
-                   (res[0][ie] > 0) ? 100*(res[ic][ie]-res[0][ie])/res[0][ie] : 0.);
+        int best = -1, bestN = 0;
+        for (int ie = 0; ie < NE; ++ie) {
+            if (!(npe[0][ie] > 0) || !(sgt[0][ie] > 0)) continue;   // control missing
+            int n = 0;
+            for (int ic = 1; ic < NC; ++ic)
+                if (npe[ic][ie] > 0 && sgt[ic][ie] > 0) ++n;
+            if (n >= bestN) { bestN = n; best = ie; }   // >= prefers higher energy
         }
-        printf("  (negative sigma_t / energy res = BETTER; negative light = worse)\n");
+        printf("\n---------------------------------------------------------------\n");
+        if (best < 0 || bestN == 0) {
+            printf("NO VERDICT: no energy has both the control and a wrap config.\n");
+            printf("  Run the wrap configs at an energy the control also covers,\n");
+            printf("  or stage a control that covers the energies you ran.\n");
+        } else {
+            printf("VERDICT at %.0f GeV (vs no wrap):\n", E[best]);
+            for (int ic = 1; ic < NC; ++ic) {
+                if (!(npe[ic][best] > 0) || !(sgt[ic][best] > 0)) continue;
+                printf("  %-16s light %+6.1f%%   sigma_t %+6.1f%%   energy res %+6.1f%%%s\n",
+                       cfg[ic].c_str(),
+                       100*(npe[ic][best]-npe[0][best])/npe[0][best],
+                       100*(sgt[ic][best]-sgt[0][best])/sgt[0][best],
+                       (res[0][best] > 0) ? 100*(res[ic][best]-res[0][best])/res[0][best] : 0.,
+                       (nev[ic][best] < 100 || nev[0][best] < 100) ? "   [LOW STATS]" : "");
+            }
+            printf("  (negative sigma_t / energy res = BETTER; negative light = worse)\n");
+        }
         printf("---------------------------------------------------------------\n");
     }
 
