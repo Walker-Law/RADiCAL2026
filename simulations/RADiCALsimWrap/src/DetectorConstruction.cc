@@ -38,6 +38,7 @@
 #include "G4Colour.hh"
 #include "G4SystemOfUnits.hh"
 #include <cstdlib>
+#include <string>
 
 // -------------------------------------------------------------------------
 // MATERIALS.  Optical property values are the RADiCAL project's verified
