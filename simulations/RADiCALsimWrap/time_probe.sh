@@ -8,7 +8,7 @@
 # event than the no-wrap control (confirmed empirically: a 0.98-reflectivity
 # side wrap at the default 1e-2 light thinning ran roughly two orders of
 # magnitude slower per event than RADiCALsimSIMPLE's baseline in a local
-// smoke test). The per-photon step cap (RADSIMPLE_PHOTON_STEP_CAP, default
+# smoke test). The per-photon step cap (RADSIMPLE_PHOTON_STEP_CAP, default
 # 20000) bounds any ONE photon's runaway, but does nothing about the total
 # NUMBER of photons now surviving many more steps before termination — so
 # wall-clock time is genuinely a property of the reflectivity, not a hang.
