@@ -206,10 +206,53 @@ energy list, no C++ needed. (`run_short.mac` is the same sweep at 1 000
 events/energy for a quick cross-check run.)
 
 Each file's histograms: `Elyso` (GeV), `Npe` (photons/event), `dT` (ns,
-4-corner mean), `dTc` (per corner), plus an `ev` ntuple with 8 columns:
-`Elyso, Npe, dT, NpeCenter, tMCP, eTrig1, eTrig2, ePbGlass`. `dT` uses `-999`
-as its "no timing achieved" sentinel (not `-1`, since real dT values can land
-near −1 ns with the beam spot in place).
+4-corner mean), `dTc` (per corner), plus the `ev` ntuple below.
+
+### What's in the ntuple (one row per event)
+
+Stored rich enough that **any event-level graph is a `TTree::Draw` away — no
+rerun needed.** (2026-07-28 extension; files before that date have only the
+first 8 columns.)
+
+| column | type | meaning |
+|--------|------|---------|
+| `Elyso` | double | GeV summed over all 29 LYSO plates (truth dE/dx) |
+| `Npe` | double | detected photons, 4 corner fibres, 8 SiPMs |
+| `dT` | double | ns, 4-corner mean first-photon t(down)−t(up); **−999 = no timing** |
+| `NpeCenter` | double | central E-type light (0 unless `RADSIMPLE_CENTER_ETYPE=1`) |
+| `tMCP` | double | MCP particle-arrival t0, ns (−1 = off/missed) |
+| `eTrig1`, `eTrig2` | double | trigger-counter deposits, MeV |
+| `ePbGlass` | double | Pb-glass tail-catcher deposit, GeV (leakage) |
+| `x`, `y` | double | this event's primary position, mm (beam-spot truth) |
+| `Ew` | double | GeV summed over all 28 W plates (sampling-fraction studies) |
+| `Elayer` | vector[29] | GeV per LYSO layer — longitudinal profile, shower max/COG per event |
+| `NpeCorner` | vector[4] | photons per corner — asymmetry, beam-spot starvation |
+| `tUp`, `tDn` | vector[4] | first-photon time per corner per end, ns (−999 = none) — rebuild dT any way you like, or reference against `tMCP` |
+
+Example draws, no rerun required:
+
+```cpp
+ev->Draw("Elayer[8]");                          // energy in layer 8
+ev->Draw("Sum$(Elayer*Iteration$)/Sum$(Elayer)"); // shower COG (layers)
+ev->Draw("Npe:sqrt(x*x+y*y)");                  // light vs beam offset
+ev->Draw("(tDn[2]-tUp[2])/2 - (tDn[0]-tUp[0])/2"); // corner-corner timing
+```
+
+**Not stored by default:** individual photon arrival times. First-photon
+timing is fully rebuildable from `tUp`/`tDn`, but a *different* estimator
+(Nth-photon, CFD emulation) needs every photon: run with
+`RADSIMPLE_STORE_PHOTON_TIMES=1` to add `phT` (every detected photon's time)
+and `phId` (its channel, corner + 4·isDown). That's the one payload that
+meaningfully grows files — see sizes below.
+
+### How much data is stored
+
+Per 5000-event file: **~2.5 MB** default (≈0.5 KB/event; the ntuple stores ~52
+doubles per event and physics doubles barely compress). A 6-energy sweep is
+**~15 MB**; even a hundred sweeps is no threat to an SSD. With
+`RADSIMPLE_STORE_PHOTON_TIMES=1` a file grows with Npe — measured ~6 KB/event
+at 10 GeV, scaling roughly linearly with energy: **~1 GB per 6-energy sweep**.
+Fine occasionally, not as an always-on default.
 
 Analyze one file: `root -l -b -q 'analysis/fit.C("build/E50GeV.root")'`
 → prints `σ_t = σ(dT)/2` and `σ/E`.
