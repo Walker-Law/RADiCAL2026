@@ -23,7 +23,12 @@ set -eu
 HERE="$(cd "$(dirname "$0")" && pwd)"
 BIN="$HERE/build/radwrap"
 NEV="${1:-2500}"
-ENERGIES="${RADWRAP_ENERGIES:-5 10 25 50 100 120}"
+# Three energies by default, not SIMPLE's six. The wrap's effect on light yield
+# is a roughly energy-independent RATIO, so three points show the trend at half
+# the cost of six. All three exist in SIMPLE's sweep, so the staged control
+# lines up. For the full grid:
+#   RADWRAP_ENERGIES="5 10 25 50 100 120" bash run_wrap_scan.sh
+ENERGIES="${RADWRAP_ENERGIES:-10 50 120}"
 WANT="${RADWRAP_CONFIGS:-}"
 
 # columns: name  sides  ends  reflectivity  finish  gap_mm
