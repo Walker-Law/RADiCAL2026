@@ -334,15 +334,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // thicknesses (photographs only) — those follow RADiCALsimDSB's replication.
     // No electronics/noise anywhere: the MCP records a pure particle-arrival
     // time, the counters and Pb-glass record pure energy deposits.
-    auto beamVis = new G4VisAttributes(G4Colour(0.4,1.0,0.4,0.5)); // green
-    beamVis->SetForceSolid(true);
+    auto trigVis = new G4VisAttributes(G4Colour(0.1,0.2,0.6,0.5));   // darker blue
+    trigVis->SetForceSolid(true);
+    auto mcpVis  = new G4VisAttributes(G4Colour(0.6,0.8,1.0,0.5));   // light blue
+    mcpVis->SetForceSolid(true);
+    auto pbglassVis = new G4VisAttributes(G4Colour(0.6,1.0,0.6,0.5)); // light green
+    pbglassVis->SetForceSolid(true);
 
     if (useTrig) {
         // Two 2 x 2 cm^2 plastic-scintillator coincidence counters (5 mm thick).
         auto scint = G4NistManager::Instance()->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
         auto tS  = new G4Box("trig", 10.*mm, 10.*mm, 2.5*mm);
-        auto t1LV = new G4LogicalVolume(tS, scint, "Trig1"); t1LV->SetVisAttributes(beamVis);
-        auto t2LV = new G4LogicalVolume(tS, scint, "Trig2"); t2LV->SetVisAttributes(beamVis);
+        auto t1LV = new G4LogicalVolume(tS, scint, "Trig1"); t1LV->SetVisAttributes(trigVis);
+        auto t2LV = new G4LogicalVolume(tS, scint, "Trig2"); t2LV->SetVisAttributes(trigVis);
         new G4PVPlacement(nullptr, {0,0,-400.*mm}, t1LV, "Trig1", worldLV, false, 0);
         new G4PVPlacement(nullptr, {0,0,-350.*mm}, t2LV, "Trig2", worldLV, false, 0);
     }
@@ -353,8 +357,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // preshower (few % of X0).
         auto alox = G4NistManager::Instance()->FindOrBuildMaterial("G4_ALUMINUM_OXIDE");
         auto rS  = new G4Box("mcpr", 13.5*mm, 13.5*mm, 1.5*mm);
-        auto rLV = new G4LogicalVolume(rS, quartz, "MCPRadiator"); rLV->SetVisAttributes(beamVis);
-        auto bLV = new G4LogicalVolume(rS, alox,   "MCPBody");     bLV->SetVisAttributes(beamVis);
+        auto rLV = new G4LogicalVolume(rS, quartz, "MCPRadiator"); rLV->SetVisAttributes(mcpVis);
+        auto bLV = new G4LogicalVolume(rS, alox,   "MCPBody");     bLV->SetVisAttributes(mcpVis);
         new G4PVPlacement(nullptr, {0,0,-250.*mm}, rLV, "MCPRadiator", worldLV, false, 0);
         new G4PVPlacement(nullptr, {0,0,-247.*mm}, bLV, "MCPBody",     worldLV, false, 0);
     }
@@ -364,7 +368,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // leakage out of the ~23 X0 module (tail catcher / leakage veto).
         auto pbgl = G4NistManager::Instance()->FindOrBuildMaterial("G4_GLASS_LEAD");
         auto gS  = new G4Box("pbg", 50.*mm, 50.*mm, 200.*mm);
-        auto gLV = new G4LogicalVolume(gS, pbgl, "PbGlass"); gLV->SetVisAttributes(beamVis);
+        auto gLV = new G4LogicalVolume(gS, pbgl, "PbGlass"); gLV->SetVisAttributes(pbglassVis);
         new G4PVPlacement(nullptr, {0,0,+320.*mm}, gLV, "PbGlass", worldLV, false, 0);
     }
 
