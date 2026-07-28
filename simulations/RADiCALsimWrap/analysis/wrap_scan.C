@@ -90,16 +90,25 @@ void wrap_scan(const char* dir = "results") {
         if (cfg[i] == "none") { std::swap(cfg[0], cfg[i]); break; }
     const bool haveBase = (cfg[0] == "none");
 
-    // ---- discover which energies were actually run ------------------------
+    // ---- discover which energies exist, across ALL configs ----------------
+    // Must scan every config, not just the first: the staged control usually
+    // comes from RADiCALsimSIMPLE's 6-energy run.mac while run_wrap_scan.sh
+    // defaults to 3 energies, so the two do NOT have the same file list. Take
+    // the union; energies a given config lacks simply show "-" in the table
+    // and are skipped in the plots.
     const double ECAND[] = {5, 10, 25, 50, 100, 120};
     std::vector<double> E;
     for (double e : ECAND)
-        if (!gSystem->AccessPathName(Form("%s/%s/E%.0fGeV.root", dir, cfg[0].c_str(), e)))
-            E.push_back(e);
-    if (E.empty()) { printf("no E<N>GeV.root files under %s/%s/\n", dir, cfg[0].c_str()); return; }
+        for (size_t ic = 0; ic < cfg.size(); ++ic)
+            if (!gSystem->AccessPathName(Form("%s/%s/E%.0fGeV.root", dir, cfg[ic].c_str(), e))) {
+                E.push_back(e); break;
+            }
+    if (E.empty()) { printf("no E<N>GeV.root files under %s/*/\n", dir); return; }
 
     const int NC = cfg.size(), NE = E.size();
-    printf("configs: %d   energies: %d\n", NC, NE);
+    printf("configs: %d   energies:", NC);
+    for (int i = 0; i < NE; ++i) printf(" %.0f", E[i]);
+    printf(" GeV\n");
 
     // [config][energy]
     std::vector<std::vector<double>> npe(NC, std::vector<double>(NE, 0)),
