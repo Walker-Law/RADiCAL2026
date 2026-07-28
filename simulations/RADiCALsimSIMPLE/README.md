@@ -46,14 +46,30 @@ symmetric down−up difference about the shower-max source).
 
 | part | value |
 |------|-------|
-| tile | 14 × 14 mm |
+| tile | 14 × 14 mm, with **five** capillary holes (4 corners + center, papers' Fig. 2) |
 | stack | 29 LYSO (1.5 mm) + 28 W (2.5 mm) + 56 Tyvek foils (0.2032 mm) = **124.88 mm** |
 | Tyvek | reflective (98%) foils between plates, with holes for the fibers |
 | fibers | 4, at (±3.5, ±3.5) mm; quartz guide + **DSB1 15 mm at shower max (40.4 mm deep)** |
 | fiber radius | 0.575 mm in a 0.65 mm hole (75 µm air gap → quartz-air TIR guiding) |
 | SiPMs | thin Si discs at both stack ends, one per fiber end (8 total) |
+| center hole | always drilled (papers: present but "unused in these studies"); instrument it with `RADSIMPLE_CENTER_ETYPE=1` |
 
-Beam: one electron per event, `+z`, set the energy in the macro with `/gun/energy`.
+Optional components (each on its own flag, see the table below):
+
+| component | z | what it is / what it records |
+|---|---|---|
+| Trig1, Trig2 | −400, −350 mm | 2×2 cm² plastic coincidence counters (size per 2401 Fig. 11) → `eTrig1`, `eTrig2` (MeV) |
+| MCP | −250 mm | fused-silica MCP-PMT window + thin ceramic body; earliest charged-particle time = event t0 → `tMCP` (ns) |
+| Pb-glass | +320 mm | 10×10×40 cm tail catcher behind the module → `ePbGlass` (GeV, leakage) |
+| central E-type | on axis | full-length WLS fiber in the center hole, own SiPM pair → `NpeCenter` |
+
+No electronics or noise anywhere — every one of those is a pure truth quantity.
+
+Beam: one electron per event along `+z` from z = −450 mm (upstream of the whole
+beam line), energy set in the macro (`/gun/energy`), **Gaussian spot σ = 2.9 mm**
+(`RADSIMPLE_BEAM_SPOT_MM`; 0 = pencil). The spot is required physics: the tiles
+have a real central hole on the beam axis, and a zero-width beam at (0,0) slips
+straight down it without showering — the pathology 2303.05580 cuts against.
 
 ---
 
