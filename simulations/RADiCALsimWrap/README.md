@@ -22,14 +22,20 @@ cd ~/Research/RADiCAL2026/simulations/RADiCALsimWrap && mkdir -p build && cd bui
 ```
 
 ```bash
-cd ~/Research/RADiCAL2026/simulations/RADiCALsimWrap && nohup bash run_wrap_scan.sh > scan.log 2>&1 &
+cd ~/Research/RADiCAL2026/simulations/RADiCALsimWrap && nohup bash run_wrap_scan.sh &
 ```
 
-Watch it:
+No redirect needed — the script logs itself to `build/logs/` (repo-wide
+convention, see [simulations/README_LOGGING.md](../README_LOGGING.md)). Watch
+the **Geant4** output, which is where the `--> Event N starts` progress lines
+are:
 
 ```bash
-tail -f ~/Research/RADiCAL2026/simulations/RADiCALsimWrap/scan.log
+tail -f ~/Research/RADiCAL2026/simulations/RADiCALsimWrap/build/logs/tyvek_geant4.log
 ```
+
+The script's own log (config banner, ETA, per-stage timing) is alongside it at
+`build/logs/run_wrap_scan.log`.
 
 Then back on the Mac:
 
