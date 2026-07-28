@@ -5,13 +5,24 @@
 # its own folder, so `analysis/wrap_scan.C` can compare them against the
 # no-wrap control.
 #
-#   bash run_wrap_scan.sh                 # defaults: 3000 events, 10/50/120 GeV
+# NO "none" CONFIG IS RUN BY DEFAULT. RADiCALsimSIMPLE's own sweep (run.mac,
+# no wrap flags — they don't exist there) IS this study's control already,
+# byte-identical geometry. Stage an already-completed SIMPLE run as "none"
+# instead of burning compute re-running it:
+#   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build
+# (see that script's header for the exact same-seed caveat). Only pass
+# RADWRAP_CONFIGS="none ..." below if you specifically want a fresh,
+# same-random-seed control run through THIS binary instead.
+#
+# Defaults match run.mac (RADiCALsimSIMPLE's standard sweep) exactly — 5000
+# events at the same 6 energies — so a staged control lines up point-for-point:
+#   bash run_wrap_scan.sh                 # defaults: 5000 events, 5/10/25/50/100/120 GeV
 #   bash run_wrap_scan.sh 1000            # quicker: 1000 events per energy
-#   RADWRAP_CONFIGS="none tyvek" bash run_wrap_scan.sh      # just two configs
-#   RADWRAP_ENERGIES="50" bash run_wrap_scan.sh 5000        # one energy, deep
+#   RADWRAP_CONFIGS="tyvek esr" bash run_wrap_scan.sh        # just two configs
+#   RADWRAP_ENERGIES="50" bash run_wrap_scan.sh 5000         # one energy, deep
 #
 # On a cluster, run the whole thing under nohup:
-#   nohup bash run_wrap_scan.sh 3000 > scan.log 2>&1 &
+#   nohup bash run_wrap_scan.sh > scan.log 2>&1 &
 #
 # Output: results/<config>/E<N>GeV.root  (+ sweep.mac and run.log per config,
 # so every number is traceable to the exact macro and banner that produced it).
@@ -19,8 +30,8 @@ set -eu
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 BIN="$HERE/build/radwrap"
-NEV="${1:-3000}"
-ENERGIES="${RADWRAP_ENERGIES:-10 50 120}"
+NEV="${1:-5000}"
+ENERGIES="${RADWRAP_ENERGIES:-5 10 25 50 100 120}"
 
 # Each config is  name:sides:ends:reflectivity:finish:gap_mm
 #
