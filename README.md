@@ -48,10 +48,20 @@ simulations/                 Geant4 simulations
                                NO electronics (no CFD/DRS4/gain/saturation/jitter):
                                timing = raw first-photon (t_down − t_up)/2. Own
                                CMakeLists/binary (radsimple), not a fork of DSB.
-                               run.mac sweeps 5–120 GeV; analysis/scan.C fits
-                               σ_t(E) and σ_E/E(E) with per-energy fit plots.
-                               pull_results.sh syncs cluster output back. Reliable,
-                               simple plots
+                               Now also models the CERN H2 test-beam line
+                               (trigger counters, MCP-PMT timing reference,
+                               Pb-glass tail-catcher) and the tile's central
+                               capillary hole (always drilled, per the papers;
+                               optionally instrumented as a 5th E-type channel)
+                               — all as truth quantities, all behind flags so
+                               they can be switched off. Gaussian beam spot
+                               (2.9 mm σ) required once the central hole is
+                               always present. run.mac sweeps 5–120 GeV at
+                               5k events/energy; analysis/scan.C fits σ_t(E)
+                               and σ_E/E(E) with per-energy fit plots.
+                               pull_results.sh syncs cluster output back. See
+                               its own README for the full flag table and an
+                               idiot-proof usage guide.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
