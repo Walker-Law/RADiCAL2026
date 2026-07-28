@@ -71,15 +71,13 @@ simulations/                 Geant4 simulations
                                doubles as the "none" control (stage_control.sh
                                reuses an existing SIMPLE run instead of
                                re-running it). Runs on perseverence.
-                               run_wrap_scan.sh sweeps several configs
-                               (Tyvek/ESR/mylar/Delrin/absorbing/optical-
-                               contact) in priority order so you can stop
-                               early; analysis/wrap_scan.C compares detected
-                               light, timing, and energy resolution against
-                               the control, flagging low-statistics and
-                               efficiency-biased rows. Measured cost: a
-                               reflective wrap traps escape-cone light and
-                               runs ~2.2x slower per event than no wrap.
+                               run_wrap_scan.sh runs the Tyvek config at
+                               SIMPLE's 6 energies; analysis/wrap_scan.C
+                               compares detected light, timing, and energy
+                               resolution against the control, flagging
+                               low-statistics and efficiency-biased rows.
+                               Measured cost: the wrap traps escape-cone
+                               light, ~2.2x slower per event than no wrap.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
