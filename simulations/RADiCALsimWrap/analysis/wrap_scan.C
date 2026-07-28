@@ -23,10 +23,15 @@
 
 // Two-pass Gaussian core fit: fit over mean +- 3*RMS, then refit within
 // mu +- 2*sigma so leakage tails do not inflate the width. png = "" -> no file.
+// MIN_FIT_ENTRIES: below this a Gaussian core fit is meaningless. Kept low
+// enough that a small smoke-test run still exercises this code path; anything
+// under ~100 entries is flagged as statistically unreliable in the table.
+const int MIN_FIT_ENTRIES = 10;
+
 void coreFit(TH1* h, const char* title, const char* png,
              double& mu, double& sg, double& sgErr) {
     mu = sg = sgErr = 0;
-    if (!h || h->GetEntries() < 50) return;
+    if (!h || h->GetEntries() < MIN_FIT_ENTRIES) return;
     double m = h->GetMean(), r = h->GetRMS();
     if (r <= 0) return;
     h->Fit("gaus", "Q0", "", m - 3*r, m + 3*r);

@@ -1,0 +1,12 @@
+# STAGED from an existing RADiCALsimSIMPLE run — NOT run by this study.
+# This file exists so analysis/wrap_scan.C recognises the folder as a config.
+# Source: ../RADiCALsimSIMPLE/build
+# Staged: Tue Jul 28 13:28:59 CDT 2026
+# Files:
+#   E100GeV.root
+#   E10GeV.root
+#   E120GeV.root
+#   E25GeV.root
+#   E50GeV.root
+#   E5GeV.root
+# See stage_control.sh's header for the seed / flag caveats.
