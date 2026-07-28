@@ -11,6 +11,45 @@ the two ends of a fiber — nothing else.
 
 ---
 
+## What changed today (2026-07-28)
+
+1. **Added the CERN H2 test-beam line**: two coincidence trigger counters, an
+   MCP-PMT timing reference, and a Pb-glass tail-catcher — each behind its own
+   on/off flag (`RADSIMPLE_WITH_TRIGGERS`, `RADSIMPLE_WITH_MCP`,
+   `RADSIMPLE_WITH_PBGLASS`, all default ON). Pure truth energy-deposit/time
+   quantities — no electronics.
+2. **Added an optional central E-type fiber** (`RADSIMPLE_CENTER_ETYPE`,
+   default OFF): the tile's central hole is now *always* drilled (matching the
+   real, tested module), and can optionally be instrumented with a full-length
+   WLS fiber + SiPM pair for future energy-measurement studies.
+3. **Added a Gaussian beam spot** (`RADSIMPLE_BEAM_SPOT_MM`, default 2.9 mm) —
+   required once the central hole is always present, since a zero-width beam
+   at (0,0) can dive straight down it without ever showering.
+4. **Renamed the flags for clarity** — old names still work as fallbacks:
+   `RADSIMPLE_LYSO_SCALE`→`RADSIMPLE_LIGHT_SCALE`,
+   `RADSIMPLE_OPT_MAXSTEP`→`RADSIMPLE_PHOTON_STEP_CAP`,
+   `RADSIMPLE_ETYPE`→`RADSIMPLE_CORNER_ETYPE`.
+5. **Grew the world volume** (70×70×620 mm) and moved the beam start to
+   z = −450 mm to fit the new beamline; extended the output to 8 columns:
+   `Elyso, Npe, dT, NpeCenter, tMCP, eTrig1, eTrig2, ePbGlass`.
+6. **Fixed a CPU-throttling bug**: a hardcoded `/run/numberOfThreads 64` in the
+   shared macros (a leftover perseverence workaround) was silently limiting
+   curiosity's 512-core machine to ~12.5% utilization. Thread count now comes
+   from a `RADSIMPLE_THREADS` env var read in `radsimple.cc`'s `main()`
+   (default = all cores); removed from all three `.mac` files.
+7. **Dropped `run.mac` to 5 000 events/energy** (from 10 000) for faster
+   iteration — still tight enough (σ_E/E to ~±0.3%, σ_t to ~±1 ps).
+8. **Gave the three beamline components distinct colors** in the geometry
+   viewer: MCP = light blue, coincidence counters = darker blue, Pb-glass =
+   light green (previously all three shared one green color).
+9. **Deployed and validated on perseverence** from a bare starting state
+   (Geant4 10.5.0 → miniforge + conda `g4` env matching curiosity); fixed a
+   worker-thread hang from a missing photon step cap (now defaults to 20 000)
+   and an `ENSDFSTATE` data-path naming mismatch between source-built and
+   conda-forge Geant4.
+
+---
+
 ## The light chain (the whole point)
 
 ```
