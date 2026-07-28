@@ -78,14 +78,17 @@ EOF
 NE=$(echo $ENERGIES | wc -w | tr -d ' ')
 ESUM=$(echo $ENERGIES | tr ' ' '\n' | awk '{s+=$1} END {print s}')
 
-# Rough ETA from a measured calibration (2026-07-28, 1 core, Apple M-series):
-# ~1.4 s/event per 10 GeV with no wrap, ~2.3x that with a reflective wrap.
-# Time scales roughly linearly with beam energy and event count. This is an
-# order-of-magnitude sanity check, not a promise — cluster cores are slower
-# per-core than a laptop, so treat it as optimistic.
+# ETA from a MEASURED calibration (2026-07-28, 1 core):
+#   no wrap : 149 s for 12 events @ 10 GeV  ->  ~1.24 core-s per event per GeV
+#   wrapped : 323 s for 12 events @ 10 GeV  ->  ~2.2x the no-wrap cost
+# Runtime scales roughly linearly with beam energy and event count. Sanity
+# check on real cluster hardware: this constant predicts 1.0 h for SIMPLE's
+# 5000-event x 6-energy sweep on curiosity's 512 cores, which is what it
+# actually took — so it transfers, it is not just a laptop number.
+# 2.0 is used below as the average wrap factor (black/none run at ~1.0x).
 CORES="${RADSIMPLE_THREADS:-$( (nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1) )}"
 ETA=$(awk -v n="$NEV" -v es="$ESUM" -v c="$NCFG" -v k="$CORES" \
-      'BEGIN {printf "%.1f", (1.4/10)*n*es*2.3*c/k/3600}')
+      'BEGIN {printf "%.1f", 1.24*n*es*2.0*c/k/3600}')
 
 echo "=================================================================="
 echo " wrap scan"
