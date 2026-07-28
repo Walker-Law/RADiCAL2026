@@ -90,16 +90,58 @@ rule) is in `DetectorConstruction.cc` or `SteppingAction.cc`, both short.
 
 ---
 
-## Build & run
+## The idiot guide (start here)
+
+**One-time setup, then three commands forever.** Everything below assumes you
+start in this folder (`RADiCALsimSIMPLE/`).
+
+**1. Build it** (redo `make` after ANY code edit; redo `cmake` too if you added
+a new file or edited a `.mac` — cmake is what copies macros into `build/`):
 
 ```bash
-cd RADiCALsimSIMPLE && mkdir -p build && cd build
-source ../setup_env.sh                       # Geant4 environment
-cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX && make -j
-
-./radsimple                                  # OpenGL viewer (fires 2 showers)
-./radsimple run.mac                          # batch energy sweep (see below)
+mkdir -p build && cd build
+source ../setup_env.sh          # Geant4 env. On curiosity: conda activate g4 FIRST
+cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX     # Mac/perseverence: use $(geant4-config --prefix) if no conda
+make -j
 ```
+
+**2. Run it:**
+
+```bash
+./radsimple                     # opens the 3D viewer, fires 2 showers
+./radsimple run.mac             # the standard sweep: 10k events x 6 energies
+nohup ./radsimple run.mac > sweep.log 2>&1 &     # same, survives SSH drops (clusters)
+```
+
+Any flag goes in front: `RADSIMPLE_CENTER_ETYPE=1 ./radsimple run.mac`.
+Watch a cluster run with `grep "\-\-> Event" sweep.log | tail` (raw `tail -f`
+is mostly thread-startup noise). Each finished energy writes its
+`E<N>GeV.root`; the run is done when `E120GeV.root` exists and
+`pgrep radsimple` returns nothing.
+
+**3. Analyze it** (from this folder, not `build/`):
+
+```bash
+root -l -b -q analysis/scan.C                     # data in build/
+root -l -b -q 'analysis/scan.C("build/short")'    # data pulled from another cluster
+```
+
+Prints the σ_t / efficiency / σ_E tables and writes every plot under
+`<dir>/plots/`. Single file: `root -l -b -q 'analysis/fit.C("build/E50GeV.root")'`.
+
+**Cluster round-trip:** run on the cluster (its repo copy, `git pull` first),
+then from the Mac `bash pull_results.sh` (curiosity → `build/`) or
+`bash pull_results.sh perseverence` (→ `build/short/`), then analyze locally.
+Plots are NEVER made on the clusters — perseverence has no working ROOT.
+
+**The three classic mistakes** (all made here at least once, ask me how I know):
+1. Editing `run.mac` and rerunning without `cmake ..` — the binary executes the
+   stale copy in `build/`, silently. Always `cmake ..` after macro edits.
+2. Trusting file *timestamps* to decide if a run is fresh — check event counts
+   (`fit.C` prints them) or the config lines at the top of the log.
+3. Reading `tail -f` thread-startup spam as "stalled" — filter for
+   `--> Event` lines instead; only 1-3 pegged threads in `top -H` with the rest
+   idle means actually stuck.
 
 `run.mac` sweeps `E = 5, 10, 25, 50, 100, 120 GeV`, 500 events each, writing one
 file per energy: `E5GeV.root`, `E10GeV.root`, ... `E120GeV.root`. It uses
