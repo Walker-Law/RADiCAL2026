@@ -144,19 +144,35 @@ cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX     # Mac/perseverence: use $(geant4-
 make -j
 ```
 
-**2. Run it:**
+**2. Run it** (from this folder, not `build/`):
 
 ```bash
-./radsimple                     # opens the 3D viewer, fires 2 showers
-./radsimple run.mac             # the standard sweep: 5k events x 6 energies (~1 h on a cluster)
-nohup ./radsimple run.mac > sweep.log 2>&1 &     # same, survives SSH drops (clusters)
+bash run_simple.sh                     # the standard sweep: 5k events x 6 energies (~1 h on a cluster)
+nohup bash run_simple.sh &             # same, survives SSH drops (clusters)
+bash run_simple.sh run_short.mac       # any other macro
 ```
 
-Any flag goes in front: `RADSIMPLE_CENTER_ETYPE=1 ./radsimple run.mac`.
-Watch a cluster run with `grep "\-\-> Event" sweep.log | tail` (raw `tail -f`
-is mostly thread-startup noise). Each finished energy writes its
-`E<N>GeV.root`; the run is done when `E120GeV.root` exists and
-`pgrep radsimple` returns nothing.
+**No redirect needed** — the log is already at `build/logs/run_simple.log`
+(repo-wide convention, see [simulations/README_LOGGING.md](../README_LOGGING.md)).
+Watch it with:
+
+```bash
+tail -f build/logs/run_simple.log
+```
+
+Any flag goes in front: `RADSIMPLE_CENTER_ETYPE=1 bash run_simple.sh`.
+Raw `tail -f` is mostly thread-startup noise at first — filter with
+`grep "\-\-> Event" build/logs/run_simple.log | tail` for real progress. Each
+finished energy writes its `E<N>GeV.root`; the run is done when `E120GeV.root`
+exists and `pgrep radsimple` returns nothing.
+
+Driving the binary directly still works and is unchanged — it just doesn't log
+itself:
+
+```bash
+cd build && ./radsimple                # opens the 3D viewer, fires 2 showers
+cd build && ./radsimple run.mac        # you name the log destination yourself
+```
 
 **3. Analyze it** (from this folder, not `build/`):
 
