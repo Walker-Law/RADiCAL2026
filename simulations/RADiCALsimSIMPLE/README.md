@@ -338,7 +338,10 @@ run ~100× photon-starved, so σ_t is ~10× worse than the true-light value.
   or DRS4. Timing is pure first-photon. *(The full model of these lives in
   `../RADiCALsimDSB`.)*
 - **SiPM SPTR jitter** — the sensor is ideal. Add a Gaussian in `RecordPhoton`.
-- **Test-beam line** — no triggers, MCP, or Pb-glass tail-catcher.
+- **Test-beam line electronics** — the triggers, MCP, and Pb-glass are all
+  modeled geometrically (`RADSIMPLE_WITH_TRIGGERS`/`_WITH_MCP`/`_WITH_PBGLASS`)
+  and record pure truth energy/time, but none of them have gain, noise, or
+  a coincidence/trigger logic layer.
 - **DSB1 self-scintillation** — off, so the light is 100% WLS.
 - **Side/end Tyvek wrap** — only inter-plate foils; sideways light is lost
   (lower efficiency, doesn't change the timing physics). Add wrap volumes in
