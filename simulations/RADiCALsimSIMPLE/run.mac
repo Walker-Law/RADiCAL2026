@@ -1,30 +1,35 @@
-# run.mac — energy sweep. Usage:  ./radsimple run.mac
-# Writes one file per energy: build/E5GeV.root, E10GeV.root, ... E120GeV.root
-# (/analysis/setFileName is a built-in Geant4 UI command — no C++ needed to
-#  add/remove energies, just add or remove a block below.)
+# run.mac — the standard energy sweep: 10 000 events at each of 6 energies.
+# Writes one file per energy: build/E5GeV.root ... E120GeV.root.
+# (/analysis/setFileName is a built-in Geant4 command — to change the energy
+#  list just add/remove a setFileName+energy+beamOn block, no C++ needed.)
+#
+# Thread cap: Geant4's ntuple merge misbehaves at hundreds of threads (it can
+# choke and leave ~200-byte empty files), and at 10k events/energy more threads
+# are mostly spin-up overhead anyway. 64 works on every machine we use.
+/run/numberOfThreads 64
 /run/initialize
-/run/printProgress 100
+/run/printProgress 500
 
 /analysis/setFileName E5GeV
 /gun/energy 5 GeV
-/run/beamOn 500000
+/run/beamOn 10000
 
 /analysis/setFileName E10GeV
 /gun/energy 10 GeV
-/run/beamOn 500000
+/run/beamOn 10000
 
 /analysis/setFileName E25GeV
 /gun/energy 25 GeV
-/run/beamOn 500000
+/run/beamOn 10000
 
 /analysis/setFileName E50GeV
 /gun/energy 50 GeV
-/run/beamOn 500000
+/run/beamOn 10000
 
 /analysis/setFileName E100GeV
 /gun/energy 100 GeV
-/run/beamOn 500000
+/run/beamOn 10000
 
 /analysis/setFileName E120GeV
 /gun/energy 120 GeV
-/run/beamOn 500000
+/run/beamOn 10000
