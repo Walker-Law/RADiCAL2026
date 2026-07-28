@@ -136,6 +136,7 @@ void wrap_scan(const char* dir = "results") {
             if (f.IsZombie()) { printf("  [!] unreadable: %s\n", fn.Data()); continue; }
             TTree* t = (TTree*)f.Get("ev");
             if (!t) { printf("  [!] no ntuple in %s\n", fn.Data()); continue; }
+            nev[ic][ie] = (int)t->GetEntries();
 
             double mu, sg, sgErr;
 
