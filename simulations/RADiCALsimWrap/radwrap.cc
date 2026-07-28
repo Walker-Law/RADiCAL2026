@@ -1,21 +1,27 @@
-// radsimple.cc — main program for the SIMPLE RADiCAL timing simulation.
+// radwrap.cc — main program for the WRAP study (does an outer reflective wrap
+// on the module's exposed faces help or hurt?).
 //
-// This is a deliberately minimal, readable model of the RADiCAL module:
-//   * a LYSO/W sampling stack that develops the electromagnetic shower,
-//   * 4 corner WLS timing fibres read out at both ends,
-//   * NO electronics — timing is the raw first-photon arrival-time difference.
+// A fork of RADiCALsimSIMPLE — same minimal, readable model of the RADiCAL
+// module (LYSO/W stack, 4 corner WLS timing fibres, no electronics), plus ONE
+// addition: an optional reflective wrap on the outside of the stack, off by
+// default (see DetectorConstruction.cc, "THE STUDY"). With no RADWRAP_* env
+// vars set, this binary builds a geometry byte-identical to RADiCALsimSIMPLE.
 //
 // The whole simulation is ~6 short source files. Read them in this order:
-//   DetectorConstruction  — geometry + materials (the physics inputs)
+//   DetectorConstruction  — geometry + materials (the physics inputs; the wrap is here)
 //   PrimaryGeneratorAction— the electron beam
 //   SteppingAction        — what happens at each step (detect photons, tally edep)
 //   EventAction           — per-event bookkeeping + fills the histograms
 //   RunAction             — defines the histograms and the output file
 //
 // Usage (from build/):
-//   ./radsimple                 open the OpenGL geometry viewer
-//   ./radsimple run.mac         batch run -> radsimple_output.root
+//   ./radwrap                    open the OpenGL geometry viewer
+//   ./radwrap sweep.mac           batch run -> whatever /analysis/setFileName says
+//   RADWRAP_SIDES=1 ./radwrap ... turn the outer wrap ON (see README for the full flag list)
 //   RADSIMPLE_OPTICAL=0 ...      turn optical-photon tracking off (fast, energy only)
+//
+// For the full study (all wrap configs, one command), use run_wrap_scan.sh —
+// it drives this binary, it is not a separate program.
 
 #include "G4RunManagerFactory.hh"
 #include "G4UImanager.hh"
