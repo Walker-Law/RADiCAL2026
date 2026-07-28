@@ -193,7 +193,11 @@ energy resolution that would result from … all 29 LYSO:Ce layers." So the
 characterization of this geometry, but **not** comparable to either paper, nor
 to the ~10 %/√E design goal (which is for a 3×3 array, a different detector).
 
-## Results (2026-07-25 — 10 000 events/energy, `RADSIMPLE_LYSO_SCALE=1e-2`)
+## Results (2026-07-25 — 10 000 events/energy, light scale 1e-2)
+
+> **These predate the 2026-07-28 geometry update** (beam line + always-drilled
+> central hole + 2.9 mm beam spot — previously a pencil beam and no hole).
+> Trends and conclusions stand; exact numbers will shift slightly on rerun.
 
 | E (GeV) | σ_t (ps) | eff | σ/E, `Npe` (measured) | σ/E, `Elyso` (truth) |
 |---|---|---|---|---|
