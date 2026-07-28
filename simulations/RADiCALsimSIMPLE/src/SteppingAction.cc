@@ -47,12 +47,25 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
         if (post) {
             const G4String& n = post->GetLogicalVolume()->GetName();
             if (n == "PD_Up" || n == "PD_Down") {
-                if (G4UniformRand() <= PDE()) {                 // detect with prob PDE
-                    const G4int corner = post->GetCopyNo();     // 0..3
+                // Accept ONLY light that arrives THROUGH the fibre the SiPM is
+                // optically coupled to (previous volume = quartz stub or DSB1).
+                // A real SiPM is glued to its capillary end face — it does not
+                // sit in open air collecting strays. Without this cut, photons
+                // escaping the LYSO end faces or flying down the (real) central
+                // air hole reach a PD DIRECTLY through air — and air light is
+                // FASTER than guided light (300 vs ~205 mm/ns), so those strays
+                // land first and wreck the first-photon timing (measured: dT
+                // scatter blew up from ~0.1 ns to ~+-1.7 ns when the beam-line
+                // geometry made the stray paths easy to hit).
+                auto preV = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
+                const G4String pn = preV ? preV->GetLogicalVolume()->GetName() : "";
+                const bool viaFibre = (pn == "QuartzUp" || pn == "QuartzDn" || pn == "DSB1");
+                if (viaFibre && G4UniformRand() <= PDE()) {     // detect with prob PDE
+                    const G4int channel = post->GetCopyNo();    // 0..3 corners, 4 = center
                     const G4double t = step->GetPostStepPoint()->GetGlobalTime()/ns;
-                    fEvt->RecordPhoton(corner, n == "PD_Up", t);
+                    fEvt->RecordPhoton(channel, n == "PD_Up", t);
                 }
-                track->SetTrackStatus(fStopAndKill);            // absorbed by the sensor
+                track->SetTrackStatus(fStopAndKill);            // absorbed either way
             }
         }
         return;                                                // photons deposit no ionisation
