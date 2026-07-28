@@ -170,8 +170,11 @@ void wrap_scan(const char* dir = "results") {
                "config", "Npe", "dNpe%", "sigma_t(ps)", "dsig%", "Npe res%", "eff%");
         for (int ic = 0; ic < NC; ++ic) {
             if (!(npe[ic][ie] > 0) && !(sgt[ic][ie] > 0)) {
-                printf("%-16s %9s %8s   %11s %8s   %10s %7s   (not run at this energy)\n",
-                       cfg[ic].c_str(), "-", "-", "-", "-", "-", "-");
+                const char* why = (nev[ic][ie] == 0)
+                    ? "(not run at this energy)"
+                    : "(ran, but too few events to fit)";
+                printf("%-16s %9s %8s   %11s %8s   %10s %7s   %s\n",
+                       cfg[ic].c_str(), "-", "-", "-", "-", "-", "-", why);
                 continue;
             }
             TString dN = "--", dS = "--";
