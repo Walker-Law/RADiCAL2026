@@ -55,8 +55,7 @@ simulations/                 Geant4 simulations
                                optionally instrumented as a 5th E-type channel)
                                — all as truth quantities, all behind flags so
                                they can be switched off. Gaussian beam spot
-                               (2.9 mm σ) required once the central hole is
-                               always present. run.mac sweeps 5–120 GeV at
+                               (2.9 mm σ) required. run.mac sweeps 5–120 GeV at
                                5k events/energy; analysis/scan.C fits σ_t(E)
                                and σ_E/E(E) with per-energy fit plots.
                                pull_results.sh syncs cluster output back. See
