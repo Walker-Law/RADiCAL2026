@@ -228,7 +228,11 @@ void wrap_scan(const char* dir = "results") {
             }
             TString warn = "";
             if (nev[ic][ie] < 100) warn += "  [LOW STATS, do not trust]";
-            if (eff[ic][ie] < 99.0) warn += "  [sigma_t BIASED: dim events dropped]";
+            if (modes[ic][ie] > 1)
+                warn += Form("  [sigma_t INVALID: %d-modal, Gaussian fit meaningless]",
+                             modes[ic][ie]);
+            if (!usedWLS[ic][ie]) warn += "  [pre-2026-07-29 file: all-light dT]";
+            if (eff[ic][ie] < 99.0) warn += "  [sigma_t biased: dim events dropped]";
             printf("%-16s %9.0f %8s   %6.1f+-%-4.1f %8s   %10.2f %7.1f%s\n",
                    cfg[ic].c_str(), npe[ic][ie], dN.Data(),
                    sgt[ic][ie], sgtE[ic][ie], dS.Data(),
