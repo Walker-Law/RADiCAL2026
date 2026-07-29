@@ -27,16 +27,36 @@ public:
     // and in the 4-corner dT average); channel 4 = the OPTIONAL central E-type
     // ENERGY capillary — counted separately (NpeCenter) and NEVER mixed into
     // the timing average.
-    void RecordPhoton(G4int channel, bool isUpstream, G4double t) {
+    //
+    // isWLS = the photon was created by OpWLS, i.e. it is LYSO light absorbed
+    // and re-emitted by the DSB1 shifter. WHY THIS MATTERS (2026-07-29): the
+    // detected light is two populations with very different arrival times —
+    // PROMPT Cherenkov (born in the quartz/DSB1 as shower particles cross it,
+    // no delay) and DELAYED WLS (LYSO 36 ns emission + DSB1's 3.5 ns
+    // re-emission). At thinned light both are 100x rarer, so which one happens
+    // to supply a corner's FIRST detected photon is close to a coin flip, and
+    // the all-light first-photon dT comes out BIMODAL (measured: peaks 3.7 ns
+    // apart, matching DSB1's WLSTIMECONSTANT). Averaging 4 such corners gives
+    // 5 discrete spikes 3.7/4 = 0.93 ns apart — which is what wrecked the
+    // sigma_t fits. Tracking the WLS population separately gives a unimodal,
+    // fittable observable; it is also the population the real (un-thinned)
+    // device times on, since there WLS light overwhelms Cherenkov.
+    void RecordPhoton(G4int channel, bool isUpstream, G4double t, bool isWLS) {
         if (channel < 0 || channel > 4) return;
         if (channel == 4) { ++fNpeCenter; return; }
         ++fNpe;
         ++fCornerNpeAcc[channel];
         auto& first = isUpstream ? fTup[channel] : fTdn[channel];
         if (t < first) first = t;
+        if (isWLS) {
+            ++fNpeWLS;
+            auto& fw = isUpstream ? fTupW[channel] : fTdnW[channel];
+            if (t < fw) fw = t;
+        }
         if (fStorePhotons) {
             fPhT.push_back(t);
             fPhId.push_back(channel + (isUpstream ? 0 : 4));  // 0-3 up, 4-7 down
+            fPhWls.push_back(isWLS ? 1. : 0.);
         }
     }
 
