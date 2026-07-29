@@ -192,16 +192,20 @@ void scan(const char* dir = "build", double rMax = 3.5) {
         resN[i]    = 100 * sgN / muN;
         resNerr[i] = resN[i] * (sgNErr / sgN);
 
-        // --- timing EFFICIENCY: what fraction of events yielded a dT at all? ---
+        // --- timing EFFICIENCY, measured WITHIN the fiducial ---
         // EventAction only fills dT when some corner saw light at BOTH ends. Dim
         // events silently vanish, and the survivors are the BRIGHTER ones — so a
-        // sigma_t quoted at low efficiency is biased optimistic. Print it so that
-        // bias can never hide (matters if light is thinned hard, or at low E).
-        double eff = 100.0 * d->GetEntries() / t->GetEntries();
+        // sigma_t quoted at low efficiency is biased optimistic. Inside the
+        // fiducial this should read 100%: the events that used to fail were the
+        // ones whose beam went down a hole or missed the tile.
+        const double inFid = t->Draw("Npe", FID, "goff");
+        const double eff   = (inFid > 0) ? 100.0 * d->GetEntries() / inFid : 0.;
+        const double keep  = 100.0 * inFid / t->GetEntries();
+        delete d;
 
-        printf("%-7.0f %7.1f +- %-4.1f %5.1f%% %7.2f +- %-4.2f %7.2f +- %-4.2f%s\n",
+        printf("%-7.0f %7.1f +- %-4.1f %5.1f%% %7.2f +- %-4.2f %7.2f +- %-4.2f  %5.1f%%%s\n",
                E[i], sigT[i], sigTerr[i], eff, resN[i], resNerr[i], resE[i], resEerr[i],
-               (eff < 99.0 ? "   <-- BIASED" : ""));
+               keep, (eff < 99.0 ? "   <-- BIASED" : ""));
         f.Close();
     }
 
