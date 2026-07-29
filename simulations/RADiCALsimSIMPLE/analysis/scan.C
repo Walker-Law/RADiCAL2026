@@ -439,6 +439,6 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
     }
 
     printf("\nplots: %s/plots/  (sigma_t_vs_E.png, sigma_E_Npe_vs_E.png,"
-           " sigma_E_vs_E.png,\n        shower_profile.png, npe_vs_Ewin.png, fits/*.png)\n"
+           " sigma_E_vs_E.png,\n        shower_profile.png, npe_vs_Elyso.png, fits/*.png)\n"
            "(sigma_t is thinned by RADSIMPLE_LYSO_SCALE; sigma_E/E is not.)\n", dir);
 }
