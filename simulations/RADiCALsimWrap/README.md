@@ -40,7 +40,7 @@ The script's own log (config banner, ETA, per-stage timing) is alongside it at
 Then back on the Mac:
 
 ```bash
-cd ~/Research/RADiCAL2026/simulations/RADiCALsimWrap && bash pull_wrap_results.sh perseverence && bash stage_control.sh ../RADiCALsimSIMPLE/build && root -l -b -q analysis/wrap_scan.C
+cd ~/Research/RADiCAL2026/simulations/RADiCALsimWrap && bash pull_wrap_results.sh perseverence && bash stage_control.sh ../RADiCALsimSIMPLE/build/rootfiles && root -l -b -q analysis/wrap_scan.C
 ```
 
 ---
@@ -58,7 +58,7 @@ point-for-point.
 RADiCALsimSIMPLE sweep you already have *is* the no-wrap control:
 
 ```bash
-bash stage_control.sh ../RADiCALsimSIMPLE/build
+bash stage_control.sh ../RADiCALsimSIMPLE/build/rootfiles
 ```
 
 Two caveats before trusting a comparison (details in the script header): the
