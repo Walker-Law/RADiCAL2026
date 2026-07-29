@@ -96,7 +96,15 @@ TString fiducialCut(double rMax = 3.5, double holeClear = 1.5) {
 // analyze a second run without clobbering the first, e.g.
 //   root -l -b -q 'analysis/scan.C("build/short")'
 // Plots are written to <dir>/plots/ so each run keeps its own.
-void scan(const char* dir = "build", double rMax = 3.5) {
+// pbFrac: CONTAINMENT VETO — drop events leaking more than this fraction of
+// the beam energy into the Pb-glass tail catcher. Full containment does not
+// exist here: measured 2026-07-29, at >=50 GeV 100% of events leak >1 GeV
+// (median at 120 GeV = 6.2 GeV = 5.2% of beam), so a zero-leakage cut keeps
+// nothing. 0.05 keeps the least-leaky ~half at every energy. Note the veto
+// preferentially keeps showers that START EARLY (less punch-through), which
+// slightly reshapes the shower-max sampling — keep% is printed so this bias
+// is never invisible. Set pbFrac=0 to disable.
+void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
     // must match the energies (and order) in the macro that produced the files
     const int N = 6;
     const double E[N] = {5, 10, 25, 50, 100, 120};
@@ -104,8 +112,10 @@ void scan(const char* dir = "build", double rMax = 3.5) {
     gStyle->SetOptStat(0);
     gSystem->mkdir(Form("%s/plots/fits", dir), true);
 
-    const TString FID = (rMax > 0) ? fiducialCut(rMax) : TString("1");
-    printf("fiducial: %s\n\n", (rMax > 0) ? FID.Data() : "NONE (raw sample)");
+    const TString FIDbase = (rMax > 0) ? fiducialCut(rMax) : TString("1");
+    printf("fiducial: %s\n", (rMax > 0) ? FIDbase.Data() : "NONE (raw sample)");
+    printf("containment veto: %s\n\n",
+           pbFrac > 0 ? Form("ePbGlass < %.0f%% of E_beam", 100*pbFrac) : "NONE");
 
     double sigT[N], sigTerr[N];      // timing:  sigma_t (ps)
     double resE[N], resEerr[N];      // energy, TRUTH:    sigma(Elyso)/Elyso (%)
