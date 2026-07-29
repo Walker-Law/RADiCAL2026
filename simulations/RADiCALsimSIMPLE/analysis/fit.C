@@ -8,7 +8,11 @@ void fit(const char* file = "build/radsimple_output.root") {
     TFile f(file);
     if (f.IsZombie()) { printf("cannot open %s\n", file); return; }
 
-    TH1* d = (TH1*)f.Get("dT");
+    // WLS-only timing (2026-07-29 fix); all-light "dT" is multi-modal at
+    // thinned light and unfittable — see scan.C for the full explanation.
+    TH1* d = (TH1*)f.Get("dTwls");
+    if (!d) { d = (TH1*)f.Get("dT");
+              printf("  [!] no dTwls (old file) -- sigma_t below is NOT reliable\n"); }
     TH1* e = (TH1*)f.Get("Elyso");
     TH1* n = (TH1*)f.Get("Npe");
     printf("\n%-14s %s\n", "events", "");
