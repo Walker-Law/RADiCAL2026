@@ -167,12 +167,20 @@ void wrap_scan(const char* dir = "results") {
 
             double mu, sg, sgErr;
 
-            // timing: sigma_t = sigma(dT)/2, from the stored dT histogram
-            TH1* d = (TH1*)f.Get("dT");
-            coreFit(d, Form("#DeltaT, %s at %.0f GeV;#DeltaT (ns);events",
+            // Timing: sigma_t = sigma(dT)/2. Prefer the WLS-only histogram
+            // (2026-07-29 fix) — the all-light "dT" is multi-modal at thinned
+            // light and cannot be fitted. Fall back to "dT" for files written
+            // before the fix, where it is the only thing available.
+            TH1* d = (TH1*)f.Get("dTwls");
+            const bool wlsTiming = (d != nullptr);
+            if (!d) d = (TH1*)f.Get("dT");
+            usedWLS[ic][ie] = wlsTiming;
+            coreFit(d, Form("#DeltaT%s, %s at %.0f GeV;#DeltaT (ns);events",
+                            wlsTiming ? " (WLS only)" : " (ALL light - unfittable)",
                             cfg[ic].c_str(), E[ie]),
                     Form("%s/plots/fits/dT_%s_E%.0fGeV.png", dir, cfg[ic].c_str(), E[ie]),
                     mu, sg, sgErr);
+            modes[ic][ie] = countModes(d);
             sgt[ic][ie]  = 1000 * sg    / 2;      // ns -> ps, /2 for single-ended
             sgtE[ic][ie] = 1000 * sgErr / 2;
             if (d && t->GetEntries() > 0)
