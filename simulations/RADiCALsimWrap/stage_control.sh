@@ -3,7 +3,7 @@
 # "none" (no-wrap) control, instead of burning compute re-running one.
 #
 #   bash stage_control.sh                                   # default: ../RADiCALsimSIMPLE/build
-#   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build    # e.g. .../build/short
+#   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build/rootfiles
 #
 # WHY THIS IS VALID, NOT A SHORTCUT: RADiCALsimWrap is RADiCALsimSIMPLE plus
 # one addition — the outer wrap — which is OFF BY DEFAULT (RADWRAP_SIDES and

@@ -27,12 +27,41 @@ case "${1:-perseverence}" in
   *) echo "usage: bash pull_wrap_results.sh [perseverence|curiosity]"; exit 1 ;;
 esac
 
-echo "pulling results/ from ${1:-perseverence} -> $HERE/results/"
-rsync -avz -e "ssh -p $PORT" \
-  --exclude 'none/' \
-  "$HOST:$REMOTE_DIR/results/" \
-  "$HERE/results/"
+DEST="$HERE/build/rootfiles"
+mkdir -p "$DEST"
 
-echo "done. If you haven't yet, stage the control with:"
-echo "  bash stage_control.sh /path/to/RADiCALsimSIMPLE/build"
-echo "then: root -l -b -q analysis/wrap_scan.C"
+# The CLUSTER-side path depends on when the run was launched:
+#   build/rootfiles/<config>/   runs started after the 2026-07-29 layout change
+#   results/<config>/           runs started before it
+# Try the new path first, fall back to the old one — so this works whether or
+# not the cluster has pulled the layout commit yet. Local destination is always
+# build/rootfiles/, i.e. the pull never reintroduces the old layout here.
+#
+# 'none/' is excluded: that is the control, staged locally from
+# RADiCALsimSIMPLE by stage_control.sh, never pulled from a cluster.
+# 'plots/' is excluded: plots are generated locally, and the clusters have no
+# usable ROOT anyway.
+PULLED=""
+for SRC in "build/rootfiles" "results"; do
+    echo "trying ${1:-perseverence}:$SRC/ ..."
+    if rsync -avz -e "ssh -p $PORT" \
+             --exclude 'none/' --exclude 'plots/' \
+             "$HOST:$REMOTE_DIR/$SRC/" "$DEST/" 2>/dev/null; then
+        PULLED="$SRC"; break
+    fi
+done
+
+if [ -z "$PULLED" ]; then
+    echo "ERROR: found neither build/rootfiles/ nor results/ on ${1:-perseverence}."
+    echo "Has the run produced output yet?  Check on the cluster with:"
+    echo "  ls -lh $REMOTE_DIR/build/rootfiles/*/ $REMOTE_DIR/results/*/ 2>/dev/null"
+    exit 1
+fi
+
+echo ""
+echo "pulled from cluster $PULLED/ -> build/rootfiles/"
+find "$DEST" -name '*GeV.root' | sed 's|.*/rootfiles/|  |' | sort
+echo ""
+echo "next:"
+echo "  bash stage_control.sh ../RADiCALsimSIMPLE/build/rootfiles   # if not already staged"
+echo "  root -l -b -q analysis/wrap_scan.C"

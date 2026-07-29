@@ -178,7 +178,7 @@ cd build && ./radsimple run.mac        # you name the log destination yourself
 
 ```bash
 root -l -b -q analysis/scan.C                     # data in build/
-root -l -b -q 'analysis/scan.C("build/short")'    # data pulled from another cluster
+root -l -b -q 'analysis/scan.C("build/archive_perseverence")'    # data pulled from another cluster
 ```
 
 Prints the σ_t / efficiency / σ_E tables and writes every plot under
@@ -186,7 +186,7 @@ Prints the σ_t / efficiency / σ_E tables and writes every plot under
 
 **Cluster round-trip:** run on the cluster (its repo copy, `git pull` first),
 then from the Mac `bash pull_results.sh` (curiosity → `build/`) or
-`bash pull_results.sh perseverence` (→ `build/short/`), then analyze locally.
+`bash pull_results.sh perseverence` (→ `build/archive_perseverence/`), then analyze locally.
 Plots are NEVER made on the clusters — perseverence has no working ROOT.
 
 **The three classic mistakes** (all made here at least once, ask me how I know):

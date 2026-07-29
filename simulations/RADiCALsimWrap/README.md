@@ -112,7 +112,7 @@ Rows are flagged automatically when they can't be trusted:
 `[sigma_t BIASED: dim events dropped]` (timing efficiency below 99% — the
 surviving events are the brighter ones, so σ_t reads optimistic).
 
-Plots land in `results/plots/`: `npe_vs_E.png`, `npe_gain_vs_E.png`,
+Plots land in `build/plots/`: `npe_vs_E.png`, `npe_gain_vs_E.png`,
 `sigma_t_vs_E.png`, `sigma_E_Npe_vs_E.png`, and
 `fits/dT_<config>_E<N>GeV.png` for the histogram behind every σ_t point.
 

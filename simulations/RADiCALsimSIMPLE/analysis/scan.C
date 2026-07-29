@@ -55,7 +55,7 @@ void drawFormula(const char* latex, double x = 0.15, double y = 0.82) {
 
 // dir = folder holding E<N>GeV.root (default "build"). Pass another folder to
 // analyze a second run without clobbering the first, e.g.
-//   root -l -b -q 'analysis/scan.C("build/short")'
+//   root -l -b -q 'analysis/scan.C("build/archive_perseverence")'
 // Plots are written to <dir>/plots/ so each run keeps its own.
 // ---------------------------------------------------------------------------
 // BEAM FIDUCIAL CUT — required, not cosmetic (added 2026-07-29).
@@ -94,7 +94,7 @@ TString fiducialCut(double rMax = 3.5, double holeClear = 1.5) {
 
 // dir = folder holding E<N>GeV.root (default "build"). Pass another folder to
 // analyze a second run without clobbering the first, e.g.
-//   root -l -b -q 'analysis/scan.C("build/short")'
+//   root -l -b -q 'analysis/scan.C("build/archive_perseverence")'
 // Plots are written to <dir>/plots/ so each run keeps its own.
 // pbFrac: CONTAINMENT VETO — drop events leaking more than this fraction of
 // the beam energy into the Pb-glass tail catcher. Full containment does not
