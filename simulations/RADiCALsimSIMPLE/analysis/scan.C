@@ -130,6 +130,11 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
                             sigT[i]=resE[i]=resN[i]=0; sigTerr[i]=resEerr[i]=resNerr[i]=0; continue; }
         double mu, sg, sgErr;
 
+        // full selection for THIS energy: fiducial + containment veto
+        const TString FID = (pbFrac > 0)
+            ? FIDbase + Form(" && ePbGlass < %g", pbFrac * E[i])
+            : FIDbase;
+
         // --- timing: dT distribution -> sigma_t = sigma(dT)/2 ---
         // Prefer the WLS-only timing histogram (2026-07-29 fix). The all-light
         // "dT" is MULTI-MODAL at thinned light: ~1% of detected photons are
