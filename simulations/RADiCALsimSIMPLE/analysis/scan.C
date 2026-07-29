@@ -93,7 +93,8 @@ void scan(const char* dir = "build") {
             printf("  [!] %s: no dTwls (pre-2026-07-29 file) -- sigma_t from"
                    " all-light dT is NOT reliable\n", fname.Data());
         }
-        coreFitAndSave(d, Form("#DeltaT at %.0f GeV;#DeltaT = t_{down}-t_{up} (ns);events", E[i]),
+        coreFitAndSave(d, Form("#DeltaT%s at %.0f GeV;#DeltaT = t_{down}-t_{up} (ns);events",
+                               wlsTiming ? " (WLS only)" : " (ALL light - unfittable)", E[i]),
                        Form("%s/plots/fits/dT_E%.0fGeV.png", dir, E[i]), mu, sg, sgErr);
         sigT[i]    = 1000 * sg    / 2;                       // ns->ps, /2 corner-trick
         sigTerr[i] = 1000 * sgErr / 2;
