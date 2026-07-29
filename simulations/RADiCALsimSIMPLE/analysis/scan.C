@@ -111,8 +111,8 @@ void scan(const char* dir = "build", double rMax = 3.5) {
     double resE[N], resEerr[N];      // energy, TRUTH:    sigma(Elyso)/Elyso (%)
     double resN[N], resNerr[N];      // energy, MEASURED: sigma(Npe)/Npe   (%)
 
-    printf("%-7s %14s %6s %14s %14s\n",
-           "E(GeV)", "sigma_t (ps)", "eff%", "Npe res (%)", "Elyso res (%)");
+    printf("%-7s %14s %6s %14s %14s %7s\n",
+           "E(GeV)", "sigma_t (ps)", "eff%", "Npe res (%)", "Elyso res (%)", "keep%");
     for (int i = 0; i < N; ++i) {
         TString fname = Form("%s/E%.0fGeV.root", dir, E[i]);
         TFile f(fname);
