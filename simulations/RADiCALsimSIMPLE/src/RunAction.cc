@@ -52,6 +52,8 @@ RunAction::RunAction(EventAction* eventAction) {
     a->CreateNtupleDColumn("x");         // primary x at the gun, mm (beam spot truth)
     a->CreateNtupleDColumn("y");         // primary y, mm
     a->CreateNtupleDColumn("Ew");        // GeV, all 28 W plates (absorber dE/dx)
+    a->CreateNtupleDColumn("dTwls");     // ns, WLS-only 4-corner mean (-999 = none) <- FIT THIS
+    a->CreateNtupleDColumn("NpeWLS");    // of Npe, how many were OpWLS-created
 
     // Vector columns — bound BY REFERENCE to the EventAction's members, read
     // automatically at AddNtupleRow(). The master RunAction never fills a row,
