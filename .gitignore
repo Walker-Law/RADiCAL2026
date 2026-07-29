@@ -27,6 +27,8 @@ RADiCAL/
 **/results/
 **/logs/
 *.log
+# (RADiCALsimLadder/results/ holds two hand-kept study outputs that predate this
+#  rule and are NOT regenerated per run — they stay tracked via `git add -f`.)
 
 # macOS metadata
 .DS_Store
