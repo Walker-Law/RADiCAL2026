@@ -352,7 +352,74 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
            "  light readout is %.1fx the whole-module dE/dx floor (%.2f%% vs %.2f%%)\n",
            E[N-1], resN[N-1]/resE[N-1], resN[N-1], resE[N-1]);
 
+    // --- graph 5: longitudinal shower profile, all energies overlaid ---
+    // <E deposited> per LYSO layer. The DSB1 window (layers 8-10) is marked:
+    // this is what the timing fibre samples, and why the sampled fraction
+    // degrades at high E as shower max walks deeper (2401.01747 Fig. 7).
+    {
+        auto c = new TCanvas("cp", "", 850, 620);
+        c->SetLogy();
+        auto mg = new TMultiGraph();
+        auto lg = new TLegend(0.75, 0.60, 0.89, 0.89);
+        lg->SetBorderSize(0); lg->SetFillStyle(0);
+        const int COL[6] = {kBlack, kAzure+2, kGreen+2, kRed+1, kMagenta+1, kOrange+7};
+        for (int i = 0; i < N; ++i) {
+            double L[NL];
+            for (int j = 0; j < NL; ++j) L[j] = j;
+            auto g = new TGraph(NL, L, prof[i]);
+            g->SetLineColor(COL[i]); g->SetMarkerColor(COL[i]);
+            g->SetMarkerStyle(20); g->SetMarkerSize(0.6);
+            mg->Add(g, "LP");
+            lg->AddEntry(g, Form("%.0f GeV", E[i]), "lp");
+        }
+        mg->SetTitle("longitudinal shower profile (fiducial);LYSO layer;#LTE_{layer}#GT (GeV)");
+        mg->Draw("A");
+        // shade the DSB1 window, layers 8-10
+        auto box = new TBox(7.5, mg->GetYaxis()->GetXmin(), 10.5, mg->GetYaxis()->GetXmax());
+        box->SetFillColorAlpha(kOrange, 0.15); box->Draw();
+        lg->Draw();
+        c->SaveAs(Form("%s/plots/shower_profile.png", dir));
+        delete c;
+    }
+
+    // --- graph 6: Npe vs eDep in the WLS window — the "calorimeter's view" ---
+    // If the detected light is a faithful sample of the window deposit, all
+    // energies fall on ONE line; its slope is the light yield (pe/GeV) and is
+    // the conversion from measured photons back to deposited energy.
+    {
+        auto c = new TCanvas("cw", "", 850, 620);
+        auto lg = new TLegend(0.15, 0.60, 0.34, 0.89);
+        lg->SetBorderSize(0); lg->SetFillStyle(0);
+        const int COL[6] = {kBlack, kAzure+2, kGreen+2, kRed+1, kMagenta+1, kOrange+7};
+        double maxX = 0, maxY = 0;
+        for (int i = 0; i < N; ++i) if (pwin[i]) {
+            maxX = TMath::Max(maxX, meanWin[i]*2.0);
+            maxY = TMath::Max(maxY, meanNpe[i]*2.0);
+        }
+        auto frame = gPad->DrawFrame(0, 0, maxX, maxY,
+            "detected light vs window deposit;E(layers 8-10) (GeV);N_{pe}");
+        for (int i = 0; i < N; ++i) if (pwin[i]) {
+            pwin[i]->SetLineColor(COL[i]); pwin[i]->SetMarkerColor(COL[i]);
+            pwin[i]->SetMarkerStyle(20);   pwin[i]->SetMarkerSize(0.5);
+            pwin[i]->Draw("same");
+            lg->AddEntry(pwin[i], Form("%.0f GeV", E[i]), "lp");
+        }
+        // one global line through the 6 per-energy means -> the pe/GeV handle
+        auto gm = new TGraph(N, meanWin, meanNpe);
+        auto lin = new TF1("lin", "[0]*x", 0, maxX);
+        gm->Fit(lin, "Q");
+        lin->SetLineColor(kGray+2); lin->SetLineStyle(2); lin->Draw("same");
+        lg->AddEntry(lin, Form("%.0f pe/GeV", lin->GetParameter(0)), "l");
+        lg->Draw();
+        c->SaveAs(Form("%s/plots/npe_vs_Ewin.png", dir));
+        printf("\nlight yield handle: Npe = %.0f +- %.0f pe per GeV in the WLS window"
+               " (layers 8-10)\n  (at LIGHT_SCALE=1e-2; multiply by 100 for true light."
+               "  Invert to read E from Npe.)\n",
+               lin->GetParameter(0), lin->GetParError(0));
+        delete c;
+    }
+
     printf("\nplots: %s/plots/  (sigma_t_vs_E.png, sigma_E_Npe_vs_E.png,"
-           " sigma_E_vs_E.png, fits/*.png)\n"
+           " sigma_E_vs_E.png,\n        shower_profile.png, npe_vs_Ewin.png, fits/*.png)\n"
            "(sigma_t is thinned by RADSIMPLE_LYSO_SCALE; sigma_E/E is not.)\n", dir);
 }
