@@ -185,24 +185,32 @@ void wrap_scan(const char* dir = "results") {
 
             double mu, sg, sgErr;
 
-            // Timing: sigma_t = sigma(dT)/2. Prefer the WLS-only histogram
-            // (2026-07-29 fix) — the all-light "dT" is multi-modal at thinned
-            // light and cannot be fitted. Fall back to "dT" for files written
-            // before the fix, where it is the only thing available.
-            TH1* d = (TH1*)f.Get("dTwls");
-            const bool wlsTiming = (d != nullptr);
-            if (!d) d = (TH1*)f.Get("dT");
+            // Timing: sigma_t = sigma(dT)/2, WLS-only (2026-07-29 fix — the
+            // all-light dT is multi-modal at thinned light), rebuilt from the
+            // ntuple so the fiducial cut applies. Old files lack dTwls (and
+            // x/y): fall back to the stored all-light histogram, flagged.
+            const bool wlsTiming = (t->GetBranch("dTwls") != nullptr);
+            const bool hasXY     = (t->GetBranch("x")     != nullptr);
             usedWLS[ic][ie] = wlsTiming;
+            TH1* d = nullptr;
+            double nFid = t->GetEntries();
+            if (wlsTiming && hasXY) {
+                nFid = t->Draw("Npe", gFID, "goff");
+                d = fineHist(t, "dTwls", "dTfine", "dTwls>-999");
+            } else {
+                d = (TH1*)f.Get("dT");
+            }
             coreFit(d, Form("#DeltaT%s, %s at %.0f GeV;#DeltaT (ns);events",
-                            wlsTiming ? " (WLS only)" : " (ALL light - unfittable)",
+                            wlsTiming ? " (WLS only, fiducial)" : " (ALL light - unfittable)",
                             cfg[ic].c_str(), E[ie]),
                     Form("%s/plots/fits/dT_%s_E%.0fGeV.png", dir, cfg[ic].c_str(), E[ie]),
                     mu, sg, sgErr);
             modes[ic][ie] = countModes(d);
             sgt[ic][ie]  = 1000 * sg    / 2;      // ns -> ps, /2 for single-ended
             sgtE[ic][ie] = 1000 * sgErr / 2;
-            if (d && t->GetEntries() > 0)
-                eff[ic][ie] = 100.0 * d->GetEntries() / t->GetEntries();
+            if (d && nFid > 0)
+                eff[ic][ie] = 100.0 * d->GetEntries() / nFid;
+            if (wlsTiming && hasXY) delete d;
 
             // light: mean Npe and its relative spread (the energy observable)
             TH1D* nh = fineHist(t, "Npe", "NpeFine");
