@@ -30,17 +30,32 @@ case "${1:-curiosity}" in
   *) echo "usage: bash pull_results.sh [curiosity|perseverence]"; exit 1 ;;
 esac
 
-mkdir -p "$DEST/plots"
-echo "pulling from ${1:-curiosity} -> $DEST"
+mkdir -p "$DEST"
 
-rsync -avz -e "ssh -p $PORT" \
-  "$HOST:$REMOTE_DIR/build/rootfiles/"'*GeV.root' \
-  "$DEST/"
+# The CLUSTER-side path depends on when the run was launched:
+#   build/rootfiles/   runs started after the 2026-07-29 layout change
+#   build/            runs started before it
+# Try the new path first, fall back to the old — so this works whether or not
+# the cluster has pulled the layout commit yet. The LOCAL destination is always
+# build/rootfiles/, so pulling never reintroduces the old layout here.
+PULLED=""
+for SRC in "build/rootfiles" "build"; do
+    echo "trying ${1:-curiosity}:$SRC/*GeV.root ..."
+    if rsync -avz -e "ssh -p $PORT" \
+             "$HOST:$REMOTE_DIR/$SRC/"'*GeV.root' "$DEST/" 2>/dev/null; then
+        PULLED="$SRC"; break
+    fi
+done
 
-# plots only exist if scan.C was run ON the cluster (perseverence has no usable
-# ROOT, so normally there are none — you analyze locally instead).
-rsync -avz -e "ssh -p $PORT" \
-  "$HOST:$REMOTE_DIR/build/plots/" \
-  "$DEST/plots/" 2>/dev/null || echo "(no build/plots/ on that cluster — analyze locally with scan.C)"
+if [ -z "$PULLED" ]; then
+    echo "ERROR: no E*GeV.root found on ${1:-curiosity} in build/rootfiles/ or build/."
+    echo "Check on the cluster with:"
+    echo "  ls -lh $REMOTE_DIR/build/rootfiles/*.root $REMOTE_DIR/build/*.root 2>/dev/null"
+    exit 1
+fi
 
-echo "done -> $DEST"
+echo ""
+echo "pulled from cluster $PULLED/ -> $DEST"
+ls -lh "$DEST"/*GeV.root 2>/dev/null | awk '{print "  "$5"  "$9}'
+echo ""
+echo "next: root -l -b -q analysis/scan.C"
