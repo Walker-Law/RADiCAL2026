@@ -115,7 +115,10 @@ TH1D* fineHist(TTree* t, const char* col, const char* name, const char* extra = 
     return h;
 }
 
-void wrap_scan(const char* dir = "results") {
+// rMax/pbFrac: fiducial radius and Pb-glass containment veto — same defaults
+// and same justification as RADiCALsimSIMPLE/analysis/scan.C. Both configs get
+// the identical cut, so the wrap comparison stays apples-to-apples.
+void wrap_scan(const char* dir = "results", double rMax = 3.5, double pbFrac = 0.05) {
     gStyle->SetOptStat(0);
     gSystem->mkdir(Form("%s/plots/fits", dir), true);
 
