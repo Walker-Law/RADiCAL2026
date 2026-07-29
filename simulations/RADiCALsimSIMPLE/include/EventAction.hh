@@ -73,8 +73,11 @@ public:
     std::vector<G4double> fCornerNpe;   // detected photons per corner, size 4
     std::vector<G4double> fCornerTup;   // first-photon time, up end (ns; -999 = none)
     std::vector<G4double> fCornerTdn;   // first-photon time, down end
+    std::vector<G4double> fCornerTupW;  // first WLS photon, up end (ns; -999 = none)
+    std::vector<G4double> fCornerTdnW;  // first WLS photon, down end
     std::vector<G4double> fPhT;         // ALL photon times (only if fStorePhotons)
     std::vector<G4double> fPhId;        // matching channel ids: corner + 4*isDown
+    std::vector<G4double> fPhWls;       // 1 = that photon was WLS, 0 = prompt
 
     static constexpr G4int kNLayers = 29;
 
