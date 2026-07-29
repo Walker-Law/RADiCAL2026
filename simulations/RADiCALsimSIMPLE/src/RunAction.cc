@@ -9,10 +9,20 @@
 RunAction::RunAction(EventAction* eventAction) {
     auto a = G4AnalysisManager::Instance();
     a->SetDefaultFileType("root");
-    a->SetFileName("radsimple_output");   // default; a macro can override with
-                                           // /analysis/setFileName before /run/beamOn
-                                           // (Geant4's built-in UI command) — used
-                                           // by run.mac to write one file per energy.
+
+    // ALL .root output goes in build/rootfiles/ — the repo-wide convention
+    // (see simulations/README_LOGGING.md, which covers build/logs/ the same
+    // way). Created HERE in C++, not in a launch script, so it exists no
+    // matter how the binary was started: ./radsimple, run_simple.sh, or a
+    // macro that calls /analysis/setFileName rootfiles/<name>.
+    std::error_code ec;
+    std::filesystem::create_directories("rootfiles", ec);
+
+    a->SetFileName("rootfiles/radsimple_output");  // default; a macro overrides
+                                           // with /analysis/setFileName before
+                                           // /run/beamOn (Geant4's built-in UI
+                                           // command) — run.mac uses it to write
+                                           // one file per energy.
     a->SetVerboseLevel(0);
     a->SetNtupleMerging(true);          // merge per-thread ntuples on MT runs
 
