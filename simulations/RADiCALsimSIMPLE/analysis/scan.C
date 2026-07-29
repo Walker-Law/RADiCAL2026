@@ -79,7 +79,20 @@ void scan(const char* dir = "build") {
         double mu, sg, sgErr;
 
         // --- timing: dT distribution -> sigma_t = sigma(dT)/2 ---
-        TH1* d = (TH1*)f.Get("dT");
+        // Prefer the WLS-only timing histogram (2026-07-29 fix). The all-light
+        // "dT" is MULTI-MODAL at thinned light: ~1% of detected photons are
+        // prompt Cherenkov arriving ~3.7 ns before the WLS bulk, and whether a
+        // corner catches one is a Poisson coin flip, so the 4-corner mean forms
+        // a comb of ~5 spikes. A Gaussian core fit across that comb returns
+        // confident nonsense. Older files have only "dT" — fall back, but the
+        // resulting sigma_t is not trustworthy.
+        TH1* d = (TH1*)f.Get("dTwls");
+        const bool wlsTiming = (d != nullptr);
+        if (!d) {
+            d = (TH1*)f.Get("dT");
+            printf("  [!] %s: no dTwls (pre-2026-07-29 file) -- sigma_t from"
+                   " all-light dT is NOT reliable\n", fname.Data());
+        }
         coreFitAndSave(d, Form("#DeltaT at %.0f GeV;#DeltaT = t_{down}-t_{up} (ns);events", E[i]),
                        Form("%s/plots/fits/dT_E%.0fGeV.png", dir, E[i]), mu, sg, sgErr);
         sigT[i]    = 1000 * sg    / 2;                       // ns->ps, /2 corner-trick
