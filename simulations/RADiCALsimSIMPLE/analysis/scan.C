@@ -128,15 +128,25 @@ void scan(const char* dir = "build", double rMax = 3.5) {
         // a comb of ~5 spikes. A Gaussian core fit across that comb returns
         // confident nonsense. Older files have only "dT" — fall back, but the
         // resulting sigma_t is not trustworthy.
-        TH1* d = (TH1*)f.Get("dTwls");
-        const bool wlsTiming = (d != nullptr);
-        if (!d) {
-            d = (TH1*)f.Get("dT");
+        // The STORED dT/dTwls histograms have no fiducial cut, so rebuild from
+        // the ntuple with FID applied — otherwise the beam-acceptance
+        // pathologies documented above leak straight back into sigma_t.
+        TTree* t = (TTree*)f.Get("ev");
+        const bool wlsTiming = (t->GetBranch("dTwls") != nullptr);
+        if (!wlsTiming)
             printf("  [!] %s: no dTwls (pre-2026-07-29 file) -- sigma_t from"
                    " all-light dT is NOT reliable\n", fname.Data());
-        }
+        const char* tvar = wlsTiming ? "dTwls" : "dT";
+        const TString tcut = FID + Form(" && %s>-999", tvar);
+
+        TH1D* d = new TH1D("dTfine", "", 400, -3, 3);
+        t->Draw(Form("%s>>dTfine", tvar), tcut, "goff");
+        double mD = d->GetMean(), rD = d->GetRMS();
+        if (rD > 0) { d->SetBins(300, mD - 5*rD, mD + 5*rD);
+                      t->Draw(Form("%s>>dTfine", tvar), tcut, "goff"); }
+        d->SetDirectory(nullptr);
         coreFitAndSave(d, Form("#DeltaT%s at %.0f GeV;#DeltaT = t_{down}-t_{up} (ns);events",
-                               wlsTiming ? " (WLS only)" : " (ALL light - unfittable)", E[i]),
+                               wlsTiming ? " (WLS only, fiducial)" : " (ALL light - unfittable)", E[i]),
                        Form("%s/plots/fits/dT_E%.0fGeV.png", dir, E[i]), mu, sg, sgErr);
         sigT[i]    = 1000 * sg    / 2;                       // ns->ps, /2 corner-trick
         sigTerr[i] = 1000 * sgErr / 2;
