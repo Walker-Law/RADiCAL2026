@@ -25,6 +25,12 @@ RunAction::RunAction(EventAction* eventAction) {
                 4000, -5.0, 5.0);
     a->CreateH1("dTc",   "t_{down}-t_{up}, per corner;#DeltaT (ns);corners",
                 4000, -5.0, 5.0);
+    // dTwls — the SAME estimator restricted to WLS-created photons. Fit THIS
+    // one: the all-light dT above is bimodal at thinned light (prompt
+    // Cherenkov vs delayed WLS supplying the first photon at random), which
+    // makes a Gaussian core fit meaningless. See EventAction::RecordPhoton.
+    a->CreateH1("dTwls", "t_{down}-t_{up}, WLS photons only;#DeltaT (ns);events",
+                4000, -5.0, 5.0);
 
     // Full photon-time dump: only if RADSIMPLE_STORE_PHOTON_TIMES=1 (grows the
     // files ~100x — see README "How much data is stored"). The flag must be
@@ -46,6 +52,8 @@ RunAction::RunAction(EventAction* eventAction) {
     a->CreateNtupleDColumn("x");         // primary x at the gun, mm (beam spot truth)
     a->CreateNtupleDColumn("y");         // primary y, mm
     a->CreateNtupleDColumn("Ew");        // GeV, all 28 W plates (absorber dE/dx)
+    a->CreateNtupleDColumn("dTwls");     // ns, WLS-only 4-corner mean (-999 = none) <- FIT THIS
+    a->CreateNtupleDColumn("NpeWLS");    // of Npe, how many were OpWLS-created
 
     // Vector columns — bound BY REFERENCE to the EventAction's members, read
     // automatically at AddNtupleRow(). The master RunAction never fills a row,
@@ -53,17 +61,23 @@ RunAction::RunAction(EventAction* eventAction) {
     static std::vector<G4double> dummy;
     auto& lay = eventAction ? eventAction->fLayerE    : dummy;
     auto& npc = eventAction ? eventAction->fCornerNpe : dummy;
-    auto& tup = eventAction ? eventAction->fCornerTup : dummy;
-    auto& tdn = eventAction ? eventAction->fCornerTdn : dummy;
+    auto& tup = eventAction ? eventAction->fCornerTup  : dummy;
+    auto& tdn = eventAction ? eventAction->fCornerTdn  : dummy;
+    auto& tuw = eventAction ? eventAction->fCornerTupW : dummy;
+    auto& tdw = eventAction ? eventAction->fCornerTdnW : dummy;
     a->CreateNtupleDColumn("Elayer",    lay);  // GeV per LYSO layer [29] -> longitudinal profile
     a->CreateNtupleDColumn("NpeCorner", npc);  // photons per corner [4]  -> asymmetry / starvation
     a->CreateNtupleDColumn("tUp",       tup);  // first-photon time per corner, up end [4] (-999 = none)
     a->CreateNtupleDColumn("tDn",       tdn);  // same, down end [4]
+    a->CreateNtupleDColumn("tUpWLS",    tuw);  // first WLS photon per corner, up end [4]
+    a->CreateNtupleDColumn("tDnWLS",    tdw);  // same, down end [4]
     if (storePhotons) {
-        auto& pht = eventAction ? eventAction->fPhT  : dummy;
-        auto& phi = eventAction ? eventAction->fPhId : dummy;
-        a->CreateNtupleDColumn("phT",  pht);   // EVERY detected photon's time (ns)
-        a->CreateNtupleDColumn("phId", phi);   // its channel: corner + 4*(down end)
+        auto& pht = eventAction ? eventAction->fPhT   : dummy;
+        auto& phi = eventAction ? eventAction->fPhId  : dummy;
+        auto& phw = eventAction ? eventAction->fPhWls : dummy;
+        a->CreateNtupleDColumn("phT",   pht);  // EVERY detected photon's time (ns)
+        a->CreateNtupleDColumn("phId",  phi);  // its channel: corner + 4*(down end)
+        a->CreateNtupleDColumn("phWls", phw);  // 1 = WLS-created, 0 = prompt
     }
     a->FinishNtuple();
 }

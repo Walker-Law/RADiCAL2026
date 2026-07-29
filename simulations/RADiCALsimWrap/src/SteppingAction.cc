@@ -3,6 +3,7 @@
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
+#include "G4VProcess.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include <cstdlib>
@@ -63,7 +64,15 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
                 if (viaFibre && G4UniformRand() <= PDE()) {     // detect with prob PDE
                     const G4int channel = post->GetCopyNo();    // 0..3 corners, 4 = center
                     const G4double t = step->GetPostStepPoint()->GetGlobalTime()/ns;
-                    fEvt->RecordPhoton(channel, n == "PD_Up", t);
+                    // Which light population is this? "OpWLS" = LYSO light
+                    // absorbed and re-emitted by DSB1 (the delayed, physical
+                    // timing population); anything else is prompt (Cherenkov
+                    // born in the quartz/DSB1, or unshifted LYSO scintillation
+                    // that reached the SiPM directly). See EventAction.hh's
+                    // RecordPhoton comment for why the split is necessary.
+                    const G4VProcess* cp = track->GetCreatorProcess();
+                    const bool isWLS = (cp && cp->GetProcessName() == "OpWLS");
+                    fEvt->RecordPhoton(channel, n == "PD_Up", t, isWLS);
                 }
                 track->SetTrackStatus(fStopAndKill);            // absorbed either way
             }

@@ -8,16 +8,20 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     fElyso = 0.;
     fEw    = 0.;
     fNpe   = 0.;
+    fNpeWLS = 0.;
     fNpeCenter = 0.;
     fTmcp  = kBig;
     fEtrig.fill(0.);
     fEpbGlass = 0.;
     fTup.fill(kBig);
     fTdn.fill(kBig);
+    fTupW.fill(kBig);
+    fTdnW.fill(kBig);
     fLayerEacc.fill(0.);
     fCornerNpeAcc.fill(0.);
     fPhT.clear();
     fPhId.clear();
+    fPhWls.clear();
 }
 
 void EventAction::EndOfEventAction(const G4Event* evt) {
@@ -36,9 +40,21 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     }
     const G4double dTmean = (n > 0) ? sum / n : kBig;
 
+    // Same estimator restricted to the WLS population. THIS is the timing
+    // observable to fit — the all-light dT above is bimodal at thinned light
+    // (see RecordPhoton's comment) and cannot be fitted with a Gaussian.
+    G4double sumW = 0.; int nW = 0;
+    for (int k = 0; k < 4; ++k) {
+        if (fTupW[k] < kBig && fTdnW[k] < kBig) {
+            sumW += fTdnW[k] - fTupW[k]; ++nW;
+        }
+    }
+    const G4double dTwls = (nW > 0) ? sumW / nW : kBig;
+
     a->FillH1(0, fElyso / GeV);
     a->FillH1(1, fNpe);
-    if (n > 0) a->FillH1(2, dTmean);
+    if (n  > 0) a->FillH1(2, dTmean);
+    if (nW > 0) a->FillH1(4, dTwls);
 
     // Beam-spot truth: where this event's primary actually started (mm).
     G4double x = 0., y = 0.;
@@ -58,15 +74,20 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     a->FillNtupleDColumn(8, x);                                // primary x (mm)
     a->FillNtupleDColumn(9, y);                                // primary y (mm)
     a->FillNtupleDColumn(10, fEw / GeV);                       // W absorber dE
+    a->FillNtupleDColumn(11, (nW > 0) ? dTwls : -999.);        // WLS-only dT (the fittable one)
+    a->FillNtupleDColumn(12, fNpeWLS);                         // how many detected photons were WLS
 
     // Vector columns (bound by reference in RunAction — fill, then row).
     fLayerE.assign(fLayerEacc.begin(), fLayerEacc.end());
     for (auto& e : fLayerE) e /= GeV;
     fCornerNpe.assign(fCornerNpeAcc.begin(), fCornerNpeAcc.end());
-    fCornerTup.resize(4); fCornerTdn.resize(4);
+    fCornerTup.resize(4);  fCornerTdn.resize(4);
+    fCornerTupW.resize(4); fCornerTdnW.resize(4);
     for (int k = 0; k < 4; ++k) {
-        fCornerTup[k] = (fTup[k] < kBig) ? fTup[k] : -999.;
-        fCornerTdn[k] = (fTdn[k] < kBig) ? fTdn[k] : -999.;
+        fCornerTup[k]  = (fTup[k]  < kBig) ? fTup[k]  : -999.;
+        fCornerTdn[k]  = (fTdn[k]  < kBig) ? fTdn[k]  : -999.;
+        fCornerTupW[k] = (fTupW[k] < kBig) ? fTupW[k] : -999.;
+        fCornerTdnW[k] = (fTdnW[k] < kBig) ? fTdnW[k] : -999.;
     }
     // fPhT/fPhId already accumulated (empty unless RADSIMPLE_STORE_PHOTON_TIMES=1)
 

@@ -21,6 +21,33 @@
 //   plots/sigma_E_Npe_vs_E.png    energy resolution from detected light
 //   plots/fits/dT_<config>_E<N>GeV.png   the dT histogram behind each sigma_t
 
+// Is this histogram multi-modal? Counts local maxima that rise above `frac` of
+// the global peak, on a lightly smoothed copy so bin noise does not register.
+//
+// WHY THIS GUARD EXISTS: before 2026-07-29 the timing histogram was the
+// ALL-light dT, which at thinned light is a comb of ~5 discrete spikes (a 1%
+// prompt-Cherenkov population arriving ~3.7 ns before the WLS bulk wins the
+// first-photon race at random, per corner). A Gaussian core fit across that
+// comb returned confident-looking nonsense — 43 ps at one energy, 867 ps at
+// the next. Fitting dTwls fixes the physics; this guard makes sure that if a
+// distribution is EVER multi-modal again, the number is flagged, not trusted.
+int countModes(TH1* h, double frac = 0.35) {
+    if (!h || h->GetEntries() < 100) return 0;
+    TH1* s = (TH1*)h->Clone("modeScan");
+    s->SetDirectory(nullptr);
+    s->Rebin(8);
+    s->Smooth(2);
+    const double pk = s->GetMaximum();
+    int modes = 0;
+    for (int i = 2; i < s->GetNbinsX(); ++i) {
+        const double y = s->GetBinContent(i);
+        if (y > frac*pk && y >= s->GetBinContent(i-1) && y > s->GetBinContent(i+1))
+            ++modes;
+    }
+    delete s;
+    return modes;
+}
+
 // Two-pass Gaussian core fit: fit over mean +- 3*RMS, then refit within
 // mu +- 2*sigma so leakage tails do not inflate the width. png = "" -> no file.
 // MIN_FIT_ENTRIES: below this a Gaussian core fit is meaningless. Kept low
