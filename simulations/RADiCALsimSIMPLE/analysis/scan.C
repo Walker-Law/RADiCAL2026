@@ -121,6 +121,15 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
     double resE[N], resEerr[N];      // energy, TRUTH:    sigma(Elyso)/Elyso (%)
     double resN[N], resNerr[N];      // energy, MEASURED: sigma(Npe)/Npe   (%)
 
+    const int NL = 29;               // LYSO layers
+    double prof[N][NL] = {};         // <Elayer> per layer -> shower profile
+    // DSB1 window layers: the 15 mm WLS sits at 32.9-47.9 mm depth; layer L's
+    // centre is at L*4.4064 + 0.75 mm, so layers 8, 9, 10 (36.0/40.4/44.8 mm)
+    // are the ones the timing fibre actually samples.
+    const char* EWIN = "(Elayer[8]+Elayer[9]+Elayer[10])";
+    double meanWin[N] = {}, meanNpe[N] = {};
+    TProfile* pwin[N] = {};
+
     printf("%-7s %14s %6s %14s %14s %7s\n",
            "E(GeV)", "sigma_t (ps)", "eff%", "Npe res (%)", "Elyso res (%)", "keep%");
     for (int i = 0; i < N; ++i) {
