@@ -8,16 +8,20 @@ void EventAction::BeginOfEventAction(const G4Event*) {
     fElyso = 0.;
     fEw    = 0.;
     fNpe   = 0.;
+    fNpeWLS = 0.;
     fNpeCenter = 0.;
     fTmcp  = kBig;
     fEtrig.fill(0.);
     fEpbGlass = 0.;
     fTup.fill(kBig);
     fTdn.fill(kBig);
+    fTupW.fill(kBig);
+    fTdnW.fill(kBig);
     fLayerEacc.fill(0.);
     fCornerNpeAcc.fill(0.);
     fPhT.clear();
     fPhId.clear();
+    fPhWls.clear();
 }
 
 void EventAction::EndOfEventAction(const G4Event* evt) {
