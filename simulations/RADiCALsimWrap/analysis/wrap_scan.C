@@ -152,6 +152,8 @@ void wrap_scan(const char* dir = "results") {
     // "it ran but had too few events to fit" — they mean very different things
     // and printing both as a blank row hides a real problem.
     std::vector<std::vector<int>> nev(NC, std::vector<int>(NE, 0));   // 0 = no file
+    std::vector<std::vector<int>> modes(NC, std::vector<int>(NE, 0)); // >1 = unfittable
+    std::vector<std::vector<bool>> usedWLS(NC, std::vector<bool>(NE, false));
 
     for (int ic = 0; ic < NC; ++ic) {
         for (int ie = 0; ie < NE; ++ie) {
