@@ -74,6 +74,8 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     a->FillNtupleDColumn(8, x);                                // primary x (mm)
     a->FillNtupleDColumn(9, y);                                // primary y (mm)
     a->FillNtupleDColumn(10, fEw / GeV);                       // W absorber dE
+    a->FillNtupleDColumn(11, (nW > 0) ? dTwls : -999.);        // WLS-only dT (the fittable one)
+    a->FillNtupleDColumn(12, fNpeWLS);                         // how many detected photons were WLS
 
     // Vector columns (bound by reference in RunAction — fill, then row).
     fLayerE.assign(fLayerEacc.begin(), fLayerEacc.end());
