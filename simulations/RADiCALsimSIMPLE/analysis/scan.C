@@ -216,6 +216,19 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         resN[i]    = 100 * sgN / muN;
         resNerr[i] = resN[i] * (sgNErr / sgN);
 
+        // --- shower profile + Npe<->window-eDep correlation (both fiducial) ---
+        for (int L = 0; L < NL; ++L) {
+            t->Draw(Form("Elayer[%d]>>hL", L), FID, "goff");
+            prof[i][L] = ((TH1*)gDirectory->Get("hL"))->GetMean();
+        }
+        t->Draw(Form("%s>>hW", EWIN), FID, "goff");
+        meanWin[i] = ((TH1*)gDirectory->Get("hW"))->GetMean();
+        t->Draw("Npe>>hNm", FID, "goff");
+        meanNpe[i] = ((TH1*)gDirectory->Get("hNm"))->GetMean();
+        pwin[i] = new TProfile(Form("pw%d", i), "", 40, 0., meanWin[i]*2.5);
+        t->Draw(Form("Npe:%s>>pw%d", EWIN, i), FID, "prof goff");
+        pwin[i]->SetDirectory(nullptr);
+
         // --- timing EFFICIENCY, measured WITHIN the fiducial ---
         // EventAction only fills dT when some corner saw light at BOTH ends. Dim
         // events silently vanish, and the survivors are the BRIGHTER ones — so a
