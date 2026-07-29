@@ -186,6 +186,16 @@ void wrap_scan(const char* dir = "results", double rMax = 3.5, double pbFrac = 0
             if (!t) { printf("  [!] no ntuple in %s\n", fn.Data()); continue; }
             nev[ic][ie] = (int)t->GetEntries();
 
+            // per-energy selection (files without x/y predate the beam-spot
+            // columns — no cut is possible there, and the flag column says so)
+            if (t->GetBranch("x") && rMax > 0) {
+                gFID = Form("%s>1.5 && sqrt(x*x+y*y)<%g", kHoleDist, rMax);
+                if (pbFrac > 0 && t->GetBranch("ePbGlass"))
+                    gFID += Form(" && ePbGlass<%g", pbFrac * E[ie]);
+            } else {
+                gFID = "1";
+            }
+
             double mu, sg, sgErr;
 
             // Timing: sigma_t = sigma(dT)/2, WLS-only (2026-07-29 fix — the
