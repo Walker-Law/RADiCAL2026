@@ -3,12 +3,12 @@
 #
 # Run from your Mac (not on the cluster):
 #   bash pull_results.sh                # curiosity   -> build/        (the long run)
-#   bash pull_results.sh perseverence   # perseverence -> build/short/ (the quick run)
+#   bash pull_results.sh perseverence   # cross-check -> build/archive_perseverence/
 #
 # Each cluster lands in its own local folder so the two runs never overwrite
 # each other. Analyze whichever you want:
 #   root -l -b -q analysis/scan.C                  # build/
-#   root -l -b -q 'analysis/scan.C("build/short")' # build/short/
+#   root -l -b -q 'analysis/scan.C("build/archive_perseverence")'
 set -eu
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
@@ -25,7 +25,7 @@ PORT=10022
 case "${1:-curiosity}" in
   curiosity)     HOST="wlaw@172.16.17.188"; DEST="$HERE/build/rootfiles"
                  REMOTE_DIR="~/RADiCAL2026/simulations/RADiCALsimSIMPLE" ;;
-  perseverence)  HOST="wlaw@172.16.17.252"; DEST="$HERE/build/rootfiles_perseverence"
+  perseverence)  HOST="wlaw@172.16.17.252"; DEST="$HERE/build/archive_perseverence"
                  REMOTE_DIR="~/Research/RADiCAL2026/simulations/RADiCALsimSIMPLE" ;;
   *) echo "usage: bash pull_results.sh [curiosity|perseverence]"; exit 1 ;;
 esac

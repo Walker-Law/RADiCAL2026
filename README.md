@@ -111,13 +111,21 @@ Optical-photon tracking is enabled with `RADICAL_OPTICAL=1` and is far slower
 than the energy-only mode; the scan splits events into many single-thread chunks
 across all cores and hadd-merges them per energy.
 
-## Where the logs are
+## Where everything is
 
-**Every sim writes its live progress log to `<sim>/build/logs/`.** To watch any
-run in this repo:
+**One layout, every simulation** — full details in
+[simulations/README_LAYOUT.md](simulations/README_LAYOUT.md):
+
+| I want... | it is always in |
+|---|---|
+| the data | `<sim>/build/rootfiles/` |
+| the log I can `tail -f` | `<sim>/build/logs/` |
+| the plots | `<sim>/build/plots/` |
+| what to run | `<sim>/macros/*.mac` |
 
 ```bash
-tail -f <sim>/build/logs/*.log
+tail -f <sim>/build/logs/*.log      # watch any run, any sim
+bash simulations/check_layout.sh    # verify nothing has drifted
 ```
 
 Run scripts log themselves — `nohup bash run_whatever.sh &` is enough, no
