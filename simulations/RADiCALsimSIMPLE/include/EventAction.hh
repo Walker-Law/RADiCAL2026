@@ -29,18 +29,29 @@ public:
     // the timing average.
     //
     // isWLS = the photon was created by OpWLS, i.e. it is LYSO light absorbed
-    // and re-emitted by the DSB1 shifter. WHY THIS MATTERS (2026-07-29): the
-    // detected light is two populations with very different arrival times —
-    // PROMPT Cherenkov (born in the quartz/DSB1 as shower particles cross it,
-    // no delay) and DELAYED WLS (LYSO 36 ns emission + DSB1's 3.5 ns
-    // re-emission). At thinned light both are 100x rarer, so which one happens
-    // to supply a corner's FIRST detected photon is close to a coin flip, and
-    // the all-light first-photon dT comes out BIMODAL (measured: peaks 3.7 ns
-    // apart, matching DSB1's WLSTIMECONSTANT). Averaging 4 such corners gives
-    // 5 discrete spikes 3.7/4 = 0.93 ns apart — which is what wrecked the
-    // sigma_t fits. Tracking the WLS population separately gives a unimodal,
-    // fittable observable; it is also the population the real (un-thinned)
-    // device times on, since there WLS light overwhelms Cherenkov.
+    // and re-emitted by the DSB1 shifter.
+    //
+    // WHY THE SPLIT EXISTS (measured 2026-07-29, 10 GeV, LIGHT_SCALE=1e-2):
+    // the detected light is 99% WLS / 1% PROMPT (Cherenkov born in the
+    // quartz/DSB1 as shower particles cross it). Tiny as it is, the prompt
+    // population arrives ~10 ns EARLIER on average (prompt <t> = 2.0 ns vs
+    // WLS <t> = 12.3 ns, because WLS light inherits LYSO's 36 ns emission
+    // before DSB1's 3.5 ns re-emission). So a FIRST-photon estimator is set by
+    // the 1% whenever a SiPM happens to catch one.
+    //
+    // At 1e-2 thinning that is ~0.9 prompt photons per SiPM per event — a
+    // Poisson coin flip. Corners that catch one read ~3.7 ns early; corners
+    // that do not read late. The 4-corner mean of a two-valued variable then
+    // produces 5 discrete spikes 3.7/4 = 0.93 ns apart, which is exactly the
+    // comb that made the Gaussian sigma_t fits meaningless.
+    //
+    // This is a THINNING ARTIFACT, not detector physics: at full light every
+    // SiPM would catch prompt photons and the estimator would be unimodal
+    // again. Tracking the WLS population separately restores a unimodal,
+    // fittable observable at any thinning — and it is also the better proxy
+    // for the real device, whose CFD fires on the leading edge of the WLS
+    // bulk, not on a 1% prompt precursor. (Same conclusion RADiCALsimDSB
+    // reached with its process-tagged "scint-only" estimator.)
     void RecordPhoton(G4int channel, bool isUpstream, G4double t, bool isWLS) {
         if (channel < 0 || channel > 4) return;
         if (channel == 4) { ++fNpeCenter; return; }
