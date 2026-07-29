@@ -424,11 +424,17 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         lin->SetLineColor(kGray+2); lin->SetLineStyle(2); lin->Draw("same");
         lg->AddEntry(lin, Form("%.0f pe/GeV", lin->GetParameter(0)), "l");
         lg->Draw();
-        c->SaveAs(Form("%s/plots/npe_vs_Ewin.png", dir));
-        printf("\nlight yield handle: Npe = %.0f +- %.0f pe per GeV in the WLS window"
-               " (layers 8-10)\n  (at LIGHT_SCALE=1e-2; multiply by 100 for true light."
-               "  Invert to read E from Npe.)\n",
-               lin->GetParameter(0), lin->GetParError(0));
+        c->SaveAs(Form("%s/plots/npe_vs_Elyso.png", dir));
+        printf("\nlight yield handle: Npe = %.1f pe per GeV of TOTAL LYSO deposit"
+               " (all 29 layers)\n  (at LIGHT_SCALE=1e-2; multiply by 100 for true light."
+               "  Invert to read E from Npe.)\n", lin->GetParameter(0));
+        // Per-energy slope: if these drift, one global pe/GeV does NOT recover
+        // the energy and a per-energy (i.e. depth-dependent) calibration is
+        // needed — the light samples shower max, not the whole stack.
+        printf("  per-energy Npe/E_LYSO:");
+        for (int i = 0; i < N; ++i)
+            if (meanWin[i] > 0) printf("  %.0fGeV:%.0f", E[i], meanNpe[i]/meanWin[i]);
+        printf("\n");
         delete c;
     }
 
