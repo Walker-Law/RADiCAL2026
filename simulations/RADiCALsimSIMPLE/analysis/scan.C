@@ -409,7 +409,8 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
             maxY = TMath::Max(maxY, meanNpe[i]*2.0);
         }
         auto frame = gPad->DrawFrame(0, 0, maxX, maxY,
-            "detected light vs window deposit;E(layers 8-10) (GeV);N_{pe}");
+            "detected light vs total LYSO deposit (all 29 layers);"
+            "E_{LYSO}, all layers (GeV);N_{pe}");
         for (int i = 0; i < N; ++i) if (pwin[i]) {
             pwin[i]->SetLineColor(COL[i]); pwin[i]->SetMarkerColor(COL[i]);
             pwin[i]->SetMarkerStyle(20);   pwin[i]->SetMarkerSize(0.5);
