@@ -180,10 +180,10 @@ void scan(const char* dir = "build", double rMax = 3.5) {
         // result from ... all 29 LYSO:Ce layers". Npe is the direct analog.
         // Same ntuple rebuild as Elyso, for the same binning reason.
         TH1D* nh = new TH1D("NpeFine", "", 100, t->GetMinimum("Npe"), t->GetMaximum("Npe"));
-        t->Draw("Npe>>NpeFine", "", "goff");
+        t->Draw("Npe>>NpeFine", FID, "goff");
         double mN = nh->GetMean(), rN = nh->GetRMS();
         nh->SetBins(100, mN - 5*rN, mN + 5*rN);
-        t->Draw("Npe>>NpeFine", "", "goff");
+        t->Draw("Npe>>NpeFine", FID, "goff");
         nh->SetDirectory(nullptr);
         double muN, sgN, sgNErr;
         coreFitAndSave(nh, Form("N_{pe} at %.0f GeV;detected photons;events", E[i]),
