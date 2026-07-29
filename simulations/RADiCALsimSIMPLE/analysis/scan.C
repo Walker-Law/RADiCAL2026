@@ -158,13 +158,12 @@ void scan(const char* dir = "build", double rMax = 3.5) {
         // garbage. Rebuild a per-energy histogram from the UNBINNED per-event
         // values in the ev ntuple instead: range = mean +- 5*RMS, 100 bins,
         // so every energy gets a well-resolved peak.
-        TTree* t = (TTree*)f.Get("ev");
         double m0  = t->GetMinimum("Elyso"), m1 = t->GetMaximum("Elyso");
         TH1D* e = new TH1D("ElysoFine", "", 100, m0, m1);
-        t->Draw("Elyso>>ElysoFine", "", "goff");
+        t->Draw("Elyso>>ElysoFine", FID, "goff");
         double mE = e->GetMean(), rE = e->GetRMS();
         e->SetBins(100, mE - 5*rE, mE + 5*rE);
-        t->Draw("Elyso>>ElysoFine", "", "goff");             // refill, focused range
+        t->Draw("Elyso>>ElysoFine", FID, "goff");            // refill, focused range
         e->SetDirectory(nullptr);                            // detach from the file
         double muE, sgE, sgEErr;
         coreFitAndSave(e, Form("E_{LYSO} at %.0f GeV;E_{LYSO} (GeV);events", E[i]),
