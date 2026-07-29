@@ -40,9 +40,21 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     }
     const G4double dTmean = (n > 0) ? sum / n : kBig;
 
+    // Same estimator restricted to the WLS population. THIS is the timing
+    // observable to fit — the all-light dT above is bimodal at thinned light
+    // (see RecordPhoton's comment) and cannot be fitted with a Gaussian.
+    G4double sumW = 0.; int nW = 0;
+    for (int k = 0; k < 4; ++k) {
+        if (fTupW[k] < kBig && fTdnW[k] < kBig) {
+            sumW += fTdnW[k] - fTupW[k]; ++nW;
+        }
+    }
+    const G4double dTwls = (nW > 0) ? sumW / nW : kBig;
+
     a->FillH1(0, fElyso / GeV);
     a->FillH1(1, fNpe);
-    if (n > 0) a->FillH1(2, dTmean);
+    if (n  > 0) a->FillH1(2, dTmean);
+    if (nW > 0) a->FillH1(4, dTwls);
 
     // Beam-spot truth: where this event's primary actually started (mm).
     G4double x = 0., y = 0.;
