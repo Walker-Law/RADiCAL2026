@@ -25,6 +25,12 @@ RunAction::RunAction(EventAction* eventAction) {
                 4000, -5.0, 5.0);
     a->CreateH1("dTc",   "t_{down}-t_{up}, per corner;#DeltaT (ns);corners",
                 4000, -5.0, 5.0);
+    // dTwls — the SAME estimator restricted to WLS-created photons. Fit THIS
+    // one: the all-light dT above is bimodal at thinned light (prompt
+    // Cherenkov vs delayed WLS supplying the first photon at random), which
+    // makes a Gaussian core fit meaningless. See EventAction::RecordPhoton.
+    a->CreateH1("dTwls", "t_{down}-t_{up}, WLS photons only;#DeltaT (ns);events",
+                4000, -5.0, 5.0);
 
     // Full photon-time dump: only if RADSIMPLE_STORE_PHOTON_TIMES=1 (grows the
     // files ~100x — see README "How much data is stored"). The flag must be
