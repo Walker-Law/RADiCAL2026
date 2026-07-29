@@ -86,6 +86,7 @@ private:
     G4double fElyso     = 0.;
     G4double fEw        = 0.;               // tungsten (absorber) deposit
     G4double fNpe       = 0.;               // corner-fibre photons (8 SiPMs)
+    G4double fNpeWLS    = 0.;               // of those, the OpWLS-created ones
     G4double fNpeCenter = 0.;               // central E-type photons (2 SiPMs)
     G4double fTmcp      = kBig;             // MCP particle-arrival time (ns)
     std::array<G4double,2> fEtrig{};        // trigger-counter energy deposits
