@@ -102,9 +102,9 @@ TString gFID = "1";   // set in wrap_scan(); "1" = no cut (old files lack x/y)
 TH1D* fineHist(TTree* t, const char* col, const char* name, const char* extra = "") {
     TString cut = gFID;
     if (extra && extra[0]) cut += Form(" && %s", extra);
-    TH1D* h = new TH1D(name, "", 200, -1e30, 1e30);
-    delete h;
-    h = new TH1D(name, "", 200, t->GetMinimum(col), t->GetMaximum(col));
+    double lo = t->GetMinimum(col), hi = t->GetMaximum(col);
+    if (!(hi > lo)) return nullptr;
+    TH1D* h = new TH1D(name, "", 200, lo, hi);
     t->Draw(Form("%s>>%s", col, name), cut, "goff");
     double m = h->GetMean(), r = h->GetRMS();
     if (r > 0) {
