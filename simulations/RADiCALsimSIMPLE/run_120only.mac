@@ -5,6 +5,6 @@
 /run/initialize
 /run/printProgress 200
 
-/analysis/setFileName E120GeV
+/analysis/setFileName rootfiles/E120GeV
 /gun/energy 120 GeV
 /run/beamOn 1000

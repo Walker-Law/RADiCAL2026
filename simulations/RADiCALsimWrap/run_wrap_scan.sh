@@ -56,7 +56,10 @@ echo "   cores     : $CORES"
 echo "   rough ETA : ~${ETA} h"
 echo "=================================================================="
 
-d="$HERE/results/tyvek"
+# ALL .root output lives under build/rootfiles/<config>/ — repo-wide convention,
+# same idea as build/logs/. One subfolder per config so wrap_scan.C can still
+# discover configs, and so the control can be staged alongside.
+d="$HERE/build/rootfiles/tyvek"
 mkdir -p "$d"
 
 # The macro is GENERATED here, next to its own output — never copied by CMake.

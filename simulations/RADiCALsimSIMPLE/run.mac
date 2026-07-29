@@ -15,26 +15,26 @@
 /run/initialize
 /run/printProgress 500
 
-/analysis/setFileName E5GeV
+/analysis/setFileName rootfiles/E5GeV
 /gun/energy 5 GeV
 /run/beamOn 5000
 
-/analysis/setFileName E10GeV
+/analysis/setFileName rootfiles/E10GeV
 /gun/energy 10 GeV
 /run/beamOn 5000
 
-/analysis/setFileName E25GeV
+/analysis/setFileName rootfiles/E25GeV
 /gun/energy 25 GeV
 /run/beamOn 5000
 
-/analysis/setFileName E50GeV
+/analysis/setFileName rootfiles/E50GeV
 /gun/energy 50 GeV
 /run/beamOn 5000
 
-/analysis/setFileName E100GeV
+/analysis/setFileName rootfiles/E100GeV
 /gun/energy 100 GeV
 /run/beamOn 5000
 
-/analysis/setFileName E120GeV
+/analysis/setFileName rootfiles/E120GeV
 /gun/energy 120 GeV
 /run/beamOn 5000
