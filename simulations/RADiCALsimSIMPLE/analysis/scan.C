@@ -123,10 +123,17 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
 
     const int NL = 29;               // LYSO layers
     double prof[N][NL] = {};         // <Elayer> per layer -> shower profile
-    // DSB1 window layers: the 15 mm WLS sits at 32.9-47.9 mm depth; layer L's
-    // centre is at L*4.4064 + 0.75 mm, so layers 8, 9, 10 (36.0/40.4/44.8 mm)
-    // are the ones the timing fibre actually samples.
-    const char* EWIN = "(Elayer[8]+Elayer[9]+Elayer[10])";
+    // Npe vs deposited energy over ALL 29 LYSO layers. "Elyso" is already that
+    // full sum, so this asks the question you actually want: how well does the
+    // detected light let you recover the TOTAL sampled energy?
+    //
+    // Expect this to be LOOSER than a window-only correlation: the light is
+    // generated at the 15 mm WLS window (layers 8-10), so Npe measures the
+    // shower AT SHOWER MAX, and the window/total ratio drifts with energy as
+    // shower max walks deeper. Whether the six energies land on one line is
+    // exactly the "can I read E from Npe" test — the per-energy offsets ARE
+    // the answer.
+    const char* EDEP = "Elyso";
     double meanWin[N] = {}, meanNpe[N] = {};
     TProfile* pwin[N] = {};
 
