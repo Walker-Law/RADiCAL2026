@@ -82,18 +82,34 @@ void coreFit(TH1* h, const char* title, const char* png,
     }
 }
 
-// Rebuild a histogram from the UNBINNED ntuple column, focused on its own peak.
-// (The stored H1s have fixed wide bins sized for any energy, which quantizes the
-// fit at low energy — the same trap fixed in RADiCALsimSIMPLE's scan.C.)
-TH1D* fineHist(TTree* t, const char* col, const char* name) {
-    double lo = t->GetMinimum(col), hi = t->GetMaximum(col);
-    if (!(hi > lo)) return nullptr;
-    TH1D* h = new TH1D(name, "", 100, lo, hi);
-    t->Draw(Form("%s>>%s", col, name), "", "goff");
+// BEAM FIDUCIAL CUT — see RADiCALsimSIMPLE/analysis/scan.C for the full
+// justification. Short version: the 2.9 mm beam spot on a 14 mm tile with five
+// drilled holes means ~5% of events miss the module entirely, ~5% go down the
+// central hole (sigma/E = 82%!), and more clip a corner capillary hole. Uncut,
+// those pathologies dominate and produce a resolution that is FLAT in energy.
+// The real experiment cuts the same way (arXiv:2303.05580 sec 3).
+// Both configs get the identical cut, so the wrap comparison stays fair.
+const char* kHoleDist =
+    "min(min(sqrt(x*x+y*y),"
+    "min(sqrt((x-3.5)*(x-3.5)+(y-3.5)*(y-3.5)),sqrt((x+3.5)*(x+3.5)+(y+3.5)*(y+3.5)))),"
+    "min(sqrt((x-3.5)*(x-3.5)+(y+3.5)*(y+3.5)),sqrt((x+3.5)*(x+3.5)+(y-3.5)*(y-3.5))))";
+
+TString gFID = "1";   // set in wrap_scan(); "1" = no cut (old files lack x/y)
+
+// Rebuild a histogram from the UNBINNED ntuple column, focused on its own peak,
+// with the fiducial cut applied. (The stored H1s have fixed wide bins sized for
+// any energy AND no cut — both traps fixed here.)
+TH1D* fineHist(TTree* t, const char* col, const char* name, const char* extra = "") {
+    TString cut = gFID;
+    if (extra && extra[0]) cut += Form(" && %s", extra);
+    TH1D* h = new TH1D(name, "", 200, -1e30, 1e30);
+    delete h;
+    h = new TH1D(name, "", 200, t->GetMinimum(col), t->GetMaximum(col));
+    t->Draw(Form("%s>>%s", col, name), cut, "goff");
     double m = h->GetMean(), r = h->GetRMS();
     if (r > 0) {
-        h->SetBins(100, m - 5*r, m + 5*r);
-        t->Draw(Form("%s>>%s", col, name), "", "goff");
+        h->SetBins(200, m - 5*r, m + 5*r);
+        t->Draw(Form("%s>>%s", col, name), cut, "goff");
     }
     h->SetDirectory(nullptr);
     return h;
