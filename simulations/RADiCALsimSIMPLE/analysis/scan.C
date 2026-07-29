@@ -57,13 +57,55 @@ void drawFormula(const char* latex, double x = 0.15, double y = 0.82) {
 // analyze a second run without clobbering the first, e.g.
 //   root -l -b -q 'analysis/scan.C("build/short")'
 // Plots are written to <dir>/plots/ so each run keeps its own.
-void scan(const char* dir = "build") {
+// ---------------------------------------------------------------------------
+// BEAM FIDUCIAL CUT — required, not cosmetic (added 2026-07-29).
+//
+// The beam is a 2.9 mm Gaussian spot on a 14 x 14 mm tile that has FIVE holes
+// drilled through it. Three distinct pathologies therefore contaminate an
+// uncut sample, all of them acceptance rather than detector physics:
+//
+//   beam radius   <E_LYSO>   sigma/E     what is happening
+//   0-1 mm        3.76 GeV     82%       straight down the CENTRAL hole
+//   1-4 mm        6.5  GeV    2-3%       <- the module actually working
+//   4-5 mm        5.42 GeV     33%       down a CORNER capillary hole (r=4.95)
+//   5-10 mm       4.24 GeV     47%       clipping the tile edge, or missing
+//                                        entirely (5.4% of events: for sigma =
+//                                        2.9 mm, P(r>7mm) = exp(-7^2/2/2.9^2))
+//
+// Uncut, these average into a ~31% "resolution" that is FLAT in energy — the
+// signature of a geometric effect, not sampling statistics. They also drop the
+// timing efficiency to ~93%, and because the lost events are the dim ones the
+// surviving sigma_t reads optimistically.
+//
+// The real experiment cuts the same way: arXiv:2303.05580 sec 3 explicitly
+// rejects "particles through the central hole".
+//
+// Default below keeps ~39% of events, restores 100% timing efficiency, and
+// recovers proper 1/sqrt(E) scaling (5.6% -> 1.9% over 5-120 GeV). Pass "" to
+// disable and see the raw sample.
+const char* kHoleDist =
+    "min(min(sqrt(x*x+y*y),"
+    "min(sqrt((x-3.5)*(x-3.5)+(y-3.5)*(y-3.5)),sqrt((x+3.5)*(x+3.5)+(y+3.5)*(y+3.5)))),"
+    "min(sqrt((x-3.5)*(x-3.5)+(y+3.5)*(y+3.5)),sqrt((x+3.5)*(x+3.5)+(y-3.5)*(y-3.5))))";
+
+TString fiducialCut(double rMax = 3.5, double holeClear = 1.5) {
+    return Form("%s>%g && sqrt(x*x+y*y)<%g", kHoleDist, holeClear, rMax);
+}
+
+// dir = folder holding E<N>GeV.root (default "build"). Pass another folder to
+// analyze a second run without clobbering the first, e.g.
+//   root -l -b -q 'analysis/scan.C("build/short")'
+// Plots are written to <dir>/plots/ so each run keeps its own.
+void scan(const char* dir = "build", double rMax = 3.5) {
     // must match the energies (and order) in the macro that produced the files
     const int N = 6;
     const double E[N] = {5, 10, 25, 50, 100, 120};
 
     gStyle->SetOptStat(0);
     gSystem->mkdir(Form("%s/plots/fits", dir), true);
+
+    const TString FID = (rMax > 0) ? fiducialCut(rMax) : TString("1");
+    printf("fiducial: %s\n\n", (rMax > 0) ? FID.Data() : "NONE (raw sample)");
 
     double sigT[N], sigTerr[N];      // timing:  sigma_t (ps)
     double resE[N], resEerr[N];      // energy, TRUTH:    sigma(Elyso)/Elyso (%)
