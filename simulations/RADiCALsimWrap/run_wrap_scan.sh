@@ -13,9 +13,9 @@
 # THE CONTROL IS NOT RUN HERE. RADiCALsimWrap with no RADWRAP_* flags builds
 # geometry byte-identical to RADiCALsimSIMPLE, so the SIMPLE sweep you already
 # have IS the no-wrap control. Stage it when you analyze:
-#   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build
+#   bash stage_control.sh /path/to/RADiCALsimSIMPLE/build/rootfiles
 #
-# Output: results/tyvek/E<N>GeV.root, plus sweep.mac and run.log so every
+# Output: build/rootfiles/tyvek/E<N>GeV.root, plus sweep.mac and run.log so every
 # number is traceable to the exact macro and banner that produced it.
 set -eu
 
@@ -81,7 +81,7 @@ mkdir -p "$d"
 
 echo "--- tyvek  (sides, R=0.98 diffuse, 0.1 mm air gap) ---"
 # Geant4's own output — the actual live progress — goes to the standard log
-# location so it can be tailed without hunting through results/.
+# location so it can be tailed without hunting for it.
 G4LOG="$HERE/build/logs/tyvek_geant4.log"
 mkdir -p "$HERE/build/logs"
 echo "    Geant4 progress -> build/logs/tyvek_geant4.log  (tail -f that one)"
@@ -90,7 +90,7 @@ start=$(date +%s)
     cd "$d"
     RADWRAP_SIDES=1 "$BIN" sweep.mac > "$G4LOG" 2>&1
 )
-echo "    done in $(( $(date +%s) - start ))s  -> results/tyvek/"
+echo "    done in $(( $(date +%s) - start ))s  -> build/rootfiles/tyvek/"
 # Keep a copy next to the data so the result folder stays self-documenting.
 cp "$G4LOG" "$d/run.log"
 grep -h "outer wrap" "$G4LOG" | head -1 | sed 's/^/    /' || true
@@ -98,6 +98,6 @@ grep -h "outer wrap" "$G4LOG" | head -1 | sed 's/^/    /' || true
 echo "=================================================================="
 echo " done. Next (on the Mac):"
 echo "   bash pull_wrap_results.sh perseverence"
-echo "   bash stage_control.sh ../RADiCALsimSIMPLE/build"
+echo "   bash stage_control.sh ../RADiCALsimSIMPLE/build/rootfiles"
 echo "   root -l -b -q analysis/wrap_scan.C"
 echo "=================================================================="

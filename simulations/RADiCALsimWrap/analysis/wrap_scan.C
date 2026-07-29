@@ -118,9 +118,11 @@ TH1D* fineHist(TTree* t, const char* col, const char* name, const char* extra = 
 // rMax/pbFrac: fiducial radius and Pb-glass containment veto — same defaults
 // and same justification as RADiCALsimSIMPLE/analysis/scan.C. Both configs get
 // the identical cut, so the wrap comparison stays apples-to-apples.
-void wrap_scan(const char* dir = "results", double rMax = 3.5, double pbFrac = 0.05) {
+void wrap_scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac = 0.05) {
     gStyle->SetOptStat(0);
-    gSystem->mkdir(Form("%s/plots/fits", dir), true);
+    TString PLOTS = dir; PLOTS.ReplaceAll("rootfiles", "plots");
+    if (PLOTS == dir) PLOTS += "/plots";      // custom dir -> <dir>/plots
+    gSystem->mkdir(Form("%s/fits", PLOTS.Data()), true);
 
     // ---- discover which configs were actually run -------------------------
     std::vector<std::string> cfg;
@@ -216,7 +218,7 @@ void wrap_scan(const char* dir = "results", double rMax = 3.5, double pbFrac = 0
             coreFit(d, Form("#DeltaT%s, %s at %.0f GeV;#DeltaT (ns);events",
                             wlsTiming ? " (WLS only, fiducial)" : " (ALL light - unfittable)",
                             cfg[ic].c_str(), E[ie]),
-                    Form("%s/plots/fits/dT_%s_E%.0fGeV.png", dir, cfg[ic].c_str(), E[ie]),
+                    Form("%s/fits/dT_%s_E%.0fGeV.png", PLOTS.Data(), cfg[ic].c_str(), E[ie]),
                     mu, sg, sgErr);
             modes[ic][ie] = countModes(d);
             sgt[ic][ie]  = 1000 * sg    / 2;      // ns -> ps, /2 for single-ended
@@ -322,7 +324,7 @@ void wrap_scan(const char* dir = "results", double rMax = 3.5, double pbFrac = 0
             z->SetLineStyle(2); z->SetLineColor(kGray+2); z->Draw();
         }
         lg->Draw();
-        c->SaveAs(Form("%s/plots/%s", dir, png));
+        c->SaveAs(Form("%s/%s", PLOTS.Data(), png));
         delete c;
     };
 
@@ -372,9 +374,9 @@ void wrap_scan(const char* dir = "results", double rMax = 3.5, double pbFrac = 0
         printf("---------------------------------------------------------------\n");
     }
 
-    printf("\nplots: %s/plots/\n"
+    printf("\nplots: %s/\n"
            "NOTE: sigma_t here is measured at thinned light "
            "(RADSIMPLE_LIGHT_SCALE, default 1e-2), so its ABSOLUTE value is ~10x\n"
            "      the true-light number. The RELATIVE comparison between configs "
-           "is the result; the absolute ps value is not.\n", dir);
+           "is the result; the absolute ps value is not.\n", PLOTS.Data());
 }

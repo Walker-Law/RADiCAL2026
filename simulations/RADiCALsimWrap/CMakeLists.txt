@@ -16,4 +16,4 @@ target_link_libraries(radwrap ${Geant4_LIBRARIES})
 # configure_file(COPYONLY), which runs at CMAKE time only — so editing the macro
 # and re-running `make` silently executes the stale copy. Generating the macro
 # per run removes that trap entirely.
-configure_file(${PROJECT_SOURCE_DIR}/vis.mac ${PROJECT_BINARY_DIR} COPYONLY)
+configure_file(${PROJECT_SOURCE_DIR}/macros/vis.mac ${PROJECT_BINARY_DIR} COPYONLY)

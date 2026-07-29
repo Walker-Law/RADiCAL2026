@@ -104,13 +104,15 @@ TString fiducialCut(double rMax = 3.5, double holeClear = 1.5) {
 // preferentially keeps showers that START EARLY (less punch-through), which
 // slightly reshapes the shower-max sampling — keep% is printed so this bias
 // is never invisible. Set pbFrac=0 to disable.
-void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
+void scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac = 0.05) {
     // must match the energies (and order) in the macro that produced the files
     const int N = 6;
     const double E[N] = {5, 10, 25, 50, 100, 120};
 
     gStyle->SetOptStat(0);
-    gSystem->mkdir(Form("%s/plots/fits", dir), true);
+    TString PLOTS = dir; PLOTS.ReplaceAll("rootfiles", "plots");
+    if (PLOTS == dir) PLOTS += "/plots";      // custom dir -> <dir>/plots
+    gSystem->mkdir(Form("%s/fits", PLOTS.Data()), true);
 
     const TString FIDbase = (rMax > 0) ? fiducialCut(rMax) : TString("1");
     printf("fiducial: %s\n", (rMax > 0) ? FIDbase.Data() : "NONE (raw sample)");
@@ -178,7 +180,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         d->SetDirectory(nullptr);
         coreFitAndSave(d, Form("#DeltaT%s at %.0f GeV;#DeltaT = t_{down}-t_{up} (ns);events",
                                wlsTiming ? " (WLS only, fiducial)" : " (ALL light - unfittable)", E[i]),
-                       Form("%s/plots/fits/dT_E%.0fGeV.png", dir, E[i]), mu, sg, sgErr);
+                       Form("%s/fits/dT_E%.0fGeV.png", PLOTS.Data(), E[i]), mu, sg, sgErr);
         sigT[i]    = 1000 * sg    / 2;                       // ns->ps, /2 corner-trick
         sigTerr[i] = 1000 * sgErr / 2;
 
@@ -198,7 +200,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         e->SetDirectory(nullptr);                            // detach from the file
         double muE, sgE, sgEErr;
         coreFitAndSave(e, Form("E_{LYSO} at %.0f GeV;E_{LYSO} (GeV);events", E[i]),
-                       Form("%s/plots/fits/Elyso_E%.0fGeV.png", dir, E[i]), muE, sgE, sgEErr);
+                       Form("%s/fits/Elyso_E%.0fGeV.png", PLOTS.Data(), E[i]), muE, sgE, sgEErr);
         delete e;
         resE[i]    = 100 * sgE / muE;
         resEerr[i] = resE[i] * sqrt(pow(sgEErr/sgE, 2));     // sigma error dominates
@@ -218,7 +220,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         nh->SetDirectory(nullptr);
         double muN, sgN, sgNErr;
         coreFitAndSave(nh, Form("N_{pe} at %.0f GeV;detected photons;events", E[i]),
-                       Form("%s/plots/fits/Npe_E%.0fGeV.png", dir, E[i]), muN, sgN, sgNErr);
+                       Form("%s/fits/Npe_E%.0fGeV.png", PLOTS.Data(), E[i]), muN, sgN, sgNErr);
         delete nh;
         resN[i]    = 100 * sgN / muN;
         resNerr[i] = resN[i] * (sgNErr / sgN);
@@ -272,7 +274,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         auto c = new TCanvas("ct", "", 800, 600);
         gr->Draw("AP");
         drawFormula("#sigma_{t} = a / #sqrt{E} #oplus b   [a: ps#sqrt{GeV}, b: ps]");
-        c->SaveAs(Form("%s/plots/sigma_t_vs_E.png", dir));
+        c->SaveAs(Form("%s/sigma_t_vs_E.png", PLOTS.Data()));
         printf("\ntiming: sigma_t = %.1f/sqrt(E) (+) %.1f ps   (+- %.1f / %.1f)\n",
                fit->GetParameter(0), fabs(fit->GetParameter(1)),
                fit->GetParError(0), fit->GetParError(1));
@@ -304,7 +306,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         auto c = new TCanvas("cn", "", 800, 600);
         gr->Draw("AP");
         drawFormula("#sigma_{E}/E = a/#sqrt{E} #oplus c   (fit #leq 50 GeV)   [%]");
-        c->SaveAs(Form("%s/plots/sigma_E_Npe_vs_E.png", dir));
+        c->SaveAs(Form("%s/sigma_E_Npe_vs_E.png", PLOTS.Data()));
         printf("energy (MEASURED, detected light, fit <=%.0f GeV):"
                " %.1f%%/sqrt(E) (+) %.2f%%\n"
                "        paper 2401.01747: 52.04%%/sqrt(E) (+) 31.62%%/E (+) 9.31%%"
@@ -338,7 +340,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         auto c = new TCanvas("ce", "", 800, 600);
         gr->Draw("AP");
         drawFormula("#sigma_{E}/E = a / #sqrt{E} #oplus b   [a: %#sqrt{GeV}, b: %]");
-        c->SaveAs(Form("%s/plots/sigma_E_vs_E.png", dir));
+        c->SaveAs(Form("%s/sigma_E_vs_E.png", PLOTS.Data()));
         printf("energy (TRUTH, full-stack dE/dx -- not a paper observable):"
                " %.1f%%/sqrt(E) (+) %.2f%%\n",
                fit->GetParameter(0), fabs(fit->GetParameter(1)));
@@ -390,7 +392,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         auto box = new TBox(7.5, mg->GetYaxis()->GetXmin(), 10.5, mg->GetYaxis()->GetXmax());
         box->SetFillColorAlpha(kOrange, 0.15); box->Draw();
         lg->Draw();
-        c->SaveAs(Form("%s/plots/shower_profile.png", dir));
+        c->SaveAs(Form("%s/shower_profile.png", PLOTS.Data()));
         delete c;
     }
 
@@ -424,7 +426,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         lin->SetLineColor(kGray+2); lin->SetLineStyle(2); lin->Draw("same");
         lg->AddEntry(lin, Form("%.0f pe/GeV", lin->GetParameter(0)), "l");
         lg->Draw();
-        c->SaveAs(Form("%s/plots/npe_vs_Elyso.png", dir));
+        c->SaveAs(Form("%s/npe_vs_Elyso.png", PLOTS.Data()));
         printf("\nlight yield handle: Npe = %.1f pe per GeV of TOTAL LYSO deposit"
                " (all 29 layers)\n  (at LIGHT_SCALE=1e-2; multiply by 100 for true light."
                "  Invert to read E from Npe.)\n", lin->GetParameter(0));
@@ -438,7 +440,7 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
         delete c;
     }
 
-    printf("\nplots: %s/plots/  (sigma_t_vs_E.png, sigma_E_Npe_vs_E.png,"
+    printf("\nplots: %s/  (sigma_t_vs_E.png, sigma_E_Npe_vs_E.png,"
            " sigma_E_vs_E.png,\n        shower_profile.png, npe_vs_Elyso.png, fits/*.png)\n"
-           "(sigma_t is thinned by RADSIMPLE_LYSO_SCALE; sigma_E/E is not.)\n", dir);
+           "(sigma_t is thinned by RADSIMPLE_LYSO_SCALE; sigma_E/E is not.)\n", PLOTS.Data());
 }

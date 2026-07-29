@@ -33,12 +33,12 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../lib/run_logging.sh"
 start_logging "$HERE"
 
-SRC="${1:-$HERE/../RADiCALsimSIMPLE/build}"
-DST="$HERE/results/none"
+SRC="${1:-$HERE/../RADiCALsimSIMPLE/build/rootfiles}"
+DST="$HERE/build/rootfiles/none"
 
 if [ ! -d "$SRC" ]; then
     echo "ERROR: no such directory: $SRC"
-    echo "Point this at a RADiCALsimSIMPLE build folder holding E<N>GeV.root files."
+    echo "Point this at a RADiCALsimSIMPLE build/rootfiles folder holding E<N>GeV.root files."
     exit 1
 fi
 
@@ -62,7 +62,7 @@ cp "$SRC"/E*GeV.root "$DST"/
     echo "# See stage_control.sh's header for the seed / flag caveats."
 } > "$DST/sweep.mac"
 
-echo "staged $N control file(s) -> results/none/"
+echo "staged $N control file(s) -> build/rootfiles/none/"
 ls "$DST"/E*GeV.root | sed 's|.*/|  |'
 echo ""
 echo "Next: root -l -b -q analysis/wrap_scan.C"

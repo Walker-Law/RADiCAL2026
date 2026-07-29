@@ -12,7 +12,7 @@ add_executable(radsimple radsimple.cc ${sources} ${headers})
 target_link_libraries(radsimple ${Geant4_LIBRARIES})
 
 # Copy macros next to the binary so `./radsimple run.mac` works from build/.
-file(GLOB macros ${PROJECT_SOURCE_DIR}/*.mac)
+file(GLOB macros ${PROJECT_SOURCE_DIR}/macros/*.mac)
 foreach(macro ${macros})
     configure_file(${macro} ${PROJECT_BINARY_DIR} COPYONLY)
 endforeach()

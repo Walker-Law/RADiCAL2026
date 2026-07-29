@@ -23,9 +23,9 @@ PORT=10022
 # curiosity: ~/RADiCAL2026, perseverence: ~/Research/RADiCAL2026. Do not
 # collapse this back into one shared REMOTE_DIR.
 case "${1:-curiosity}" in
-  curiosity)     HOST="wlaw@172.16.17.188"; DEST="$HERE/build"
+  curiosity)     HOST="wlaw@172.16.17.188"; DEST="$HERE/build/rootfiles"
                  REMOTE_DIR="~/RADiCAL2026/simulations/RADiCALsimSIMPLE" ;;
-  perseverence)  HOST="wlaw@172.16.17.252"; DEST="$HERE/build/short"
+  perseverence)  HOST="wlaw@172.16.17.252"; DEST="$HERE/build/rootfiles_perseverence"
                  REMOTE_DIR="~/Research/RADiCAL2026/simulations/RADiCALsimSIMPLE" ;;
   *) echo "usage: bash pull_results.sh [curiosity|perseverence]"; exit 1 ;;
 esac
@@ -34,7 +34,7 @@ mkdir -p "$DEST/plots"
 echo "pulling from ${1:-curiosity} -> $DEST"
 
 rsync -avz -e "ssh -p $PORT" \
-  "$HOST:$REMOTE_DIR/build/"'*GeV.root' \
+  "$HOST:$REMOTE_DIR/build/rootfiles/"'*GeV.root' \
   "$DEST/"
 
 # plots only exist if scan.C was run ON the cluster (perseverence has no usable
