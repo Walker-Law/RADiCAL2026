@@ -81,10 +81,13 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
     fLayerE.assign(fLayerEacc.begin(), fLayerEacc.end());
     for (auto& e : fLayerE) e /= GeV;
     fCornerNpe.assign(fCornerNpeAcc.begin(), fCornerNpeAcc.end());
-    fCornerTup.resize(4); fCornerTdn.resize(4);
+    fCornerTup.resize(4);  fCornerTdn.resize(4);
+    fCornerTupW.resize(4); fCornerTdnW.resize(4);
     for (int k = 0; k < 4; ++k) {
-        fCornerTup[k] = (fTup[k] < kBig) ? fTup[k] : -999.;
-        fCornerTdn[k] = (fTdn[k] < kBig) ? fTdn[k] : -999.;
+        fCornerTup[k]  = (fTup[k]  < kBig) ? fTup[k]  : -999.;
+        fCornerTdn[k]  = (fTdn[k]  < kBig) ? fTdn[k]  : -999.;
+        fCornerTupW[k] = (fTupW[k] < kBig) ? fTupW[k] : -999.;
+        fCornerTdnW[k] = (fTdnW[k] < kBig) ? fTdnW[k] : -999.;
     }
     // fPhT/fPhId already accumulated (empty unless RADSIMPLE_STORE_PHOTON_TIMES=1)
 
