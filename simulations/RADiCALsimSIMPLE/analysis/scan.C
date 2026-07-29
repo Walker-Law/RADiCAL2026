@@ -218,6 +218,10 @@ void scan(const char* dir = "build", double rMax = 3.5, double pbFrac = 0.05) {
 
         // --- shower profile + Npe<->window-eDep correlation (both fiducial) ---
         for (int L = 0; L < NL; ++L) {
+            // fresh histogram each time: reusing ">>hL" keeps the FIRST call's
+            // auto-binning, and later layers with bigger deposits overflow it,
+            // silently computing the mean from whatever fraction stayed in range
+            gDirectory->Delete("hL");
             t->Draw(Form("Elayer[%d]>>hL", L), FID, "goff");
             prof[i][L] = ((TH1*)gDirectory->Get("hL"))->GetMean();
         }
