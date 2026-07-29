@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# pull_wrap_results.sh — rsync the wrap-study results/ tree back from a cluster.
+# pull_wrap_results.sh — rsync the wrap-study .root output back from a cluster.
 #
 # Run from your Mac (not on the cluster):
 #   bash pull_wrap_results.sh perseverence   # this study runs on perseverence
 #   bash pull_wrap_results.sh curiosity      # if you ever run it there instead
 #
-# Syncs the WHOLE results/ directory (every config's E*GeV.root + sweep.mac +
-# run.log), so analysis/wrap_scan.C works locally right after with no
-# additional setup. Does NOT touch results/none — that is staged locally from
-# RADiCALsimSIMPLE via stage_control.sh, not pulled from a cluster.
+# Syncs every config's E*GeV.root + sweep.mac + run.log into the standard
+# local location build/rootfiles/, so analysis/wrap_scan.C works right after
+# with no extra setup. Does NOT touch the 'none' control — that is staged from
+# RADiCALsimSIMPLE locally via stage_control.sh, never pulled from a cluster.
 set -eu
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
