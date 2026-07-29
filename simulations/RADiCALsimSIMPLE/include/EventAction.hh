@@ -91,7 +91,8 @@ private:
     G4double fTmcp      = kBig;             // MCP particle-arrival time (ns)
     std::array<G4double,2> fEtrig{};        // trigger-counter energy deposits
     G4double fEpbGlass  = 0.;               // Pb-glass (tail catcher) deposit
-    std::array<G4double,4> fTup{}, fTdn{};
+    std::array<G4double,4> fTup{},  fTdn{};    // first photon, ANY population
+    std::array<G4double,4> fTupW{}, fTdnW{};   // first WLS photon only
     std::array<G4double,kNLayers> fLayerEacc{};
     std::array<G4double,4> fCornerNpeAcc{};
     // Full per-photon dump (RADSIMPLE_STORE_PHOTON_TIMES=1). OFF by default:
