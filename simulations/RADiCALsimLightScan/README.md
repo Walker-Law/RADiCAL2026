@@ -77,11 +77,49 @@ The fit recovers B exactly in every case — what changes is the *error bar*.
 Stopping at 1e-2 leaves a 5 ps floor determined only to ±4 ps, which answers
 nothing. Going to 3e-2 measures a 10 ps floor at ~12σ, and even a 2 ps floor
 is bounded well under the goal. **That is the whole reason the top rung is
-worth its runtime.** Adding 1e-1 would tighten further at ~3× the cost of
-3e-2 — worth it only if the result lands ambiguously near 10 ps.
+worth its runtime.**
 
 Two energies (25 and 120 GeV) confirm the A/B split isn't an artifact of one
 operating point, at a fraction of the full 6-energy cost.
+
+## Does this actually reach TRUE light?
+
+Yes — and that claim is worth being precise about, because the fit is
+evaluated at 1/f = 1, which lies **outside** the measured range
+(1/f = 33…1000).
+
+**f = 1 really is true light.** `RADSIMPLE_LIGHT_SCALE` multiplies LYSO's
+datasheet 33200 ph/MeV directly, and `StackingAction` thins Cherenkov by the
+same factor, so f = 1 means no thinning anywhere. There is no further
+correction to apply.
+
+**The extrapolation is short, not long.** At f = 1 the photon-counting term
+has collapsed to nothing (A²/1 ≈ 7 ps²), so σ_t(f=1) = √(A²+B²) is dominated
+by B — the *intercept*, which is exactly what the ladder measures directly.
+Extrapolating a straight line to its own intercept is not a stretch. Injecting
+known values and refitting gives the achievable precision on the true-light
+number:
+
+| true σ_t(f=1) | top rung 1e-2 | **top rung 3e-2 (default)** |
+|---|---|---|
+| 3.3 ps | ±6.3 | **±1.8** |
+| 5.6 ps | ±3.7 | **±1.1** |
+| 10.3 ps | ±2.2 | **±0.8** |
+
+So with the default rungs, a true-light resolution anywhere near the 10 ps
+goal is resolved to well under a ps — conclusive either way. `lightscan.C`
+prints this number **with its error**, and flags `chi2/ndf` so a bad model
+can't masquerade as a confident answer.
+
+**Two guards on validity.** The analysis also checks that `Npe` is linear in
+f (if it isn't, the detector isn't simply "the same thing with less light" and
+the A²/f model is void — flagged automatically), and reports the extrapolated
+true-light photon yield, which is the number to compare against the papers and
+against DSB's ~50–90 pe/MeV prediction. That second check is what would catch
+the sim over-collecting light, which is the failure mode that has bitten this
+project before.
+
+**What it does not cover:** electronics. See the caveat below.
 
 ## Reading the result
 
