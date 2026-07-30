@@ -298,7 +298,15 @@ void scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac 
         auto gr = new TGraphErrors(N, E, resN, nullptr, resNerr);
         gr->SetTitle("SIMPLE energy resolution (detected light);E_{beam} (GeV);#sigma_{E}/E (%)");
         gr->SetMarkerStyle(20); gr->SetMarkerColor(kAzure+2); gr->SetLineColor(kAzure+2);
-        auto fit = new TF1("fn", "sqrt([0]*[0]/x + [1]*[1])", E[0], EFITMAX);
+        // TF1's construction range is what ROOT DRAWS, independent of what
+        // gets FITTED — those are two different things. Build it over the
+        // FULL plot range so the curve spans 5-120 GeV like the other three
+        // plots' fits do; the "" , E[0], EFITMAX below still restricts the
+        // actual FIT computation to the monotonic region. The result: the
+        // curve visibly diverges from the data above 50 GeV, which is the
+        // correct picture — it makes the turn-up plainly visible rather than
+        // hiding it by stopping the line exactly where the fit does.
+        auto fit = new TF1("fn", "sqrt([0]*[0]/x + [1]*[1])", E[0], E[N-1]);
         fit->SetParName(0, "a"); fit->SetParName(1, "c");
         fit->SetParameters(40, 9);
         gr->Fit(fit, "Q", "", E[0], EFITMAX);       // monotonic region only
