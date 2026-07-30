@@ -60,4 +60,8 @@ bash simulations/check_layout.sh
 | `archive/RADiCALsimDSB`, `RADiCALsim{LuAG,Fig8,HoleScan}` output | these predate the convention and write per-scan trees under `build/scan/<tag>_scan_<N>/`, because a scan is hundreds of parallel chunk files plus their own `RUNS.md` manifest. Their `scan_resolution.C` and manifest tooling are wired to that path. Moving them buys little and risks breaking working analysis — **their logs still follow the standard rule**, which is the part you actually tail. |
 | `RADiCALsimLadder/results/` | two hand-kept study outputs, deliberately tracked in git. |
 
-Fully on the convention today: **RADiCALsimSIMPLE**, **RADiCALsimWrap**.
+Fully on the convention today: **RADiCALsimSIMPLE**, **RADiCALsimWrap**,
+**RADiCALsimLightScan**.
+
+`archive/` holds retired sims (frozen, not deleted — see
+[archive/README.md](archive/README.md)); they keep whatever layout they had.
