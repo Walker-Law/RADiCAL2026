@@ -235,6 +235,36 @@ void scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac 
         resN[i]    = 100 * sgN / muN;
         resNerr[i] = resN[i] * (sgNErr / sgN);
 
+        // --- central E-type capillary (only meaningful if the dataset was
+        // run with RADSIMPLE_CENTER_ETYPE=1 — see hasCenter check below) ---
+        if (t->GetBranch("NpeCenter")) {
+            TH1D* ch = new TH1D("NpeCFine", "", 100, t->GetMinimum("NpeCenter"), t->GetMaximum("NpeCenter"));
+            t->Draw("NpeCenter>>NpeCFine", FID, "goff");
+            double mC = ch->GetMean(), rC = ch->GetRMS();
+            if (rC > 0) { ch->SetBins(100, mC - 5*rC, mC + 5*rC);
+                          t->Draw("NpeCenter>>NpeCFine", FID, "goff"); }
+            ch->SetDirectory(nullptr);
+            double muC, sgC, sgCErr;
+            coreFitAndSave(ch, Form("N_{pe}^{center} at %.0f GeV;detected photons (center E-type);events", E[i]),
+                           Form("%s/fits/NpeCenter_E%.0fGeV.png", PLOTS.Data(), E[i]), muC, sgC, sgCErr);
+            delete ch;
+            if (muC > 0) { resNC[i] = 100 * sgC / muC; resNCerr[i] = resNC[i] * (sgCErr / sgC); }
+
+            // The depth-correction test: does the RATIO of the two real,
+            // SiPM-measured light sums (full-length center fiber vs the
+            // fixed-window corner fibers) track the same shower-depth effect
+            // that a truth layer-COG would? If so, a linear regression of Npe
+            // against that ratio removes the same variance a truth-based
+            // correction would, using ONLY quantities a real detector reads
+            // out. No shower-truth information enters this calculation.
+            TH2D* h2 = new TH2D("h2c", "", 60, 0, 0, 100, 0, 0);
+            t->Draw("Npe:(NpeCenter/Npe)>>h2c", TString(FID) + "&& Npe>0", "goff");
+            double r = h2->GetCorrelationFactor();
+            delete h2;
+            corrRatio[i] = r;
+            resNcorr[i]  = resN[i] * sqrt(std::max(0., 1 - r*r));
+        }
+
         // --- shower profile + Npe<->window-eDep correlation (both fiducial) ---
         for (int L = 0; L < NL; ++L) {
             // fresh histogram each time: reusing ">>hL" keeps the FIRST call's
