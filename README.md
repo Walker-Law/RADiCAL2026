@@ -80,6 +80,16 @@ simulations/                 Geant4 simulations
                                low-statistics and efficiency-biased rows.
                                Measured cost: the wrap traps escape-cone
                                light, ~2.2x slower per event than no wrap.
+  RADiCALsimLightScan/       Photostatistics ladder for the SIMPLE family
+                               (reuses the radsimple binary unmodified): runs
+                               the same sweep at several RADSIMPLE_LIGHT_SCALE
+                               values and fits σ_t²(f)=A²/f+B² to separate
+                               photon counting (A) from the light-INDEPENDENT
+                               floor (B). B is what decides whether <10 ps is
+                               reachable — extrapolating a single thinned run
+                               assumes B=0, the assumption that hid a 43.5 ps
+                               floor in the DSB ladder. Top rung 3e-2 is what
+                               makes B measurable; see its README.
   RADiCALphotonorigin/       Position→SiPM mapping study (where the beam hits vs
                                which corner SiPM lights up; S-curve reconstruction).
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
