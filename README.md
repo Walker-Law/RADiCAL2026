@@ -153,10 +153,12 @@ script's own progress log, and `*_geant4.log` holding Geant4's output — **the
 including the per-chunk-scan exception, in
 [simulations/README_LOGGING.md](simulations/README_LOGGING.md).
 
-See [simulations/RADiCALsimDSB/README.md](simulations/RADiCALsimDSB/README.md)
-and its `CLAUDE.md` for full detector, physics, and workflow documentation.
+See [simulations/RADiCALsimSIMPLE/README.md](simulations/RADiCALsimSIMPLE/README.md)
+for the actively-developed sim's full flag table and idiot-proof usage guide.
+The archived full-electronics model has its own
+[README](simulations/archive/RADiCALsimDSB/README.md) and `CLAUDE.md`.
 
-**Vis tip:** bare `./radical` opens the geometry viewer with no particle track
+**Vis tip (archive/RADiCALsimDSB):** bare `./radical` opens the geometry viewer with no particle track
 drawn — `vis_purple.mac` (the macro it auto-runs) no longer auto-fires
 `/run/beamOn 1`. (Trajectories are controlled by `/tracking/storeTrajectory`,
 not `/vis/viewer/set/hiddenMarker` — that command only hides step-point markers
