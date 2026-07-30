@@ -28,15 +28,10 @@ SIMPLE="$HERE/../RADiCALsimSIMPLE"
 BIN="$SIMPLE/build/radsimple"
 NEVT="${1:-2000}"
 
-# Rungs: 1e-2 is the standard production scale every existing result uses, so
-# it anchors the ladder to numbers you already trust. Spanning 1e-3..3e-2 is a
-# 30x lever in f, i.e. ~5.5x in sigma_t — plenty to resolve the A/B split.
-# Cost scales ~linearly with f (more photons = more tracking), so the top rung
-# dominates: keep the list short and let 3e-2 be the expensive one.
+# 1e-2 anchors the ladder to the production scale; 3e-2 is the top rung that
+# actually constrains B (and dominates cost, since cost ~ f). README has the
+# numbers justifying both. 25+120 GeV checks the split isn't a one-point fluke.
 FACTORS="${RADSIMPLE_LIGHT_FACTORS:-1e-3 3e-3 1e-2 3e-2}"
-
-# Two energies is enough to check the A/B split is not an artifact of one
-# operating point, and costs far less than the full 6-energy grid.
 ENERGIES="${RADSIMPLE_ENERGIES:-25 120}"
 
 [ -x "$BIN" ] || {
