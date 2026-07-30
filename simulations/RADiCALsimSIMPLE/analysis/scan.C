@@ -300,6 +300,47 @@ void scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac 
         f.Close();
     }
 
+    // --- central E-type capillary report (only if the dataset has one) ------
+    // Baseline files carry the NpeCenter column but it is identically 0, so
+    // presence of the branch is NOT enough — require actual light.
+    bool hasCenter = false;
+    for (int i = 0; i < N; ++i) if (resNC[i] > 0) hasCenter = true;
+    if (hasCenter) {
+        printf("\n--- central E-type capillary (RADSIMPLE_CENTER_ETYPE=1) ---\n");
+        printf("%-7s %14s %16s %18s\n",
+               "E(GeV)", "NpeCtr res %", "corr(Npe,ratio)", "Npe res corrected %");
+        for (int i = 0; i < N; ++i) {
+            if (resNC[i] <= 0) continue;
+            printf("%-7.0f %8.2f +- %-4.2f %15.3f %13.2f -> %.2f\n",
+                   E[i], resNC[i], resNCerr[i], corrRatio[i], resN[i], resNcorr[i]);
+        }
+        printf("  ratio = NpeCenter/Npe (full-length vs shower-max-window light).\n"
+               "  BOTH inputs are real SiPM sums — no truth used — so the last\n"
+               "  column is an achievable correction, not a ceiling.\n");
+
+        // graph: corner vs center vs corrected, one figure, three series
+        auto c = new TCanvas("cc", "", 850, 620);
+        auto mg = new TMultiGraph();
+        auto lg = new TLegend(0.55, 0.68, 0.88, 0.88);
+        lg->SetBorderSize(0); lg->SetFillStyle(0);
+        auto g1 = new TGraphErrors(N, E, resN,  nullptr, resNerr);
+        g1->SetMarkerStyle(20); g1->SetMarkerColor(kAzure+2); g1->SetLineColor(kAzure+2);
+        auto g2 = new TGraphErrors(N, E, resNC, nullptr, resNCerr);
+        g2->SetMarkerStyle(21); g2->SetMarkerColor(kGreen+2); g2->SetLineColor(kGreen+2);
+        auto g3 = new TGraph(N, E, resNcorr);
+        g3->SetMarkerStyle(22); g3->SetMarkerColor(kRed+1);  g3->SetLineColor(kRed+1);
+        mg->Add(g1, "LP"); mg->Add(g2, "LP"); mg->Add(g3, "LP");
+        lg->AddEntry(g1, "corner N_{pe} (15 mm window)", "lp");
+        lg->AddEntry(g2, "center N_{pe} (full length)",  "lp");
+        lg->AddEntry(g3, "corner, ratio-corrected",      "lp");
+        mg->SetTitle("energy resolution: window vs full-length vs corrected;"
+                     "E_{beam} (GeV);#sigma_{E}/E (%)");
+        mg->Draw("A");
+        lg->Draw();
+        c->SaveAs(Form("%s/centerE_energy_res.png", PLOTS.Data()));
+        delete c;
+    }
+
     // --- graph 1: sigma_t vs E,  fit a/sqrt(E) (+) b ---
     {
         auto gr = new TGraphErrors(N, E, sigT, nullptr, sigTerr);
