@@ -51,7 +51,7 @@ Geant4 to finish a stage.
 
 ## The one exception: per-chunk scan logs
 
-`RADiCALsimDSB`, `RADiCALsimLuAG`, `RADiCALsimFig8` and `RADiCALsimHoleScan`
+`archive/RADiCALsimDSB`, `RADiCALsimLuAG`, `RADiCALsimFig8` and `RADiCALsimHoleScan`
 split a scan into hundreds of parallel single-thread chunks, each writing its
 own `log_E<E>_c<N>.log`. Those stay **inside the scan output directory**, not in
 `build/logs/` — there can be ~500 of them per run, they'd swamp the folder, and
