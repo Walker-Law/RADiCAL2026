@@ -1,7 +1,9 @@
 # RADiCALsimLadder — photostatistics scale-ladder timing study
 
 A study built on top of **RADiCALsimDSB** (same binary, same paper-fidelity
-geometry — this is not a separate detector). It answers one question:
+geometry — this is not a separate detector; DSB itself was archived
+2026-07-30 to `simulations/archive/RADiCALsimDSB`, this study still reuses
+its binary from there). It answers one question:
 
 > With the simulation now carrying a **realistic light composition** and a
 > **realistic electronics chain**, does its timing resolution reproduce the
@@ -140,7 +142,7 @@ One f = 1 scan with the fix, compared to the pre-fix `lad1` (identical config,
 
 ```bash
 conda activate g4 && cd ~/RADiCAL2026 && git pull
-cd simulations/RADiCALsimDSB/build && make -j$(nproc)
+cd simulations/archive/RADiCALsimDSB/build && make -j$(nproc)
 setsid nohup env RADICAL_OPTICAL=1 RADICAL_ENERGIES="25 50 75 100 125 150" \
   RADICAL_LYSO_SCINT_SCALE=1e-2 RADICAL_SCINT_YIELD=1e-2 RADICAL_QUARTZ_CHER_KEEP=1e-2 \
   RADICAL_MAX_OPT_PHOTONS=20000000 RADICAL_SPTR_PS=60 RADICAL_SIPM_NPIX=5676 \
@@ -189,7 +191,7 @@ best-behaved, `a = 1020 ps/√E`) — but flag it as saturation-limited, not fin
 ## Files
 
 ```
-run_ladder.sh          reruns the four scans (reuses ../RADiCALsimDSB)
+run_ladder.sh          reruns the four scans (reuses ../archive/RADiCALsimDSB)
 analysis/ladder.C      decomposition + true-light extrapolation; writes results/
 results/ladder.png     left: σ_t(E) per light level; right: a² vs 1/f fit
 results/ladder_summary.txt   the numbers above
