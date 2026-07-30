@@ -29,7 +29,7 @@ set -u
 . "$(cd "$(dirname "$0")" && pwd)/../lib/run_logging.sh"
 start_logging "$(cd "$(dirname "$0")" && pwd)"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-DSB="$HERE/../RADiCALsimDSB"
+DSB="$HERE/../archive/RADiCALsimDSB"   # DSB archived 2026-07-30 — see archive/README.md
 NEVT=${1:-500}
 FACTORS=${RADICAL_LADDER_FACTORS:-"0.1 0.3 1 3"}
 BASE=1e-2                                   # paperR thinning at f=1
