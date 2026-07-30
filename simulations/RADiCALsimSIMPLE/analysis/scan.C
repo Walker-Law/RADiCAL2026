@@ -139,6 +139,16 @@ void scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac 
     double meanWin[N] = {}, meanNpe[N] = {};
     TProfile* pwin[N] = {};
 
+    // Central E-type capillary (RADSIMPLE_CENTER_ETYPE=1 datasets only — the
+    // column exists and is 0 in every baseline file, which is exactly how we
+    // detect whether this section applies, see hasCenter below).
+    double resNC[N] = {}, resNCerr[N] = {};   // NpeCenter's OWN resolution (%)
+    double corrRatio[N] = {};                 // corr(Npe, NpeCenter/Npe)
+    double resNcorr[N] = {};                  // Npe resolution AFTER using
+                                               // NpeCenter as a depth proxy —
+                                               // zero truth information used,
+                                               // both inputs are real SiPM light.
+
     printf("%-7s %14s %6s %14s %14s %7s\n",
            "E(GeV)", "sigma_t (ps)", "eff%", "Npe res (%)", "Elyso res (%)", "keep%");
     for (int i = 0; i < N; ++i) {
