@@ -40,8 +40,8 @@ simulations/                 Geant4 simulations
                                own end PDs) so it counts as the 5th light source
                                alongside the 4 corner WLS caps. run_hole_scan.sh.
   RADiCALsimLadder/          Photostatistics scale-ladder timing study (reuses the
-                               RADiCALsimDSB binary): sweeps a coherent light factor
-                               f, fits σ_t²(f)=A²/f+B² to separate photon-counting
+                               archived RADiCALsimDSB binary): sweeps a coherent light
+                               factor f, fits σ_t²(f)=A²/f+B² to separate photon-counting
                                from the light-independent floor, extrapolates to true
                                light. Found the sim over-collects light ~3–4×,
                                over-saturating the SiPM — see its README.
