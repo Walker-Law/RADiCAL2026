@@ -5,7 +5,7 @@
 # (G4NDL, G4EMLOW, ENSDFSTATE, ...) AND sets the G4*DATA paths on activation, so no
 # manual data download and no setup_env.sh path-juggling is needed. ROOT (hadd +
 # analysis) and an ABI-matched compiler + cmake live in the same env.
-name: radical
+name: g4    # same name as the g4 env on curiosity/perseverence — one name, every machine
 channels:
   - conda-forge
 dependencies:
