@@ -301,23 +301,27 @@ void scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac 
         auto fit = new TF1("fn", "sqrt([0]*[0]/x + [1]*[1])", E[0], EFITMAX);
         fit->SetParName(0, "a"); fit->SetParName(1, "c");
         fit->SetParameters(40, 9);
-        gr->Fit(fit, "Q", "", E[0], EFITMAX);       // monotonic region only
-        // TGraph::Fit's xmin/xmax args do double duty: they restrict the FIT
-        // (correct — the turn-up above 50 GeV breaks the monotonic form, see
-        // the comment above) but ALSO silently reset the function's OWN range
-        // to that same window, which is what ROOT then uses to DRAW it — so
-        // without this line the curve stops dead at 50 GeV even though the
-        // plot's x-axis runs to 120. Widening the range back out here only
-        // changes where the already-fitted curve gets EVALUATED for drawing;
-        // it does not touch the fitted parameters (a, c) at all. The result
-        // is the curve visibly diverging from the data above 50 GeV — which
-        // is the correct picture: it makes the turn-up plainly visible
-        // instead of hiding it by cutting the line off exactly where the fit
-        // region ends.
-        fit->SetRange(E[0], E[N-1]);
+        gr->Fit(fit, "Q0", "", E[0], EFITMAX);      // monotonic region only; "0" =
+                                                     // do not auto-attach to gr (see below)
         gStyle->SetOptFit(1);
         auto c = new TCanvas("cn", "", 800, 600);
         gr->Draw("AP");
+        // Draw the fitted curve SEPARATELY, spanning the FULL plot (E[0] to
+        // E[N-1]) rather than only the fit's own region. A TF1 that has been
+        // through TGraph::Fit stubbornly repaints over its ORIGINAL fit range
+        // no matter what — SetRange()+Save() afterward does not budge it,
+        // ROOT keeps repainting from an internal cache tied to the fit call.
+        // So instead of fighting that, this is a second, never-fitted TF1
+        // that just copies the already-fitted parameter VALUES (not
+        // re-fit — same a, c) and is free to be drawn over any range. Net
+        // effect: the curve now visibly diverges from the data above 50 GeV,
+        // which is the correct picture — it makes the turn-up plainly
+        // visible instead of hiding it by cutting the line off exactly where
+        // the fit region ends.
+        auto drawFit = new TF1("fnDraw", "sqrt([0]*[0]/x + [1]*[1])", E[0], E[N-1]);
+        drawFit->SetParameters(fit->GetParameter(0), fit->GetParameter(1));
+        drawFit->SetLineColor(kRed);
+        drawFit->Draw("same");
         drawFormula("#sigma_{E}/E = a/#sqrt{E} #oplus c   (fit #leq 50 GeV)   [%]");
         c->SaveAs(Form("%s/sigma_E_Npe_vs_E.png", PLOTS.Data()));
         printf("energy (MEASURED, detected light, fit <=%.0f GeV):"
