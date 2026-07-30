@@ -134,9 +134,16 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
     }
 
     // ---- the fit: sigma_t^2 vs 1/f, per energy ---------------------------
+    // f=1 is TRUE LIGHT: RADSIMPLE_LIGHT_SCALE multiplies LYSO's datasheet
+    // 33200 ph/MeV, and StackingAction thins Cherenkov by the same factor, so
+    // f=1 means "no thinning anywhere". sigma_t(f=1) = sqrt(A^2 + B^2) is
+    // therefore the extrapolation to the light the real device actually has —
+    // reported WITH its error, because that error is what decides whether the
+    // <10 ps goal is met, missed, or simply unresolved.
     printf("=== A/B separation:  sigma_t^2 = A^2/f + B^2 ===\n");
-    printf("%-8s %14s %14s %12s %16s\n",
-           "E(GeV)", "A (ps.sqrt f)", "B (ps)", "chi2/ndf", "sigma_t(f=1) ps");
+    printf("%-8s %14s %14s %10s %22s\n",
+           "E(GeV)", "A (ps.sqrt f)", "B (ps)", "chi2/ndf",
+           "TRUE LIGHT sigma_t (ps)");
     auto c = new TCanvas("cl", "", 850, 620);
     auto mg = new TMultiGraph();
     auto lg = new TLegend(0.15, 0.68, 0.45, 0.88);
