@@ -57,7 +57,7 @@ bash simulations/check_layout.sh
 |---|---|
 | `*/setup_env.sh` | **sourced, not run** — logging it would redirect your interactive shell's stdout into a file and your terminal would go quiet. |
 | `describe_runs.sh`, `make_run_manifests.sh`, `install_cluster_env.sh` | repo-level utilities, not tied to one sim, so there is no `<sim>/build/` to write to. Short and interactive. |
-| `RADiCALsim{DSB,LuAG,Fig8,HoleScan}` output | these predate the convention and write per-scan trees under `build/scan/<tag>_scan_<N>/`, because a scan is hundreds of parallel chunk files plus their own `RUNS.md` manifest. Their `scan_resolution.C` and manifest tooling are wired to that path. Moving them buys little and risks breaking working analysis — **their logs still follow the standard rule**, which is the part you actually tail. |
+| `archive/RADiCALsimDSB`, `RADiCALsim{LuAG,Fig8,HoleScan}` output | these predate the convention and write per-scan trees under `build/scan/<tag>_scan_<N>/`, because a scan is hundreds of parallel chunk files plus their own `RUNS.md` manifest. Their `scan_resolution.C` and manifest tooling are wired to that path. Moving them buys little and risks breaking working analysis — **their logs still follow the standard rule**, which is the part you actually tail. |
 | `RADiCALsimLadder/results/` | two hand-kept study outputs, deliberately tracked in git. |
 
 Fully on the convention today: **RADiCALsimSIMPLE**, **RADiCALsimWrap**.
