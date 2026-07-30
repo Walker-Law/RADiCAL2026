@@ -171,6 +171,27 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
             ey.push_back(2 * sigT[ie][jf] * sigTerr[ie][jf]);   // d(s^2) = 2 s ds
         }
         if (x.size() < 2) { printf("%-8.0f  (need >=2 rungs)\n", E[ie]); continue; }
+
+        // Power-law characterization: sigma_t ~ f^(-p), via log-log least
+        // squares over ALL rungs at this energy. Naive photon-COUNTING
+        // (mean-averaging) predicts p=0.5; dTwls is a FIRST-PHOTON (minimum
+        // of N) estimator, an ORDER statistic, which is not obliged to obey
+        // that -- p can genuinely exceed 0.5. This is reported UNCONDITIONALLY
+        // (unlike the A/B fit above) because it doesn't assume a floor exists;
+        // it just describes how sigma_t actually scales with the data at hand.
+        {
+            std::vector<double> lx, ly;
+            for (int jf = 0; jf < NF; ++jf)
+                if (sigT[ie][jf] > 0) { lx.push_back(log(F[jf])); ly.push_back(log(sigT[ie][jf])); }
+            double mx=0,my=0; for (size_t i=0;i<lx.size();++i){mx+=lx[i];my+=ly[i];}
+            mx/=lx.size(); my/=ly.size();
+            double num=0, den=0;
+            for (size_t i=0;i<lx.size();++i){ num+=(lx[i]-mx)*(ly[i]-my); den+=(lx[i]-mx)*(lx[i]-mx); }
+            double p = -num/den;
+            printf("         power-law fit: sigma_t ~ f^-%.2f  (0.5 = naive photon-counting;"
+                   " first-photon/minimum-of-N estimators can exceed 0.5)\n", p);
+        }
+
         auto g = new TGraphErrors(x.size(), &x[0], &y[0], nullptr, &ey[0]);
         auto lin = new TF1(Form("lin%d", ie), "[0]*x + [1]", 0, x.back()*1.1);
         lin->SetParameters(y[0]/std::max(1e-9,x[0]), 0.);
