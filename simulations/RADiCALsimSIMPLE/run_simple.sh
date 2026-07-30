@@ -85,10 +85,10 @@ echo "   energies  : $ENERGIES GeV"
 echo "   events    : $NEV per energy"
 echo "   cores     : $CORES"
 echo "   rough ETA : ~${ETA} h"
-echo "   output    : build/rootfiles/E<N>GeV.root"
+echo "   output    : build/$OUTDIR/E<N>GeV.root"
 echo "=================================================================="
 
 start=$(date +%s)
 cd "$HERE/build"
 ./radsimple "$MACRO"
-echo "done in $(( $(date +%s) - start ))s  -> build/rootfiles/"
+echo "done in $(( $(date +%s) - start ))s  -> build/$OUTDIR/"
