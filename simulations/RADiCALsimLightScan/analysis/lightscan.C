@@ -257,14 +257,35 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
                worst > 0.10 ? "   <-- NONLINEAR, extrapolation suspect" : "");
     }
 
+    bool anyBad = false;
+    for (int ie = 0; ie < NE; ++ie) if (!fitOk[ie]) anyBad = true;
+
     printf("\n--- how to read this ---\n"
            "B          the LIGHT-INDEPENDENT floor: the part more light cannot fix.\n"
            "TRUE LIGHT sigma_t at f=1, i.e. LYSO's full 33200 ph/MeV with no\n"
-           "           thinning anywhere. THIS is the number to compare to 10 ps,\n"
-           "           and its error bar decides whether the comparison is\n"
-           "           conclusive. chi2/ndf >> 1 means the A^2/f + B^2 model does\n"
-           "           not describe the data and neither number should be trusted.\n"
-           "\nCAVEAT that must travel with any number from here: SIMPLE models NO\n"
+           "           thinning anywhere. THIS is the number to compare to 10 ps.\n"
+           "MODEL INVALID: chi2/ndf failed the %.0f cut, so no true-light number\n"
+           "           is reported -- printing one anyway would be a fabrication.\n",
+           CHI2_BAD);
+    if (anyBad)
+        printf("\n[!] THE TWO-TERM MODEL FAILED HERE. Diagnostic: sigma_t*sqrt(f) should\n"
+               "be flat-or-RISING with f if sigma_t^2 = A^2/f + B^2 with B^2>=0 -- any\n"
+               "floor only ever ADDS as f grows. If it instead FALLS as f increases\n"
+               "(check the printed sigma_t values by hand: sigma_t*sqrt(f) at each f),\n"
+               "the mean-averaging assumption behind A^2/f is simply wrong for this\n"
+               "observable. dTwls is a FIRST-PHOTON (minimum-of-N) estimator -- an\n"
+               "ORDER statistic, not a mean -- and minima are not obliged to obey\n"
+               "1/sqrt(N). The power-law slope printed above each energy (p) is the\n"
+               "actual local scaling; p > 0.5 here means the light-side timing is\n"
+               "improving FASTER than naive counting predicts, which is encouraging\n"
+               "for the <10 ps goal, but a power law has no floor built in, so it\n"
+               "must NOT be extrapolated to f=1 either -- it would be optimistic in\n"
+               "the same way the A^2/f+B^2 fit was invalid. NEXT STEP: add a rung\n"
+               "between f=0.03 and f=0.3 -- if a real floor exists, sigma_t*sqrt(f)\n"
+               "should visibly turn over and start RISING there (120 GeV already\n"
+               "shows a hint of this between f=0.01 and f=0.03); that turnover, not\n"
+               "an extrapolation past it, is what would pin down B honestly.\n");
+    printf("\nCAVEAT that must travel with any number from here: SIMPLE models NO\n"
            "electronics, so this is the LIGHT-side budget only. A real device adds\n"
            "SiPM SPTR (~60 ps single-photon), amplifier noise-over-slope and DRS4\n"
            "timebase on top — which is why real test-beam data sits near 500 ps.\n"
