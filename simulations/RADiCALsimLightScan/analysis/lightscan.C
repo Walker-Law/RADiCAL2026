@@ -89,9 +89,11 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
     printf(" GeV\nfiducial: r<%g mm, >1.5 mm from any hole\n\n", rMax);
 
     // [energy][rung]
-    std::vector<std::vector<double>> sigT(NE, std::vector<double>(NF, 0)),
-                                     sigE(NE, std::vector<double>(NF, 0)),
-                                     npe (NE, std::vector<double>(NF, 0));
+    std::vector<std::vector<double>> sigT   (NE, std::vector<double>(NF, 0)),
+                                     sigTerr(NE, std::vector<double>(NF, 0)),
+                                     npe    (NE, std::vector<double>(NF, 0));
+    // per-energy true-light extrapolation, filled by the fit below
+    std::vector<double> trueLight(NE, 0), trueLightErr(NE, 0);
 
     for (int ie = 0; ie < NE; ++ie) {
         printf("=== %.0f GeV ===\n", E[ie]);
