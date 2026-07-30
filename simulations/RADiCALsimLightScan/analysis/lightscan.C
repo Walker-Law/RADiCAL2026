@@ -163,16 +163,22 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
         auto lin = new TF1(Form("lin%d", ie), "[0]*x + [1]", 0, x.back()*1.1);
         lin->SetParameters(y[0]/std::max(1e-9,x[0]), 0.);
         g->Fit(lin, "Q");
-        double A2 = lin->GetParameter(0), B2 = lin->GetParameter(1);
+        double A2 = lin->GetParameter(0),  B2 = lin->GetParameter(1);
+        double eA2 = lin->GetParError(0), eB2 = lin->GetParError(1);
         double A  = A2 > 0 ? sqrt(A2) : 0;
         // A negative intercept is consistent with B=0 within errors; report 0
         // rather than an imaginary floor, but say so.
         double B  = B2 > 0 ? sqrt(B2) : 0;
         double ndf = lin->GetNDF();
-        printf("%-8.0f %14.1f %14.1f %12.2f %16.1f%s\n",
-               E[ie], A, B, ndf > 0 ? lin->GetChisquare()/ndf : 0.,
-               sqrt(A2 + B2),                      // f=1 -> true light
-               B2 <= 0 ? "   (B^2<0: consistent with no floor)" : "");
+        // TRUE LIGHT (f=1): sigma_t = sqrt(A^2 + B^2), with both parameter
+        // errors propagated. Reported as x +- e so the goal question is
+        // answerable at a glance, not eyeballed off a central value.
+        double s1  = sqrt(std::max(1e-9, A2 + B2));
+        double es1 = sqrt(eA2*eA2 + eB2*eB2) / (2*s1);
+        trueLight[ie] = s1; trueLightErr[ie] = es1;
+        printf("%-8.0f %14.1f %14.1f %10.2f %13.1f +- %-5.1f%s\n",
+               E[ie], A, B, ndf > 0 ? lin->GetChisquare()/ndf : 0., s1, es1,
+               B2 <= 0 ? "  (B^2<0: consistent with no floor)" : "");
         g->SetMarkerStyle(20 + ie); g->SetMarkerColor(COL[ie % 6]);
         g->SetLineColor(COL[ie % 6]); lin->SetLineColor(COL[ie % 6]);
         mg->Add(g, "P");
