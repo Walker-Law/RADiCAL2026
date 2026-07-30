@@ -85,19 +85,35 @@ simulations/                 Geant4 simulations
   RADiCALopticalcrosstalk/   Optical-photon trajectory viewer, colored by
                                originating corner capillary (crosstalk visual).
   H3generation/              Standalone generation study.
-  firstsim/                  Early prototype (reference only).
 ```
 
-The four `RADiCALsim{DSB,LuAG,Fig8,HoleScan}` directories share the same core
-Geant4 code (they were forked from a common base) and differ in the WLS
-material, geometry parametrization, observables, and study focus. `RADiCALsimDSB`
-is the canonical, most up-to-date version; the others inherit fixes from it.
+`RADiCALsimLuAG`, `RADiCALsimFig8`, and `RADiCALsimHoleScan` share core Geant4
+code forked historically from `RADiCALsimDSB` (now `archive/RADiCALsimDSB`) —
+each carries its own independent source copy, so archiving DSB broke nothing
+in them. They differ in WLS material, geometry parametrization, observables,
+and study focus.
 
 ## Quick start
 
 ```bash
-cd simulations/RADiCALsimDSB
+cd simulations/RADiCALsimSIMPLE
 source setup_env.sh            # sources Geant4 (auto-detects conda `g4` env)
+mkdir build && cd build
+cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
+make -j
+cd ..
+bash run_simple.sh             # standard sweep: 5/10/25/50/100/120 GeV
+
+# analyze (from the sim root, not build/):
+root -l -b -q analysis/scan.C
+```
+
+For the archived full-electronics model (DSB1 WLS, dual-gain SiPM, CERN
+beamline, DRS4 waveform emulation):
+
+```bash
+cd simulations/archive/RADiCALsimDSB
+source setup_env.sh
 mkdir build && cd build
 cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
          -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
