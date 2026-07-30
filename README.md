@@ -17,16 +17,18 @@ RADiCAL/                     Test-beam data and ROOT analysis
   legacy/                    Older analysis code (reference)
 
 simulations/                 Geant4 simulations
-  RADiCALsimDSB/             ★ Primary full-module sim — DSB1 WLS fiber (fast,
-                               3.5 ns decay). Solid quartz capillary rods (the
-                               paper's "hollow tube" core is filled and fused
-                               with quartz — an earlier air-bore model broke
-                               light transport and was reverted), optically
-                               active LYSO→DSB1 WLS chain, dual-gain SiPM readout
-                               (onsemi MicroFJ-30035), full CERN test-beam line,
-                               DRS4 waveform emulation. Actively developed.
+  archive/                   Retired sims, frozen not deleted (git mv, full
+                               history kept). RADiCALsimDSB (full-module,
+                               DSB1 WLS, dual-gain SiPM, CERN beamline, DRS4
+                               waveform emulation — the most electronics-
+                               complete single-module model built here) and
+                               firstsim (earliest prototype). Archived
+                               2026-07-30 as focus moved to the
+                               RADiCALsimSIMPLE family. See archive/README.md
+                               for what still depends on what.
   RADiCALsimLuAG/            Identical geometry with LuAG:Ce WLS fiber (slow,
-                               60 ns decay) — material comparison against DSB.
+                               60 ns decay) — material comparison against DSB
+                               (archive/RADiCALsimDSB). Still active.
   RADiCALsimFig8/            Focused recreation of ref [2] Fig. 8: single
                                downstream-SiPM timing resolution vs detected
                                light yield (npe/MeV), 50 GeV e⁻, rise-time (CFD)
