@@ -3,6 +3,11 @@
 #
 #   bash run_simple.sh                  # run.mac (the 6-energy sweep)
 #   bash run_simple.sh run_short.mac    # any other macro in this folder
+#   bash run_simple.sh 5000                       # generate+run a 5k sweep
+#   RADSIMPLE_OUT_SUBDIR=centerE RADSIMPLE_CENTER_ETYPE=1 \
+#     bash run_simple.sh 5000                     # -> rootfiles/centerE/, the
+#                                                  # canonical rootfiles/*.root
+#                                                  # baseline is left untouched
 #
 # On a cluster, under nohup so it survives an SSH drop — no redirect needed:
 #   nohup bash run_simple.sh &
