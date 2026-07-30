@@ -120,7 +120,7 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
             double mu, sg, sgErr;
             coreFit(h, mu, sg, sgErr);
             sigT[ie][jf] = 1000 * sg / 2;      // ns->ps, /2 for the corner trick
-            sigE[ie][jf] = 1000 * sgErr / 2;
+            sigTerr[ie][jf] = 1000 * sgErr / 2;
             delete h;
 
             t->Draw("Npe>>hn(200,0,0)", FID, "goff");
@@ -128,7 +128,7 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
             double inFid = t->Draw("Npe", FID, "goff");
             double nT    = t->Draw(tvar, tcut, "goff");
             printf("%-10g %10.0f %8.1f +- %-4.1f %10.1f%%\n",
-                   F[jf], npe[ie][jf], sigT[ie][jf], sigE[ie][jf],
+                   F[jf], npe[ie][jf], sigT[ie][jf], sigTerr[ie][jf],
                    inFid > 0 ? 100.0*nT/inFid : 0.);
             f.Close();
         }
@@ -158,7 +158,7 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
             if (!(sigT[ie][jf] > 0)) continue;
             x.push_back(1.0 / F[jf]);
             y.push_back(sigT[ie][jf] * sigT[ie][jf]);
-            ey.push_back(2 * sigT[ie][jf] * sigE[ie][jf]);   // d(s^2) = 2 s ds
+            ey.push_back(2 * sigT[ie][jf] * sigTerr[ie][jf]);   // d(s^2) = 2 s ds
         }
         if (x.size() < 2) { printf("%-8.0f  (need >=2 rungs)\n", E[ie]); continue; }
         auto g = new TGraphErrors(x.size(), &x[0], &y[0], nullptr, &ey[0]);
@@ -194,9 +194,42 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
     c->SaveAs(Form("%s/ladder_sigmaT2_vs_invf.png", PLOTS.Data()));
     delete c;
 
-    printf("\nB is the LIGHT-INDEPENDENT floor — the part more light cannot fix.\n"
-           "sigma_t(f=1) is the true-light extrapolation INCLUDING that floor.\n"
-           "NOTE: SIMPLE models no electronics, so B is a LOWER BOUND on a real\n"
-           "device (SiPM SPTR, amplifier noise and DRS4 timebase add on top).\n");
+    // ---- does the light itself scale as it should? ------------------------
+    // Sanity check on the whole premise: Npe must be LINEAR in f. If it is
+    // not, the sim is not simply "the same detector with less light" and the
+    // A^2/f model does not apply, so the extrapolation would be invalid.
+    // Also reports the true-light yield, which is the number to compare
+    // against the papers / DSB's ~50-90 pe/MeV prediction.
+    printf("\n=== light scaling check (Npe must be linear in f) ===\n");
+    printf("%-8s %16s %14s %18s\n",
+           "E(GeV)", "Npe/f (should", "max deviation", "TRUE-LIGHT Npe");
+    printf("%-8s %16s %14s %18s\n", "", "be constant)", "from constant", "(f=1)");
+    for (int ie = 0; ie < NE; ++ie) {
+        double ref = 0; int nref = 0;
+        for (int jf = 0; jf < NF; ++jf)
+            if (npe[ie][jf] > 0) { ref += npe[ie][jf]/F[jf]; ++nref; }
+        if (!nref) continue;
+        ref /= nref;
+        double worst = 0;
+        for (int jf = 0; jf < NF; ++jf)
+            if (npe[ie][jf] > 0)
+                worst = std::max(worst, fabs(npe[ie][jf]/F[jf] - ref)/ref);
+        printf("%-8.0f %16.0f %13.1f%% %18.0f%s\n",
+               E[ie], ref, 100*worst, ref,
+               worst > 0.10 ? "   <-- NONLINEAR, extrapolation suspect" : "");
+    }
+
+    printf("\n--- how to read this ---\n"
+           "B          the LIGHT-INDEPENDENT floor: the part more light cannot fix.\n"
+           "TRUE LIGHT sigma_t at f=1, i.e. LYSO's full 33200 ph/MeV with no\n"
+           "           thinning anywhere. THIS is the number to compare to 10 ps,\n"
+           "           and its error bar decides whether the comparison is\n"
+           "           conclusive. chi2/ndf >> 1 means the A^2/f + B^2 model does\n"
+           "           not describe the data and neither number should be trusted.\n"
+           "\nCAVEAT that must travel with any number from here: SIMPLE models NO\n"
+           "electronics, so this is the LIGHT-side budget only. A real device adds\n"
+           "SiPM SPTR (~60 ps single-photon), amplifier noise-over-slope and DRS4\n"
+           "timebase on top — which is why real test-beam data sits near 500 ps.\n"
+           "Read the result as: 'can light transport alone support <10 ps?'\n");
     printf("\nplots: %s/\n", PLOTS.Data());
 }
