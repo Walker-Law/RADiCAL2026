@@ -142,6 +142,15 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
     // therefore the extrapolation to the light the real device actually has —
     // reported WITH its error, because that error is what decides whether the
     // <10 ps goal is met, missed, or simply unresolved.
+    //
+    // THIS MODEL ASSUMES MEAN-AVERAGING PHOTOSTATISTICS (sigma ~ 1/sqrt(N)).
+    // dTwls is a FIRST-PHOTON (minimum-of-N) estimator, which is an ORDER
+    // STATISTIC, not a mean -- and minima are not obliged to obey 1/sqrt(N).
+    // A chi2/ndf cutoff below therefore isn't just fit hygiene here; it is
+    // the test of whether that assumption even applies to this observable.
+    // If it fails, log-log slope + a bare data table are printed instead of
+    // a fabricated true-light number (see CHI2_BAD block below).
+    const double CHI2_BAD = 5.0;
     printf("=== A/B separation:  sigma_t^2 = A^2/f + B^2 ===\n");
     printf("%-8s %14s %14s %10s %22s\n",
            "E(GeV)", "A (ps.sqrt f)", "B (ps)", "chi2/ndf",
@@ -151,6 +160,7 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
     auto lg = new TLegend(0.15, 0.68, 0.45, 0.88);
     lg->SetBorderSize(0); lg->SetFillStyle(0);
     const int COL[] = {kAzure+2, kRed+1, kGreen+2, kMagenta+1, kOrange+7, kBlack};
+    std::vector<bool> fitOk(NE, false);
 
     for (int ie = 0; ie < NE; ++ie) {
         std::vector<double> x, y, ey;
@@ -168,19 +178,26 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
         double A2 = lin->GetParameter(0),  B2 = lin->GetParameter(1);
         double eA2 = lin->GetParError(0), eB2 = lin->GetParError(1);
         double A  = A2 > 0 ? sqrt(A2) : 0;
-        // A negative intercept is consistent with B=0 within errors; report 0
-        // rather than an imaginary floor, but say so.
         double B  = B2 > 0 ? sqrt(B2) : 0;
         double ndf = lin->GetNDF();
-        // TRUE LIGHT (f=1): sigma_t = sqrt(A^2 + B^2), with both parameter
-        // errors propagated. Reported as x +- e so the goal question is
-        // answerable at a glance, not eyeballed off a central value.
-        double s1  = sqrt(std::max(1e-9, A2 + B2));
-        double es1 = sqrt(eA2*eA2 + eB2*eB2) / (2*s1);
-        trueLight[ie] = s1; trueLightErr[ie] = es1;
-        printf("%-8.0f %14.1f %14.1f %10.2f %13.1f +- %-5.1f%s\n",
-               E[ie], A, B, ndf > 0 ? lin->GetChisquare()/ndf : 0., s1, es1,
-               B2 <= 0 ? "  (B^2<0: consistent with no floor)" : "");
+        double chi2ndf = ndf > 0 ? lin->GetChisquare()/ndf : 0.;
+        fitOk[ie] = (chi2ndf < CHI2_BAD) && (B2 > 0 || fabs(B2) < 0.2*A2);
+
+        if (!fitOk[ie]) {
+            // Do NOT compute/print a true-light extrapolation from a fit this
+            // bad -- sqrt(A^2+B^2) with a wildly negative B^2 is a coordinate
+            // artifact (A^2+B^2 near zero), not a physical floor estimate.
+            printf("%-8.0f %14s %14s %10.1f %22s\n", E[ie], "--", "--", chi2ndf,
+                   "MODEL INVALID (see below)");
+            trueLight[ie] = trueLightErr[ie] = 0;
+        } else {
+            double s1  = sqrt(std::max(1e-9, A2 + B2));
+            double es1 = sqrt(eA2*eA2 + eB2*eB2) / (2*s1);
+            trueLight[ie] = s1; trueLightErr[ie] = es1;
+            printf("%-8.0f %14.1f %14.1f %10.2f %13.1f +- %-5.1f%s\n",
+                   E[ie], A, B, chi2ndf, s1, es1,
+                   B2 <= 0 ? "  (B^2<0: consistent with no floor)" : "");
+        }
         g->SetMarkerStyle(20 + ie); g->SetMarkerColor(COL[ie % 6]);
         g->SetLineColor(COL[ie % 6]); lin->SetLineColor(COL[ie % 6]);
         mg->Add(g, "P");
