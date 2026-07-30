@@ -1,35 +1,19 @@
 #!/usr/bin/env bash
 # run_lightscan.sh — photostatistics scale ladder for RADiCALsimSIMPLE.
 #
-# THE QUESTION THIS ANSWERS. Every sigma_t we quote is measured at 1% light
-# (RADSIMPLE_LIGHT_SCALE=1e-2), because tracking all ~5e8 optical photons per
-# 120 GeV event is intractable. A single thinned run CANNOT tell you where the
-# true-light resolution lands, because the measured width mixes two terms that
-# behave completely differently as light increases:
+# Runs the same sweep at several light scales so sigma_t^2 = A^2/f + B^2 can be
+# fitted, separating photon counting (A) from the light-independent floor (B).
+# B is what decides whether <10 ps is reachable. WHY this is necessary, and why
+# these particular rungs: see README.md — not repeated here.
 #
-#     sigma_t^2(f) = A^2 / f  +  B^2
-#                    \____/     \__/
-#                photon counting  light-INDEPENDENT floor
-#                (shrinks as f)   (never shrinks: fibre transit-time
-#                                  spread, path dispersion, geometry)
+# A STUDY, NOT A DETECTOR: reuses the RADiCALsimSIMPLE binary and geometry
+# unchanged. Only RADSIMPLE_LIGHT_SCALE varies between rungs.
 #
-# Fitting that straight line (sigma_t^2 vs 1/f) over several light levels
-# separates them, and B is the honest answer to "does <10 ps survive at true
-# light?". Extrapolating a single point instead ASSUMES B=0 — the assumption
-# that hid a 43.5 ps floor in the DSB sim's own ladder (see
-# ../RADiCALsimLadder/README.md). This study is the SIMPLE-family equivalent.
-#
-# THIS IS A STUDY, NOT A DETECTOR. It reuses the RADiCALsimSIMPLE binary and
-# geometry unchanged — the only thing that varies between rungs is the light
-# scale. Nothing here forks the simulation.
-#
-#   cd RADiCALsimLightScan && bash run_lightscan.sh [NEVT]     (default 2000)
-#
-# On a cluster, under nohup — no redirect needed, it logs itself:
-#   nohup bash run_lightscan.sh 2000 &
+#   bash run_lightscan.sh [NEVT]                 (default 2000)
+#   nohup bash run_lightscan.sh 2000 &           # cluster; logs itself
 #   tail -f build/logs/run_lightscan.log
 #
-# Output: build/rootfiles/f<scale>/E<N>GeV.root, one subdir per rung.
+# Output:  build/rootfiles/f<scale>/E<N>GeV.root  (one subdir per rung)
 # Analyze: root -l -b -q analysis/lightscan.C
 set -eu
 
