@@ -14,7 +14,7 @@ FAIL=0
 # Sims held to the FULL convention. The DSB family is excluded on purpose —
 # see README_LAYOUT.md "Deliberate exceptions" (their scan/ trees are wired
 # into scan_resolution.C and the RUNS.md manifests).
-FULL="RADiCALsimSIMPLE RADiCALsimWrap"
+FULL="RADiCALsimSIMPLE RADiCALsimWrap RADiCALsimLightScan"
 
 say()  { printf "  %-58s %s\n" "$1" "$2"; }
 bad()  { say "$1" "FAIL  $2"; FAIL=1; }
