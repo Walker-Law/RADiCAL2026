@@ -114,8 +114,19 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
             TH1D* h = new TH1D("dTf", "", 400, -3, 3);
             t->Draw(Form("%s>>dTf", tvar), tcut, "goff");
             double m = h->GetMean(), r = h->GetRMS();
-            if (r > 0) { h->SetBins(300, m-5*r, m+5*r);
-                         t->Draw(Form("%s>>dTf", tvar), tcut, "goff"); }
+            if (r > 0) {
+                // Bin count scales with statistics (~8 events/bin), bounded
+                // [20,300]. A FIXED 300 bins here once produced a nonsense fit
+                // (22.5+-42.1 ps) on an 82-event emergency rung: nearly every
+                // bin was empty/single-occupancy, and the two-pass Gaussian
+                // core fit diverged on that sparse, spiky histogram instead of
+                // failing loudly. This is a companion to the chi2/ndf guard
+                // below -- that guard catches a bad MODEL, this prevents a bad
+                // HISTOGRAM from masquerading as a precise measurement.
+                int nb = (int)std::max(20.0, std::min(300.0, h->GetEntries()/8.0));
+                h->SetBins(nb, m-5*r, m+5*r);
+                t->Draw(Form("%s>>dTf", tvar), tcut, "goff");
+            }
             h->SetDirectory(nullptr);
             double mu, sg, sgErr;
             coreFit(h, mu, sg, sgErr);
