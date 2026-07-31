@@ -232,6 +232,52 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
     c->SaveAs(Form("%s/ladder_sigmaT2_vs_invf.png", PLOTS.Data()));
     delete c;
 
+    // ---- THE TURNOVER PLOT: sigma_t*sqrt(f) vs f ---------------------------
+    // If sigma_t^2 = A^2/f + B^2 held with B^2>=0, sigma_t*sqrt(f) = sqrt(A^2
+    // + B^2*f) could only stay flat or RISE as f grows -- it can never fall.
+    // So this quantity falling is the direct, model-independent signature
+    // that the mean-averaging assumption is wrong (see file header); and a
+    // MINIMUM followed by a rise -- a true turnover -- is what finding the
+    // real floor looks like, whatever its functional form turns out to be.
+    // Printed AND plotted so the turnover is visible without doing the
+    // arithmetic by hand.
+    printf("\n=== turnover check: sigma_t*sqrt(f) (falling = no floor yet"
+           " visible; rising = floor coming into view) ===\n");
+    auto c2 = new TCanvas("c2", "", 850, 620);
+    c2->SetLogx();
+    auto mg2 = new TMultiGraph();
+    auto lg2 = new TLegend(0.62, 0.68, 0.89, 0.89);
+    lg2->SetBorderSize(0); lg2->SetFillStyle(0);
+    for (int ie = 0; ie < NE; ++ie) {
+        printf("  %.0f GeV:", E[ie]);
+        std::vector<double> x, y, ey;
+        double prev = -1; int nRises = 0, nFalls = 0;
+        for (int jf = 0; jf < NF; ++jf) {
+            if (!(sigT[ie][jf] > 0)) continue;
+            double v = sigT[ie][jf] * sqrt(F[jf]);
+            const char* arrow = "";
+            if (prev >= 0) { if (v > prev) { arrow = " UP"; ++nRises; }
+                             else          { arrow = " dn"; ++nFalls; } }
+            printf("  f=%g:%.2f%s", F[jf], v, arrow);
+            x.push_back(F[jf]); y.push_back(v);
+            ey.push_back(sqrt(F[jf]) * sigTerr[ie][jf]);
+            prev = v;
+        }
+        printf("  ->  %s\n", nRises >= 2 ? "TURNOVER SEEN (>=2 consecutive rises)"
+                            : nRises == 1 ? "possible turnover (1 rise) -- need one more rung to confirm"
+                            : "still falling -- no floor visible in this range yet");
+        auto g2 = new TGraphErrors(x.size(), &x[0], &y[0], nullptr, &ey[0]);
+        g2->SetMarkerStyle(20 + ie); g2->SetMarkerColor(COL[ie % 6]);
+        g2->SetLineColor(COL[ie % 6]);
+        mg2->Add(g2, "LP");
+        lg2->AddEntry(g2, Form("%.0f GeV", E[ie]), "lp");
+    }
+    mg2->SetTitle("turnover check (rising = floor visible);f (log scale, 1 = true light);#sigma_{t}#upoint#sqrt{f}  (ps#sqrt{GeV#lower[-0.3]{ }}units)");
+    mg2->Draw("A");
+    lg2->Draw();
+    c2->SaveAs(Form("%s/turnover_sigmaT_sqrtf_vs_f.png", PLOTS.Data()));
+    delete c2;
+
     // ---- does the light itself scale as it should? ------------------------
     // Sanity check on the whole premise: Npe must be LINEAR in f. If it is
     // not, the sim is not simply "the same detector with less light" and the
