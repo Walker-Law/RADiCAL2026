@@ -259,6 +259,11 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
     auto mg2 = new TMultiGraph();
     auto lg2 = new TLegend(0.62, 0.68, 0.89, 0.89);
     lg2->SetBorderSize(0); lg2->SetFillStyle(0);
+    const double REL_ERR_BAD = 0.3;   // >30% relative error on sigma_t: too
+                                       // noisy to trust for a rise/fall call
+                                       // (this is what a 200-event emergency
+                                       // rung looked like before the binning
+                                       // fix above -- guard stays regardless)
     for (int ie = 0; ie < NE; ++ie) {
         printf("  %.0f GeV:", E[ie]);
         std::vector<double> x, y, ey;
@@ -266,13 +271,18 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
         for (int jf = 0; jf < NF; ++jf) {
             if (!(sigT[ie][jf] > 0)) continue;
             double v = sigT[ie][jf] * sqrt(F[jf]);
+            bool unreliable = (sigTerr[ie][jf] / sigT[ie][jf]) > REL_ERR_BAD;
             const char* arrow = "";
-            if (prev >= 0) { if (v > prev) { arrow = " UP"; ++nRises; }
-                             else          { arrow = " dn"; ++nFalls; } }
+            if (unreliable) {
+                arrow = " [UNRELIABLE >30% rel.err -- excluded from verdict]";
+            } else if (prev >= 0) {
+                if (v > prev) { arrow = " UP"; ++nRises; }
+                else          { arrow = " dn"; ++nFalls; }
+            }
             printf("  f=%g:%.2f%s", F[jf], v, arrow);
             x.push_back(F[jf]); y.push_back(v);
             ey.push_back(sqrt(F[jf]) * sigTerr[ie][jf]);
-            prev = v;
+            if (!unreliable) prev = v;   // don't chain off a garbage point
         }
         printf("  ->  %s\n", nRises >= 2 ? "TURNOVER SEEN (>=2 consecutive rises)"
                             : nRises == 1 ? "possible turnover (1 rise) -- need one more rung to confirm"
