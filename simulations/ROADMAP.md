@@ -1,232 +1,204 @@
 # RADiCAL roadmap — toward <10 ps, <10% σ_E/E, 1 mm position
-*Written overnight 2026-07-29→30 for morning review. Every number in here is
-measured from data on disk tonight, not estimated — sources noted inline.
-Nothing has been launched; the run commands are staged at the bottom for
-approval.*
+*Rewritten 2026-07-30 ~23:00 after two full days of measurements. Everything
+here is measured from data on disk — sources noted inline. The original
+2026-07-30 morning version is in git history; statuses below supersede it.*
 
 ---
 
 ## 1. Where we stand tonight
 
-| dataset | events | schema | state |
+| dataset | events | state |
+|---|---|---|
+| SIMPLE **15k × 6E** (curiosity) | 15000/E | on Mac, analyzed — the production reference |
+| Wrap tyvek 2.5k × 6E, new schema | 2500/E | on Mac, analyzed — **valid timing verdict in hand** |
+| Light-scan ladder, 4 rungs × {25,120} GeV | 2000/pt | on Mac, analyzed — **model discovery, see §2** |
+| **Ladder rung f=0.1** | 1500/pt | **launched tonight on curiosity, done ~06:20** |
+| SIMPLE 5k (old) / 10k 3-branch (Jul 24-25) | — | archives |
+| DSB / firstsim | — | moved to `simulations/archive/` (frozen, LuAG stays active) |
+
+**Production numbers (15k, fiducial, dTwls):**
+
+| E (GeV) | σ_t (ps) @f=1e-2 | Npe res % | Elyso res % |
 |---|---|---|---|
-| SIMPLE 5k × 6E (curiosity) | 5000/E | 19-branch, `dTwls` | on Mac, analyzed |
-| SIMPLE **15k × 6E** | 15000/E | same | **running on curiosity, done ~07:15** |
-| Wrap tyvek 2.5k × 6E (perseverence) | 2500/E | same | on Mac, analyzed |
-| Wrap control (= SIMPLE staged) | 5000/E | same | staged |
-| SIMPLE 10k old-schema (Jul 24-25) | 10000/E | 3-branch | `build/archive_2026-07-25/` |
-| DSB full-chain results | — | — | paperJ/paper183/paperR + ladder (see its CLAUDE.md) |
-| Real test-beam DRS4 data | ~30k evt × 4 runs | — | `RADiCAL/Data/`, σ_t ≈ 476–614 ps uncalibrated |
+| 5 | 306.4 ± 4.6 | 23.03 | 5.54 |
+| 25 | 66.1 ± 0.9 | 11.75 | 2.76 |
+| 50 | 43.1 ± 0.7 | 10.68 | 2.22 |
+| 100 | 28.8 ± 0.5 | **10.56** | 1.86 |
+| 120 | 26.2 ± 0.4 | 11.03 | 1.77 |
 
-**Validated results (fiducial, dTwls, 5k):**
-
-- σ_t = **328/√E ⊕ ~0 ps** at LIGHT_SCALE=1e-2 (25.1 ± 0.6 ps at 120 GeV), 100% efficiency
-- σ_E/E (Npe) = **45.5%/√E ⊕ 8.98%** (fit ≤50 GeV) vs paper 52.04/√E ⊕ 31.62/E ⊕ 9.31 — but **12.5% at 120 GeV** (turn-up, fixed WLS window)
-- σ_E/E (Elyso truth) = 11.7%/√E ⊕ 1.61% — the stack itself has huge headroom
-- Light: 598 pe per GeV deposited (×100 for true light); per-energy slope drifts ±6% (depth effect)
-- **Tyvek wrap: +133–137% light, σ_t −12% to −31%, energy res ±1.5%** (first valid timing comparison, tonight)
+σ_t = 333.4/√E ⊕ 0 ps (thinned); σ_E/E = 46.9%/√E ⊕ 7.82% (fit ≤50 GeV) vs
+paper 52.04/√E ⊕ 31.62/E ⊕ 9.31; turn-up +4% rel from 100→120 GeV; 100%
+timing efficiency everywhere.
 
 ---
 
-## 2. Shortcomings — ranked by how much they threaten conclusions
+## 2. Discoveries since the original roadmap (chronological)
 
-**S1. Every σ_t we quote is at 1% light.** The single biggest caveat. At
-LIGHT_SCALE=1e-2 the photostatistics term is ~10× inflated. Extrapolating
-328/√E by √100 → ~33/√E ps assumes the *entire* width is photostatistical —
-the DSB ladder proved that assumption can hide a floor (it found B = 43.5 ps
-there). **We have never run a scale ladder on SIMPLE.** Until we do, we cannot
-say whether the true-light floor is 2 ps or 40 ps, i.e. whether the <10 ps
-goal is alive. → Phase 1.
+**D1. Beam-acceptance pathologies were burying the physics** (07-29). Central
+hole (σ/E = 82% for r<1 mm!), corner holes (r≈4.95 mm), and tile misses (5.4%)
+averaged into a flat ~31% "resolution". The fiducial cut (>1.5 mm from any
+hole, r<3.5 mm, ~37% keep) plus a 5% Pb-glass containment veto restored 100%
+timing efficiency and 1/√E scaling. Same cut the real experiment makes
+(2303.05580 §3).
 
-**S2. No electronics anywhere in SIMPLE.** First-photon timing with an ideal
-sensor. The real device adds: SiPM SPTR (~60 ps single-photon), amplifier
-noise-over-slope, DRS4 timebase (~50 ps/cell, partially cancelling in DW−UP),
-CFD behavior on a 8.3 ns pulse. The real test-beam data sits at ~500 ps
-*because* of this chain (DSB's finding: threshold-independence proves it's not
-photostatistics). SIMPLE can bound the light-side budget; it cannot claim a
-device-level <10 ps alone. The DSB sim owns that chain. → Phase 2 adds the
-one cheap term (SPTR); full-chain validation stays in DSB.
+**D2. All-light first-photon timing is multi-modal at thinned light** (07-29).
+1% of detected photons are prompt Cherenkov arriving ~10 ns early; whether a
+corner catches one is a coin flip at f=1e-2 → a 5-spike comb that made every
+earlier σ_t fit meaningless. Fixed with the process-tagged `dTwls` estimator +
+a multi-modality guard in every analysis. (Same conclusion DSB reached.)
 
-**S3. The fixed 15 mm WLS window at 40.4 mm.** Causes the measured energy
-turn-up (11.4% best at 100 GeV → 12.5% at 120) and the ±6% pe/GeV drift.
-Paper flags it themselves ("not optimized... will be corrected"). Window
-depth/length are compile-time constants — not scannable without a code touch.
-→ Phase 3.
+**D3. Wrap verdict — now valid on both axes** (07-30 morning, dTwls both
+sides): Tyvek on the 4 side faces gives **+133–137% light**, **σ_t −12% to
+−31%** (≈ the √2.35 photostatistics expectation at 25–100 GeV, less at 120),
+energy resolution ±1.5% (unchanged). The wrap is a straight win at the light
+level; adoption decision pending the true-light picture (D5 changes how to
+extrapolate its benefit).
 
-**S4. Absolute light scale unvalidated.** SIMPLE's optics are simpler than
-DSB's (flat PDE 0.36, no rod-surface roughness, no wavelength-dependent
-transport), and DSB measured its own light over-collection at 3–4× before its
-roughness fix. If SIMPLE over-collects similarly, every √N extrapolation is
-optimistic by ~2×. Cheap cross-check: SIMPLE predicts 598 pe/GeV_dep ×100 =
-~60k pe/GeV true ≈ **~60 pe/MeV** — DSB's post-fix prediction was ~50-90
-pe/MeV, so we're in the same band, but this deserves one deliberate
-comparison table. → Phase 1 sanity row.
+**D4. Position goal effectively met** (07-29 probe, unchanged): corner-light
+asymmetry gives σ_x = 0.61/0.38/0.33 mm at 10/50/120 GeV at 1% light —
+already ×3 under the 1 mm goal. Formal S-curve study still pending (Phase 0).
 
-**S5. No SiPM saturation.** 5676-cell MicroFJ at true light with the wrap's
-2.35× would clip hard (DSB measured 74% clipped pulses at 150 GeV in data).
-Npe linearity conclusions at true light are unproven. Matters most for the
-wrap adoption decision. → noted gate in Phase 3.
+**D5. THE BIG ONE — first-photon timing does not obey 1/√N** (07-30 tonight).
+The 4-rung ladder (f = 1e-3…3e-2) *rejected* the σ_t² = A²/f + B² model
+outright (χ²/ndf = 30 and 23). Diagnostic: σ_t·√f falls monotonically with f
+(15.8→5.2 ps√f at 25 GeV), which is mathematically impossible for that model
+with any B² ≥ 0. Cause: `dTwls` is the **minimum** of N photon times — an
+order statistic, not a mean — and it improves *faster* than 1/√N. Measured
+scaling: σ_t ~ f^−0.82 (25 GeV), f^−0.62 (120 GeV).
+- Encouraging: light-side timing improves faster with light than naive
+  counting predicts.
+- Sobering: neither model can be extrapolated to f=1 — the two-term fit is
+  invalid, and a pure power law has no floor and would be optimistic.
+  **We still have no trustworthy true-light σ_t.**
+- The one concrete lead: at 120 GeV, σ_t·√f ticks UP between f=0.01 and
+  f=0.03 (2.51→2.79) — a possible first sight of the real floor.
+  → **Tonight's f=0.1 rung exists to catch that turnover directly.**
+- `lightscan.C` now refuses to print a true-light number when the model fails
+  (it briefly printed `0.0 ± 3,075,432 ps` — fabrication, now guarded).
 
-**S6. Single module ≠ the array goals.** R_M = 13.7 mm vs a 14 mm tile: a
-single cell is intrinsically leakage-limited laterally; the papers' <10%
-design goal belongs to a 3×3 array. Our fiducial-cut numbers are the
-single-cell best case. If the goal is strict single-module <10% at all E, the
-depth correction (below) is the lever; if array-level is acceptable, that's a
-geometry build we haven't started. **Needs your call on scope.**
+**D6. Light-yield sanity check passed** (S4 partially closed): Npe is linear
+in f to 0.2–1.0% across a 30× lever (validates coherent thinning), and the
+true-light yield extrapolates to ~60 pe per MeV *deposited* — inside DSB's
+50–90 pe/MeV predicted band. The optical model is not obviously
+over-collecting.
 
-**S7. dTwls is a sim-side estimator.** Process-tagging isn't available to a
-real SiPM — the real device sees all light through electronics. Fine for
-studying the light-transport physics (and the real CFD on the WLS-dominated
-bulk behaves like it), but the final quoted number must come from an
-electronics-chain estimator (DSB's CFD path). Same conclusion DSB reached.
+**D7. Center E-type capillary is wired end-to-end** (07-30): geometry verified
+overlap-clean, `NpeCenter` > corner `Npe` in smoke tests (full-length fiber
+sees more of the shower), and `scan.C` now computes the window/full-length
+**ratio depth-proxy** correction automatically when a center-on dataset is
+present. No production center-on sweep has been run yet — that is the
+measurement that tests the SiPM-only depth correction (ceiling from truth:
+15.9% → 10.8% at 120 GeV; Pb-glass proxy captures most of it at corr −0.65).
 
-**S8. Housekeeping debt.** Wrap README still documents `RADWRAP_ENDS` etc. —
-fine; but the wrap study has only tested ONE wrap config with valid timing
-(sides, R=0.98, 0.1 mm gap). The gap=0 trap and ends-on variants exist as
-flags, untested with dTwls. Low priority; flags are there when wanted.
+**Infrastructure landed along the way** (matters for reproducibility):
+repo-wide layout (`build/rootfiles|logs|plots`) + `check_layout.sh` in CI-style
+use; `run_simple.sh N` generates macros (stale-macro trap eliminated);
+`RADSIMPLE_OUT_SUBDIR` protects the baseline; all pull scripts hardened
+(dual-path, fail-loud); DSB+firstsim archived with the Ladder dependency
+re-pointed; one `g4` conda env name across all machines + laptop.
 
 ---
 
-## 3. Tonight's feasibility probes (new information)
+## 3. Shortcomings — status
 
-Ran directly on the ntuples tonight; these reshape the plan:
-
-**P1. Position from corner-light asymmetry — the 1 mm goal looks ALREADY MET
-in sim.** Using `NpeCorner` x-asymmetry (corners at +x vs −x), fiducial
-events, linearized at x=0:
-
-| E (GeV) | slope (1/mm) | σ(A_x) | → σ_x |
-|---|---|---|---|
-| 10 | 0.105 | 0.065 | **0.61 mm** |
-| 50 | 0.114 | 0.043 | **0.38 mm** |
-| 120 | 0.119 | 0.039 | **0.33 mm** |
-
-And this is at 1% light — photostatistics shrinks the asymmetry noise further
-at true light. Needs the full S-curve treatment (nonlinearity toward edges,
-y-axis, energy dependence, true-light extrapolation), but the goal is not in
-danger. *This was measurable only since the schema extension — first time
-anyone looked.*
-
-**P2. Timing does NOT measure shower depth at thinned light.** corr(dTwls,
-layer-COG) = −0.02…−0.05. The fixed window pins the light origin; first-photon
-jitter buries the residual. Kills "use dT to correct energy" at thinned light
-(retest once at true-light equivalent, but don't plan around it).
-
-**P3. Depth correction of the energy IS the high-E fix — and it's measurable.**
-Within the fiducial: corr(Npe, layer-COG) = −0.58/−0.69/−0.73 at 50/100/120
-GeV. A perfect depth correction takes the raw core spread 15.9% → **10.8% at
-120 GeV** (−32% relative). And a *real, measurable* proxy exists — the
-Pb-glass tail-catcher we already model and the real beamline already had:
-corr(Npe, ePbGlass) = −0.65 at 120 GeV, capturing most of the truth-COG
-information. A 2D calibration E_reco = f(Npe, ePbGlass) is the single
-highest-value energy lead. The center E-type capillary (flag exists,
-RADSIMPLE_CENTER_ETYPE) offers a second proxy: window/full-length light ratio.
+| # | shortcoming | status |
+|---|---|---|
+| S1 | σ_t only known at 1% light | **OPEN — sharpened.** Ladder ran; model invalid (D5). Path: find the σ_t·√f turnover empirically. f=0.1 running tonight; f≈0.3 decision after. |
+| S2 | No electronics in SIMPLE | OPEN, unchanged. SIMPLE bounds the light side; device-level claim needs the archived DSB chain (SPTR knob = Phase 2). D5 makes this MORE important: if the light floor is tiny, electronics dominate the real answer. |
+| S3 | Fixed 15 mm WLS window → high-E turn-up | OPEN. 15k pins it: best 10.56% @100 GeV, +4% by 120. Fixes queued: window scan + depth proxies (Phase 3). |
+| S4 | Absolute light scale unvalidated | **Mostly closed** (D6): linear thinning + ~60 pe/MeV inside DSB's band. Residual: no wavelength-dependent PDE/transport. |
+| S5 | No SiPM saturation | OPEN. At true light ~9×10⁵ photons reach SiPMs at 120 GeV (D6) — saturation is guaranteed relevant for the wrap decision at true light. |
+| S6 | Single module ≠ array goals | OPEN — **still needs your scope call.** |
+| S7 | dTwls not experimentally accessible | OPEN, unchanged — final numbers need an electronics-chain estimator. |
+| S8 | Wrap variants untested | Baseline verdict done (D3); gap=0/ends variants remain flag-reachable, unrun. |
 
 ---
 
 ## 4. Gap analysis per goal
 
-| goal | where we are | gap | verdict |
-|---|---|---|---|
-| **<10 ps σ_t** | 25 ps at 120 GeV *at 1% light*; naive √100 → 2.5 ps but floor unmeasured; wrap −25%; paper's own constant term 17.5 ps (electronics-inclusive) | ladder B unknown; electronics chain unmodeled here | **undecided until Phase 1**; light-side plausible, device-level hinges on electronics (DSB track) |
-| **<10% σ_E/E** | 8.98% constant ≤50 GeV (already <10 there); 12.5% at 120 | high-E turn-up | **likely reachable** via Pb-glass depth correction (ceiling says 10.8% at 120) + window optimization; array scope decision pending |
-| **1 mm position** | 0.33–0.61 mm from corner asymmetry at 1% light | full S-curve + edges | **effectively met in sim**; formalize and publish the curve |
+| goal | where we are | verdict |
+|---|---|---|
+| **<10 ps** | 26.2 ps at 120 GeV at **1% light**, scaling *faster* than 1/√N toward true light (D5); wrap gives another −12–31%; floor location unknown but possibly sighted at f~0.03 | **Open, trending favorable.** Tonight's rung is the decisive step; electronics (S2) then becomes the real fight. |
+| **<10% σ_E/E** | 10.56–11.03% at 100–120 GeV uncut; truth-depth ceiling 10.8%; Pb-glass proxy measurable; center-E proxy ready to run | **Within reach** — needs the center-on sweep + 2D calibration to close. |
+| **1 mm position** | 0.33–0.61 mm at 1% light; only improves with light | **Met in sim** — formalize (Phase 0). |
 
 ---
 
-## 5. The plan
+## 5. The plan (statuses updated)
 
-### Phase 0 — free, offline, on data we already have (start tomorrow)
-No cluster time. All on 15k data when it lands (~07:15), 5k meanwhile.
-1. **Position paper-grade study**: S-curves A_x(x), A_y(y) per energy; invert;
-   residual distributions; σ_x,y vs E; edge behavior to the fiducial boundary.
-   *(new macro `analysis/position.C`)*
-2. **Depth-corrected energy**: 2D profile Npe vs ePbGlass per E; derive
-   correction; before/after σ_E/E vs E. Same with NpeCenter ratio once a
-   center-on sweep exists (Phase 3).
-3. **Wrap verdict memo**: finalize tyvek table (light/timing/energy/position
-   effect of wrap — position uses NpeCorner, so wrap changes it; check).
-4. 15k refresh of every existing figure + the σ_t=328/√E fit error bars.
+### Phase 0 — offline, free
+- [x] Wrap verdict memo (D3)
+- [x] 15k refresh of all standard figures
+- [x] Npe↔Elyso all-layer correlation + per-energy pe/GeV
+- [ ] **Position S-curve study** (`analysis/position.C`): full inversion,
+      residuals, σ_x,y(E), edge behavior — the probe says the goal is met;
+      make it a defensible figure.
+- [ ] **Pb-glass 2D depth calibration** E(Npe, ePbGlass) on the 15k set —
+      no new running needed; ceiling says 16.5%→~11% at 120 GeV.
 
-### Phase 1 — the scale ladder (decides the timing goal) — needs approval
-σ_t²(f) = A²/f + B² per energy; extrapolate f→1 (true light). B is the
-floor; B vs 10 ps is the verdict.
-- Scales: LIGHT_SCALE ∈ {1e-3, 3e-3, **1e-2 = reuse the 15k run**, 3e-2},
-  optional 1e-1 confirmation point later.
-- Energies {25, 120}, 4000 ev/point (fiducial keeps ~1500).
-- Cost (measured 5.63 core-s/ev/GeV at 1e-2, cost ≈ ∝ scale):
-  perseverence takes {1e-3, 3e-3} ≈ 2 h total; curiosity takes {3e-2} ≈ 5.5 h
-  after the 15k run finishes. 1e-1 = 15 h, only if the fit demands it.
-- Sanity row: pe/MeV prediction vs DSB's ~50-90 (S4).
-- **Gate T1**: B < 5 ps → photostatistics/electronics-dominated; proceed to
-  Phase 2 knowing light is not the limit. B > 15 ps → dissect the floor
-  (window length, path dispersion) *before* any electronics work.
+### Phase 1 — timing floor (REVISED after D5)
+The A²/f+B² extrapolation is dead; the floor must be *seen*, not fitted from
+below. New protocol: extend the ladder upward until σ_t·√f visibly turns over,
+then read the floor from the turnover region directly.
+- [x] Rungs 1e-3 … 3e-2 (done tonight — model discovery D5)
+- [▶] **f = 0.1 × {25, 120} GeV × 1500 ev — RUNNING tonight, done ~06:20**
+- [ ] Decision gate: if σ_t·√f rises at f=0.1 → floor is in view; one more
+      rung (f≈0.3, ~1 day, possibly 120 GeV only) brackets it. If still
+      falling → floor < ~3 ps√f territory and electronics officially dominate
+      the <10 ps question → pivot effort to Phase 2/DSB.
+- [ ] Write up the order-statistic scaling itself — σ_t ~ f^−0.6…−0.8 is a
+      publishable methodological point (first-photon timing beats √N).
 
-### Phase 2 — minimal realism on the timing (cheap code, one sweep)
-1. Add `RADSIMPLE_SPTR_PS` (Gaussian smear per detected photon, default 0
-   = current behavior; ~5 lines in EventAction). Run one sweep at 60 ps.
-2. Rebuild the **timing budget plot**: σ_t(E) stacked as photostat ⊕ SPTR ⊕
-   floor, at true light, wrap on/off. This is the figure that says whether
-   <10 ps survives contact with a real sensor — and hands DSB a target.
+### Phase 2 — minimal electronics realism
+- [ ] `RADSIMPLE_SPTR_PS` Gaussian smear knob (~5 lines) + one sweep at 60 ps.
+      D5 raises the stakes: SPTR is likely the true limiting term.
+- [ ] Timing budget figure: photostat ⊕ SPTR ⊕ floor vs E, wrap on/off.
 
-### Phase 3 — energy: kill the turn-up — needs approval (one overnight)
-1. Env-var the window: `RADSIMPLE_WLS_DEPTH_MM`, `RADSIMPLE_WLS_LEN_MM`
-   (defaults unchanged). Scan depth {40.4, 44, 48} × len {15, 25} at
-   {25, 50, 120} GeV, 3000 ev → ~9 h, one cluster overnight.
-2. One sweep with `RADSIMPLE_CENTER_ETYPE=1` → window/full ratio as the
-   second depth proxy; compare against Pb-glass proxy.
-3. Deliverable: σ_E/E vs E for {baseline, best window, depth-corrected,
-   wrap} with the 10% goal line. **Gate E1**: if corrected 120 GeV ≤10%,
-   energy goal closes at single-module level; else escalate the array
-   question (S6).
+### Phase 3 — energy: kill the turn-up
+- [ ] **Center-E-type production sweep** (analysis ready per D7; one sweep,
+      ~5 h on either cluster — natural next overnight after the rung).
+- [ ] Window scan via `RADSIMPLE_WLS_DEPTH_MM`/`_LEN_MM` env-vars (code change
+      pending) — depth {40.4, 44, 48} × len {15, 25}.
+- [ ] Deliverable: σ_E/E(E) for {baseline, best window, Pb-glass-corrected,
+      ratio-corrected, wrap} with the 10% line. Gate: ≤10% at 120 GeV closes
+      the goal at single-module level; else escalate S6.
 
 ### Phase 4 — consolidation
-- σ_t and σ_E/E and σ_x final curves at true light with all adopted fixes
-  (wrap? window? correction?) — the three "goal plots" with goal lines.
-- Port the adopted config to DSB for electronics-inclusive confirmation of
-  the timing number (S2/S7 close-out).
-- Wrap adoption decision recorded in both READMEs.
+- [ ] Three goal plots at true light with adopted fixes; port winning config
+      to archive/RADiCALsimDSB for electronics-inclusive confirmation; record
+      the wrap adoption decision.
 
-### Standing discipline (all phases)
-- Fiducial cut always on; keep% always printed.
-- Any resolution from a fit gets its per-energy fit PNG saved.
-- Multi-modality guard stays armed everywhere σ_t is fitted.
-- ETAs only from measured per-cluster constants (5.63 / 6.53 core-s/ev/GeV).
-- New observables → ntuple columns, never new study forks.
+### Standing discipline (unchanged + additions)
+- Fiducial always on; keep% printed; multi-modality guard armed.
+- **New:** any fit whose χ²/ndf fails its cut must refuse to print derived
+  numbers (learned the hard way tonight — a 0.0 ± 3×10⁶ ps "result").
+- **New:** extrapolations must state their model assumption; first-photon
+  observables are order statistics and do NOT inherit mean-averaging rules.
+- ETAs from measured per-cluster constants only.
 
 ---
 
-## 6. Graph catalog
+## 6. Graph catalog — status
 
-**Goal plots (the three that matter):**
-| # | figure | axes | needs |
-|---|---|---|---|
-| G1 | σ_t vs E, true light, budget-stacked, 10 ps line | ps vs GeV | Phase 1+2 |
-| G2 | σ_E/E vs E, variants + corrected, 10% line | % vs GeV | Phase 0.2 + 3 |
-| G3 | σ_x vs E, true-light band, 1 mm line | mm vs GeV | Phase 0.1 |
-
-**Evidence plots behind them:**
-| # | figure | why |
+| # | figure | status |
 |---|---|---|
-| E1 | σ_t² vs 1/f per energy (ladder lines) | the A/B separation itself |
-| E2 | A_x vs x S-curve per energy | position calibration curve |
-| E3 | x_reco − x_true residuals | the 1 mm claim, honestly shaped |
-| E4 | Npe vs ePbGlass 2D + correction contour | the depth correction, visibly |
-| E5 | σ_E/E vs window depth (scan) | window optimization result |
-| E6 | Elayer profile overlay per E + window band | shows WHY the turn-up (have data) |
-| E7 | Npe linearity E_reco/E_beam vs E | response flatness (have data) |
-| E8 | wrap: ΔNpe, Δσ_t, Δσ_x summary | wrap adoption evidence (have data) |
-| E9 | pe/MeV table sim-vs-DSB-vs-paper-era numbers | light-scale sanity (S4) |
-| E10 | dTwls fit PNGs per energy (existing) | fit transparency, keep generating |
+| G1 | σ_t vs E true-light budget + 10 ps line | blocked on Phase 1 gate + Phase 2 |
+| G2 | σ_E/E variants + 10% line | partially (baseline + fits exist); corrections pending |
+| G3 | σ_x vs E + 1 mm line | probe done; formal version pending Phase 0 |
+| E1 | ladder σ_t² vs 1/f | **exists** — now documents the model failure; will gain the turnover once f=0.1 lands |
+| E1b | **NEW: σ_t·√f vs f** (the turnover plot — the floor is visible as a minimum) | add to lightscan.C when tonight's rung lands |
+| E2/E3 | position S-curves + residuals | pending Phase 0 |
+| E4 | Npe vs ePbGlass 2D + correction | pending Phase 0 |
+| E5 | σ_E/E vs window depth | pending Phase 3 |
+| E6/E7/E8 | shower profiles / linearity / wrap summary | **exist** (15k / wrap data) |
+| E9 | pe/MeV sanity table | **numbers in hand** (D6) — worth one small figure |
+| E10 | per-energy fit PNGs | auto-generated everywhere |
 
 ---
 
-## 7. Approval list (nothing launched)
+## 7. Tonight (2026-07-30, launched ~23:15)
 
-- [ ] Phase 1 ladder: 2 short runs on perseverence (~2 h) + 1 on curiosity
-      after 15k finishes (~5.5 h)
-- [ ] Phase 2 SPTR knob (code change, then one ~5 h sweep)
-- [ ] Phase 3 window env-vars (code change) + overnight scan (~9 h)
-- [ ] Scope call on S6: single-module goals vs 3×3 array
-- [ ] Phase 0 needs no approval — offline analysis only; I'll start with the
-      position S-curve study on the 15k data unless redirected
+- **curiosity**: ladder rung f=0.1, {25, 120} GeV, 1500 ev — the turnover
+  hunt. Done ~06:20; pull + `lightscan.C` over coffee.
+- perseverence: idle. The Phase-3 center-E-type sweep is the queued candidate
+  for it — deliberately NOT launched without a go-ahead.
