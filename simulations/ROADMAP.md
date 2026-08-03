@@ -209,7 +209,7 @@ high-E energy turn-up (A8) — the last blocker on the <10% goal.
 
 | goal | status | what closes it |
 |---|---|---|
-| **<10 ps** | **Light side: MET** (B = 8.2 ± 0.6 ps) — but only ~1.8 ps headroom, and the estimator itself (A1) is unvalidated | Runs A+B confirm B and give B(E); Run C decides whether a *realizable* estimator preserves it; then electronics (DSB chain) is the whole remaining fight |
+| **<10 ps** | **Light side: MET on `dTwls`** (B = 8.2 ± 0.6 ps) — but only ~1.8 ps headroom, and that number needs re-deriving on the now-standard `dTcfd` estimator (A1c) | Run C re-derives B under `dTcfd` and checks the precursor-threshold question (A1b); Runs A+B cross-check it and give B(E) on the validated estimator; then electronics (DSB chain) is the whole remaining fight |
 | **<10% σ_E/E** | 10.56% @100 GeV, 11.03% @120 — just outside | Run D (center-E depth proxy) + Pb-glass correction + possibly the wrap's +133% light |
 | **1 mm position** | **MET in sim** (0.33–0.61 mm, improves with light) | Formalize offline |
 
