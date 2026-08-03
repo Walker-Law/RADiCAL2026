@@ -73,10 +73,30 @@ Every detected photon is tagged by its creator process, so the sim records:
 | `dT` | earliest photon of **either** population | ⚠️ multi-modal at thinned light — **don't fit this** |
 | **`dTwls`** | earliest **WLS** photon only | ✅ **the timing observable** — unimodal at any thinning |
 
-`dTwls` is also the better physical proxy: a real device's CFD fires on the
-leading edge of the WLS bulk (99% of the light), not on a 1% prompt precursor.
-`RADiCALsimDSB` reached the same conclusion independently with its
-process-tagged "scint-only" estimator.
+`dTwls` is the right estimator *for this sim* — it is the only one that is
+unimodal and fittable at thinned light. Whether it is the right proxy for the
+**real device** is a genuinely open question, and worth stating precisely:
+
+> **The prompt precursor may sit right at the real CFD threshold.** At true
+> light a 120 GeV event puts ~110,600 WLS + ~890 prompt photons on each SiPM.
+> The prompt population is ~6× narrower in time (RMS 0.69 ns vs 4.14 ns), so
+> its *peak instantaneous rate* is **~5% of the WLS peak** — and the test-beam
+> analysis uses a **5% CFD threshold**. Because the WLS pulse is
+> exponential-tailed its true peak is higher than a Gaussian estimate, putting
+> the precursor more likely at **2–4%** — just under. But this is a
+> back-of-envelope from arrival-time RMS, not a waveform calculation, and the
+> conclusion flips if it is off by a factor of ~1.5.
+>
+> If the CFD fires on the precursor, the real device times on **Cherenkov**,
+> not WLS, and `dTwls` is the wrong proxy. `RADiCALsimDSB` hit exactly this —
+> its σ_t floor turned out to be "prompt quartz-rod Cherenkov dominating the
+> leading edge" — so this is a known failure mode in this project, not a
+> hypothetical.
+>
+> **Settled by:** the photon-dump run (`RADSIMPLE_STORE_PHOTON_TIMES=1`), which
+> records every photon time and lets the actual pulse shape — and any
+> threshold estimator on it — be built offline. Until then, treat `dTwls` as
+> the light-transport observable, not as a prediction of the device.
 
 Every analysis macro prefers `dTwls` automatically and carries a
 **multi-modality guard** that counts peaks and refuses to report a σ_t from a
