@@ -108,11 +108,25 @@ used to be "later" is now the critical path.
 
 ## 4. The two-day campaign (2026-08-02 → 08-04)
 
-Sized from measured throughput: **wall seconds ≈ 1.095 × f × N_events × ΣE_GeV**
-(fits every rung run so far to ~10%). Two clusters ≈ 96 cluster-hours available;
-this plan uses ~40, leaving deliberate slack.
+**⚠️ CURIOSITY ONLY — perseverence is shut down.** The campaign therefore runs
+**serially on one cluster**: ~40 h of work into a ~48 h window, no slack for a
+failed run to be re-done. That makes *ordering* the critical decision.
 
-### Run A — the floor, measured directly [curiosity, ~14.6 h]
+**Run order is by value-per-hour, cheapest-and-most-unblocking first**, so that
+if the cluster dies partway we lose the least:
+
+| order | run | hours | cumulative | why this position |
+|---|---|---|---|---|
+| 0 | smoke test (3 ev) | 0.03 | — | A6 memory risk is untested; 2 min of insurance before committing 14 h |
+| 1 | **C** photon dump | 5.4 | 5.4 | **Cheapest, unlocks the most.** Converts gaps A1 + A3 into offline work — after this, days of analysis need no cluster at all |
+| 2 | **D** center E-type | 4.7 | 10.1 | Cheap, and the *only* thing blocking the energy goal |
+| 3 | **B** 25 GeV ladder | 14.8 | 24.9 | New physics: true light + B(E) |
+| 4 | **A** 120 GeV f=0.5 | 14.6 | 39.5 | Confirms a number we already have a fit for — most expendable if time runs out |
+
+Sized from measured throughput: **wall seconds ≈ 1.095 × f × N_events × ΣE_GeV**
+(fits every rung run so far to ~10%).
+
+### Run A — the floor, measured directly [~14.6 h]
 **f = 0.5, 120 GeV, 800 events.** At f=0.5 the photostatistics term contributes
 only **1.8%** in quadrature — this measures B essentially *directly*, with no
 model extrapolation at all. Chosen over f=1.0 deliberately: f=1.0 buys only 1.1
