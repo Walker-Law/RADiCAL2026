@@ -140,13 +140,17 @@ if the cluster dies partway we lose the least:
 | order | run | hours | cumulative | why this position |
 |---|---|---|---|---|
 | 0 | smoke test (3 ev) | 0.03 | — | A6 memory risk is untested; 2 min of insurance before committing 14 h |
-| 1 | **C** photon dump | 5.4 | 5.4 | **Cheapest, unlocks the most.** Converts gaps A1 + A3 into offline work — after this, days of analysis need no cluster at all |
-| 2 | **D** center E-type | 4.7 | 10.1 | Cheap, and the *only* thing blocking the energy goal |
-| 3 | **B** 25 GeV ladder | 14.8 | 24.9 | New physics: true light + B(E) |
-| 4 | **A** 120 GeV f=0.5 | 14.6 | 39.5 | Confirms a number we already have a fit for — most expendable if time runs out |
+| 1 | **C** CFD-ladder validation | ~8.2 | 8.2 | **Cheapest thing that can invalidate the headline number.** Answers A1c (does B=8.24 ps survive under `dTcfd`?) and A1b (does the precursor cross the 5% threshold?) together |
+| 2 | **D** center E-type | 4.7 | 12.9 | Cheap, and the *only* thing blocking the energy goal |
+| 3 | **B** 25 GeV ladder | 14.8 | 27.7 | New physics: true light + B(E), now natively on `dTcfd` |
+| 4 | **A** 120 GeV f=0.5 | 14.6 | 42.3 | Confirms a number we already have a fit for — most expendable if time runs out |
 
 Sized from measured throughput: **wall seconds ≈ 1.095 × f × N_events × ΣE_GeV**
-(fits every rung run so far to ~10%).
+(fits every rung run so far to ~10%). ~42.3 h into the ~48 h window leaves
+~6 h slack — tighter than before (the CFD-ladder rerun costs real cluster
+time; it isn't free the way the old photon-dump run was), but every run
+below now produces the full waveform automatically, so nothing here needs
+a special flag anymore.
 
 ### Run A — the floor, measured directly [~14.6 h]
 **f = 0.5, 120 GeV, 800 events.** At f=0.5 the photostatistics term contributes
@@ -154,28 +158,36 @@ only **1.8%** in quadrature — this measures B essentially *directly*, with no
 model extrapolation at all. Chosen over f=1.0 deliberately: f=1.0 buys only 1.1
 percentage points more (0.7% vs 1.8% excess) for **double** the cost and double
 the OOM risk (5×10⁸ vs 2.5×10⁸ photons/event, against no budget cap — A6).
-- **Success:** σ_t lands at 8.4 ± 0.4 ps → confirms B independently of the fit.
-- **Failure mode to watch:** if it lands far from 8.4, the 3-param fit was
-  wrong and B must be re-derived from the direct points only.
+Now reads `dTcfd` automatically (no flag needed) — this is a second,
+independent cross-check of whatever Run C finds.
+- **Success:** σ_t(dTcfd) lands close to Run C's fitted B → confirms the floor
+  under the realizable estimator, independent of the fit.
+- **Failure mode to watch:** if it lands far off, trust the direct point over
+  the fit and re-derive B from Run C's rungs alone.
 - ⚠️ **Smoke-test first** (3 events, ~2 min) — A6 means this is untested territory.
 
 ### Run B — B(25 GeV), and TRUE LIGHT for free [~14.8 h]
 **f = 0.3 (1500 ev, 3.4 h) then f = 1.0 (1500 ev, 11.4 h), 25 GeV only.**
 At 25 GeV, **f = 1.0 IS true light — zero thinning, zero extrapolation** — and
 costs only 11 h because cost scales with E. This is the single most defensible
-timing number the project can produce. Also finds the 25 GeV turnover, giving
-**B(E)** (gap A2).
+timing number the project can produce, and — same as every run now — it comes
+with the full waveform and `dTcfd` for free, extending the B(E) question (A2)
+onto the *validated* estimator rather than the retired one.
 
-### Run C — the estimator study [~5.4 h] ← *best value per hour*
-**`RADSIMPLE_STORE_PHOTON_TIMES=1`** at f=0.1 (500 ev) and f=0.5 (200 ev),
-120 GeV, written to an isolated `dump/` subdir. Records **every** detected
-photon's time and channel, which makes the following testable **entirely
-offline, with no further cluster time**:
-- first-photon vs 5th/10th/50th-photon vs threshold/CFD-like estimators (A1)
-- SPTR at any value, applied by smearing and re-deriving (A3)
-- the prompt-Cherenkov vs WLS composition question (D2) directly
-This converts two of the three critical gaps from "needs a run" to "needs an
-afternoon".
+### Run C — CFD-ladder validation [~8.2 h] ← *best value per hour*
+**120 GeV, the same 6 rungs as the original ladder (f = 0.001, 0.003, 0.01,
+0.03, 0.1, 0.3), 500 events/rung**, on current (waveform-always-on) code —
+no flag needed. This directly answers the two gaps the CFD switch opened:
+- **A1c:** refit σ_t(dTcfd)·√f across the 6 rungs the same way D8 did for
+  `dTwls`. If B comes out near 8.24 ps, the headline number survives the
+  estimator switch; if not, `dTcfd` is now the number that counts.
+- **A1b:** at the top two rungs (f=0.1, 0.3 — closest to true light), pull
+  the raw `phT`/`phWls` waveform and check directly whether the prompt-
+  Cherenkov precursor's peak rate crosses the 5% threshold before the WLS
+  bulk does. This is the one open question that could most change the
+  timing story, and it needs real photons at high f to answer honestly.
+This converts the largest remaining unknown — "does any of this still hold
+under a realizable estimator?" — into a single, moderate-cost run.
 
 ### Run D — center E-type production sweep [~4.7 h]
 **`RADSIMPLE_CENTER_ETYPE=1`, 6 energies, 5000 ev, f=1e-2.** Analysis is
