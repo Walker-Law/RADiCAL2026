@@ -142,7 +142,7 @@ straight down it without showering — the pathology 2303.05580 cuts against.
 | `src/PrimaryGeneratorAction.cc` | the electron beam |
 | `src/SteppingAction.cc` | at each step: sum LYSO energy, detect photons at SiPMs |
 | `src/StackingAction.cc` | coherent Cherenkov thinning (same factor as the LYSO yield) |
-| `src/EventAction.cc` | per event: form dT, fill histograms |
+| `src/EventAction.cc` | per event: store every photon (the waveform), compute the 5% CFD, fill histograms |
 | `src/RunAction.cc` | define histograms + ntuple, write the output file |
 
 Everything you'd want to change (a dimension, a material property, the readout
