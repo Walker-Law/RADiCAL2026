@@ -353,12 +353,16 @@ to the ~10 %/√E design goal (which is for a 3×3 array, a different detector).
 | 120 |  26.2 ± 0.4 | 100 % | 11.03 ± 0.18 | 1.77 ± 0.03 |
 
 > **Why σ_t here is ~26 ps but the project quotes a ~8 ps floor.** These are at
-> `RADSIMPLE_LIGHT_SCALE=1e-2` — 1% of the real light. More light means better
-> timing, and `RADiCALsimLightScan` measured how much better by running a
-> ladder of light levels: the light-independent floor is **B = 8.24 ± 0.61 ps
-> at 120 GeV**. The scaling is *not* the naive 1/√N, because first-photon
-> timing is a **minimum** (an order statistic) — measured exponent 1.41 ± 0.05.
-> Do not extrapolate these numbers by hand; see `../RADiCALsimLightScan/`.
+> `RADSIMPLE_LIGHT_SCALE=1e-2` — 1% of the real light — measured with the
+> now-retired first-WLS-photon estimator. More light means better timing, and
+> `RADiCALsimLightScan` measured how much better by running a ladder of light
+> levels: the light-independent floor is **B = 8.24 ± 0.61 ps at 120 GeV**. The
+> scaling is *not* the naive 1/√N — a first-photon estimator is a **minimum**
+> (an order statistic), measured exponent 1.41 ± 0.05. The switch to the 5%
+> CFD (this file's "The light chain" section) exists partly *because* of this:
+> a quantile is closer to mean-averaging behavior and is the estimator that
+> actually matches how the real device is analyzed. Do not extrapolate these
+> numbers by hand; see `../RADiCALsimLightScan/`.
 
 - **Measured (`Npe`): σ_E/E = 46.9 %/√E ⊕ 7.82 %** (fit ≤ 50 GeV) vs the paper's
   **52.04 %/√E ⊕ 31.62 %/E ⊕ 9.31 %**. Same order, constant term within ~1.5 %.
