@@ -73,7 +73,7 @@ optical model is not obviously over-collecting.
 **D7. Center E-type capillary wired end-to-end** — geometry overlap-clean,
 `NpeCenter` > corner `Npe` as expected, `scan.C` computes the window/full-length
 ratio depth-proxy automatically. **Never run in production** — that is D-tier
-work now queued (§4 Run C).
+work now queued (§4 Run D).
 
 **D8. THE FLOOR, MEASURED.** Once rungs existed on *both* sides of the σ_t·√f
 minimum, the 3-parameter model σ_t = √(C·f^−q + B²) became identifiable:
