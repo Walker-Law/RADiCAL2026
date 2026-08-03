@@ -379,10 +379,10 @@ to the ~10 %/√E design goal (which is for a 3×3 array, a different detector).
 - **Truth (`Elyso`): 11.4 %/√E ⊕ 0.44 %** — intrinsic sampling resolution of the
   stack; independent of photon thinning. See the caveat table above.
 - **Efficiency** = fraction of events yielding a ΔT at all. `EventAction` only
-  fills `dT` when some corner sees light at **both** ends, so dim events vanish
-  silently and the survivors are the *brighter* ones — a σ_t quoted at low
-  efficiency is biased optimistic. 100 % everywhere here, so no bias; `scan.C`
-  prints it and flags any energy below 99 %.
+  fills a timing value when some corner has light at **both** ends, so dim
+  events vanish silently and the survivors are the *brighter* ones — a σ_t
+  quoted at low efficiency is biased optimistic. 100 % everywhere here, so no
+  bias; `scan.C` prints it and flags any energy below 99 %.
 - **σ_t = 84.4/√E ⊕ 12.5 ps** at 1e-2 thinned light — *superseded.* This run
   predates the coherent-thinning fix: Cherenkov was generated at its **full
   physical rate** while scintillation was 100× thinned, so the first-photon
