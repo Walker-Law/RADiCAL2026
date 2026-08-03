@@ -58,11 +58,15 @@ echo "   energies  : $ENERGIES GeV"
 echo "   events    : $NEVT per energy per rung"
 echo "   cores     : $CORES"
 echo "   rough ETA : ~${ETA} h  (top rung dominates — cost ~ f)"
-echo "   output    : build/rootfiles/f<scale>/"
+echo "   output    : build/rootfiles/${TAG:+$TAG/}f<scale>/"
 echo "=================================================================="
 
+# RADSIMPLE_OUT_SUBDIR: write rungs under build/rootfiles/<subdir>/ instead of
+# directly under rootfiles/. Use it for any run that is NOT a standard ladder
+# rung -- e.g. a photon-dump run at an f that already exists -- so it cannot
+# silently overwrite a production rung that cost hours to produce.
 for f in $FACTORS; do
-    d="$HERE/build/rootfiles/f$f"
+    d="$HERE/build/rootfiles/${TAG:+$TAG/}f$f"
     mkdir -p "$d"
     MACRO="$HERE/build/sweep_f$f.mac"
     {
