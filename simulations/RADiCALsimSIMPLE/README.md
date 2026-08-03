@@ -336,9 +336,12 @@ to the ~10 %/√E design goal (which is for a 3×3 array, a different detector).
 
 ## Results (2026-07-30 — 15 000 events/energy, light scale 1e-2)
 
-> Current reference numbers. These use everything: `dTwls` timing, the beam
-> fiducial cut, and the 5% Pb-glass containment veto. **`σ_t` is measured at
-> 1% light** — see the note under the table for what that means.
+> ⚠️ **Predates the 5% CFD estimator switch (2026-08-02).** σ_t below uses the
+> first-WLS-photon estimator (`dTwls`, now removed — see "The light chain"
+> above for why). Energy numbers are estimator-independent and still current.
+> These use the beam fiducial cut and the 5% Pb-glass containment veto.
+> **`σ_t` is measured at 1% light** — see the note under the table for what
+> that means. A `dTcfd` rerun of this table is queued.
 
 | E (GeV) | σ_t (ps) | eff | σ/E, `Npe` (measured) | σ/E, `Elyso` (truth) |
 |---|---|---|---|---|
