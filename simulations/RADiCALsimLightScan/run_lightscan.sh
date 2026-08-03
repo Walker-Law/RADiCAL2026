@@ -33,6 +33,7 @@ NEVT="${1:-2000}"
 # numbers justifying both. 25+120 GeV checks the split isn't a one-point fluke.
 FACTORS="${RADSIMPLE_LIGHT_FACTORS:-1e-3 3e-3 1e-2 3e-2}"
 ENERGIES="${RADSIMPLE_ENERGIES:-25 120}"
+TAG="${RADSIMPLE_OUT_SUBDIR:-}"   # optional: isolate non-standard runs
 
 [ -x "$BIN" ] || {
     echo "ERROR: no RADiCALsimSIMPLE binary at $BIN"
