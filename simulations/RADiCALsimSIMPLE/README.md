@@ -347,8 +347,8 @@ to the ~10 %/√E design goal (which is for a 3×3 array, a different detector).
 - **Measured (`Npe`): σ_E/E = 46.9 %/√E ⊕ 7.82 %** (fit ≤ 50 GeV) vs the paper's
   **52.04 %/√E ⊕ 31.62 %/E ⊕ 9.31 %**. Same order, constant term within ~1.5 %.
   (Their `b/E` term is electronic noise, which this sim does not model at all.)
-- **The resolution stops improving above ~50 GeV and gets 13 % worse by 120 GeV.**
-  This is real, not noise (9.63 ± 0.12 → 10.88 ± 0.15). The DSB1 window is a
+- **The resolution stops improving above ~100 GeV and gets 4 % worse by 120 GeV.**
+  This is real, not noise (10.56 ± 0.19 → 11.03 ± 0.18). The DSB1 window is a
   **fixed 15 mm at 40.4 mm depth**, but shower max walks deeper with energy
   (2401.01747 Fig. 7: layers 8–10 at 25 GeV → 11–13 at 125 GeV), so the sampled
   fraction degrades. The paper flags exactly this limitation ("adequate although
