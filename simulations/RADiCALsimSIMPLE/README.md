@@ -226,25 +226,28 @@ Geant4's built-in `/analysis/setFileName` command — add or remove a
 energy list, no C++ needed. (`run_short.mac` is the same sweep at 1 000
 events/energy for a quick cross-check run.)
 
-Each file's histograms: `Elyso` (GeV), `Npe` (photons/event), `dT` (all-light,
-4-corner mean), **`dTwls`** (WLS-only — the one to fit), `dTc` (per corner),
-plus the `ev` ntuple below.
+Each file's histograms: `Elyso` (GeV), `Npe` (photons/event), `dTcfd` (5% CFD,
+4-corner mean — **the timing observable**), plus the `ev` ntuple below.
 
 ### What's in the ntuple (one row per event)
 
 Stored rich enough that **any event-level graph is a `TTree::Draw` away — no
-rerun needed.** 19 branches. (Schema grew twice: 8 → 15 columns on 2026-07-28,
-then the four WLS-timing columns on 2026-07-29. Older files have fewer; every
-analysis macro falls back gracefully and says so.)
+rerun needed** — and now including the complete photon-by-photon record, so
+**any timing estimator** is a `TTree::Draw` away too. 19 branches. (Schema has
+grown three times: 8 → 15 columns on 2026-07-28, WLS-tagged timing on
+2026-07-29, replaced by the CFD + always-on waveform on 2026-08-02. Older
+files have fewer columns; every analysis macro falls back gracefully and says
+so on the terminal.)
 
 **Timing — read "The light chain" above before using these:**
 
 | column | type | meaning |
 |--------|------|---------|
-| **`dTwls`** | double | ✅ **the timing observable.** ns, 4-corner mean, **WLS photons only** → unimodal at any light level. −999 = no timing |
-| `dT` | double | ⚠️ same but **all light**. Multi-modal (5-spike comb) at thinned light — kept for diagnostics, **do not fit it** |
-| `tUpWLS`, `tDnWLS` | vector[4] | first **WLS** photon per corner per end, ns (−999 = none) — rebuild `dTwls` any way you like |
-| `tUp`, `tDn` | vector[4] | same for **all** light — the pair to compare against when studying the prompt-Cherenkov contamination |
+| **`dTcfd`** | double | ✅ **the timing observable.** ns, 4-corner mean of the 5% CFD (see above). −999 = no timing |
+| `t05Up`, `t05Dn` | vector[4] | the 5% CFD time per corner per end, ns (−999 = none) — rebuild `dTcfd` any way you like |
+| `phT` | vector | **every detected photon's arrival time, ns — the perfect waveform.** Always stored, no flag needed |
+| `phId` | vector | which channel-end each `phT` entry belongs to: 0–3 = corners up, 4–7 = corners down, 8/9 = center up/down |
+| `phWls` | vector | 1 = that photon was WLS-created, 0 = prompt Cherenkov — lets you rebuild the old first-photon estimators, test other CFD fractions, or apply SPTR smearing offline |
 | `NpeWLS` | double | how many of `Npe` were WLS-created (typically ~99%) |
 
 **Energy and light:**
@@ -273,27 +276,25 @@ Example draws, no rerun required:
 ev->Draw("Elayer[8]");                          // energy in layer 8
 ev->Draw("Sum$(Elayer*Iteration$)/Sum$(Elayer)"); // shower COG (layers)
 ev->Draw("Npe:sqrt(x*x+y*y)");                  // light vs beam offset
-ev->Draw("(tDn[2]-tUp[2])/2 - (tDn[0]-tUp[0])/2"); // corner-corner timing
-```
+ev->Draw("t05Dn[2]-t05Up[2]");                  // corner-2 timing, any way you slice it
 
-**Not stored by default:** individual photon arrival times. First-photon
-timing is fully rebuildable from `tUp`/`tDn`, but a *different* estimator
-(Nth-photon, CFD emulation) needs every photon: run with
-`RADSIMPLE_STORE_PHOTON_TIMES=1` to add `phT` (every detected photon's time)
-and `phId` (its channel, corner + 4·isDown). That's the one payload that
-meaningfully grows files — see sizes below.
+// build a DIFFERENT estimator from the stored waveform, no rerun:
+ev->Draw("Min$(phT*(phId==0 && phWls==1) + 1e9*!(phId==0 && phWls==1))");
+   // -> first-WLS-photon time at corner 0, up end (the old dTwls, reconstructed)
+```
 
 ### How much data is stored
 
-Per 5000-event file: **~2.5 MB** default (≈0.5 KB/event; the ntuple stores ~52
-doubles per event and physics doubles barely compress). A 6-energy sweep is
-**~15 MB**; even a hundred sweeps is no threat to an SSD. With
-`RADSIMPLE_STORE_PHOTON_TIMES=1` a file grows with Npe — measured ~6 KB/event
-at 10 GeV, scaling roughly linearly with energy: **~1 GB per 6-energy sweep**.
-Fine occasionally, not as an always-on default.
+Per 5000-event file: **~2.5 MB** for the scalar/vector columns (≈0.5 KB/event
+— physics doubles barely compress). The waveform (`phT`/`phId`/`phWls`) grows
+with `Npe`: measured ~6 KB/event at 10 GeV, f=1e-2, scaling with energy and
+light level — **~1 GB per 6-energy sweep** at the default thinning, more at
+higher `RADSIMPLE_LIGHT_SCALE`. It is stored **unconditionally now** (there is
+no "cheap" mode without it) because the whole point of this architecture is
+that no estimator question should ever require a rerun.
 
 Analyze one file: `root -l -b -q 'analysis/fit.C("build/E50GeV.root")'`
-→ prints `σ_t = σ(dT)/2` and `σ/E`.
+→ prints `σ_t = σ(dTcfd)/2` and `σ/E`.
 
 Analyze the whole sweep: `root -l -b -q analysis/scan.C` → `build/plots/`:
 
