@@ -7,6 +7,9 @@ noted inline. Supersedes the 2026-07-30 version (in git history).*
 > **B = 8.24 ± 0.61 ps at 120 GeV** (q = 1.41 ± 0.05, χ²/ndf = 2.71)
 > — light side only, no electronics. Under the 10 ps goal, with **~1.8 ps of
 > headroom** for SPTR + amplifier + digitizer combined.
+> ⚠️ Measured with the now-retired first-photon estimator (`dTwls`) — see D10
+> and gap A1c. Re-deriving this under the new 5% CFD estimator (`dTcfd`) is
+> the top item in §4's campaign, not yet done.
 
 That single number reframes the whole project: **the light is no longer the
 problem — the electronics are.** Everything below is organized around that.
