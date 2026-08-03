@@ -477,7 +477,25 @@ system, then layer complexity back in one piece at a time.
 
 Newest first. Dates are when the change landed, not when it was written up.
 
-### 2026-08-02
+### 2026-08-02 (later)
+
+- **Replaced the first-photon timing estimator with an electronics-free 5%
+  CFD, and made the full photon waveform an unconditional, always-on ntuple
+  column.** This is an architecture change, not a bugfix: the sim is now a
+  light recorder — it stores every detected photon's time, channel, and
+  process tag (`phT`/`phId`/`phWls`), and computes exactly one trigger from
+  it, the light-only analog of the test-beam's own 5% CFD (a 5%-of-light
+  quantile per SiPM, not a threshold-of-peak on an amplified pulse that
+  doesn't exist in this sim). `dTwls`, `dT`, `tUp`/`tDn`, `tUpWLS`/`tDnWLS`,
+  and the `RADSIMPLE_STORE_PHOTON_TIMES` flag are all removed — replaced by
+  `dTcfd`, `t05Up`/`t05Dn`, and the waveform columns, which are now always
+  present, no flag required. Every other estimator (first-photon, a different
+  CFD fraction, SPTR-smeared) is derivable from the stored waveform offline;
+  no code change or rerun is needed to try one. All four analysis macros
+  (`scan.C`, `fit.C`, `lightscan.C`, `wrap_scan.C`) prefer `dTcfd` and fall
+  back to the older columns on pre-08-02 files, flagged as not comparable.
+
+### 2026-08-02 (earlier)
 
 - **Documented the two light populations** (see "The light chain" above).
   The README previously described only the WLS path and never mentioned
