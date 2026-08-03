@@ -292,6 +292,45 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
         g2->SetLineColor(COL[ie % 6]);
         mg2->Add(g2, "LP");
         lg2->AddEntry(g2, Form("%.0f GeV", E[ie]), "lp");
+
+        // ---- THE FLOOR, measured -- only when the turnover is actually seen.
+        // sigma_t(f) = sqrt(C*f^-q + B^2): the power term is the empirical
+        // order-statistic scaling (q free -- NOT assumed 1, see file header),
+        // and B is the light-independent floor. This is only fittable once
+        // rungs on BOTH sides of the minimum exist; before that the fit is
+        // degenerate (measured: chi2/ndf 8-13 with 5 rungs, 2.6 with 6). Both
+        // guards from elsewhere in this file apply: >=2 confirmed rises AND
+        // chi2/ndf < CHI2_BAD, else nothing is reported.
+        if (nRises >= 2) {
+            std::vector<double> fx, fy, fe;
+            for (int jf = 0; jf < NF; ++jf) {
+                if (!(sigT[ie][jf] > 0)) continue;
+                if (sigTerr[ie][jf] / sigT[ie][jf] > REL_ERR_BAD) continue;
+                fx.push_back(F[jf]); fy.push_back(sigT[ie][jf]); fe.push_back(sigTerr[ie][jf]);
+            }
+            if (fx.size() >= 5) {   // 3 free params; demand >=2 dof
+                auto gf = new TGraphErrors(fx.size(), &fx[0], &fy[0], nullptr, &fe[0]);
+                auto ffit = new TF1(Form("floor%d", ie),
+                                    "sqrt([0]*pow(x,-[1])+[2]*[2])", fx.front(), fx.back());
+                ffit->SetParameters(1.0, 0.6, 5.0);
+                ffit->SetParLimits(2, 0.0, 100.0);
+                gf->Fit(ffit, "Q");
+                double B = ffit->GetParameter(2), eB = ffit->GetParError(2);
+                double q = ffit->GetParameter(1), eq = ffit->GetParError(1);
+                double c2n = ffit->GetNDF() > 0 ? ffit->GetChisquare()/ffit->GetNDF() : 999;
+                if (c2n < CHI2_BAD) {
+                    printf("      FLOOR (light-independent): B = %.2f +- %.2f ps"
+                           "   [q = %.2f +- %.2f, chi2/ndf = %.2f]\n"
+                           "      -> light-side true-light sigma_t at %.0f GeV = B"
+                           " (power term ~0 at f=1); compare to the 10 ps goal,\n"
+                           "         REMEMBERING electronics (SPTR, DRS4) add on top.\n",
+                           B, eB, q, eq, c2n, E[ie]);
+                } else {
+                    printf("      floor fit attempted but chi2/ndf = %.1f fails the"
+                           " %.0f cut -- not reported\n", c2n, CHI2_BAD);
+                }
+            }
+        }
     }
     mg2->SetTitle("turnover check (rising = floor visible);f (log scale, 1 = true light);#sigma_{t}#upoint#sqrt{f}  (ps#sqrt{GeV#lower[-0.3]{ }}units)");
     mg2->Draw("A");
