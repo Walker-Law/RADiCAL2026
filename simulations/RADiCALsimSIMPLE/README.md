@@ -253,29 +253,46 @@ Geant4's built-in `/analysis/setFileName` command — add or remove a
 energy list, no C++ needed. (`run_short.mac` is the same sweep at 1 000
 events/energy for a quick cross-check run.)
 
-Each file's histograms: `Elyso` (GeV), `Npe` (photons/event), `dT` (ns,
-4-corner mean), `dTc` (per corner), plus the `ev` ntuple below.
+Each file's histograms: `Elyso` (GeV), `Npe` (photons/event), `dT` (all-light,
+4-corner mean), **`dTwls`** (WLS-only — the one to fit), `dTc` (per corner),
+plus the `ev` ntuple below.
 
 ### What's in the ntuple (one row per event)
 
 Stored rich enough that **any event-level graph is a `TTree::Draw` away — no
-rerun needed.** (2026-07-28 extension; files before that date have only the
-first 8 columns.)
+rerun needed.** 19 branches. (Schema grew twice: 8 → 15 columns on 2026-07-28,
+then the four WLS-timing columns on 2026-07-29. Older files have fewer; every
+analysis macro falls back gracefully and says so.)
+
+**Timing — read "The light chain" above before using these:**
+
+| column | type | meaning |
+|--------|------|---------|
+| **`dTwls`** | double | ✅ **the timing observable.** ns, 4-corner mean, **WLS photons only** → unimodal at any light level. −999 = no timing |
+| `dT` | double | ⚠️ same but **all light**. Multi-modal (5-spike comb) at thinned light — kept for diagnostics, **do not fit it** |
+| `tUpWLS`, `tDnWLS` | vector[4] | first **WLS** photon per corner per end, ns (−999 = none) — rebuild `dTwls` any way you like |
+| `tUp`, `tDn` | vector[4] | same for **all** light — the pair to compare against when studying the prompt-Cherenkov contamination |
+| `NpeWLS` | double | how many of `Npe` were WLS-created (typically ~99%) |
+
+**Energy and light:**
 
 | column | type | meaning |
 |--------|------|---------|
 | `Elyso` | double | GeV summed over all 29 LYSO plates (truth dE/dx) |
-| `Npe` | double | detected photons, 4 corner fibres, 8 SiPMs |
-| `dT` | double | ns, 4-corner mean first-photon t(down)−t(up); **−999 = no timing** |
+| `Npe` | double | detected photons, 4 corner fibres, 8 SiPMs (all populations) |
+| `NpeCorner` | vector[4] | photons per corner — asymmetry, beam-spot starvation, **position reconstruction** |
 | `NpeCenter` | double | central E-type light (0 unless `RADSIMPLE_CENTER_ETYPE=1`) |
+| `Elayer` | vector[29] | GeV per LYSO layer — longitudinal profile, shower max/COG per event |
+| `Ew` | double | GeV summed over all 28 W plates (sampling-fraction studies) |
+
+**Beam line and beam truth:**
+
+| column | type | meaning |
+|--------|------|---------|
+| `x`, `y` | double | this event's primary position, mm — **required for the fiducial cut** |
 | `tMCP` | double | MCP particle-arrival t0, ns (−1 = off/missed) |
 | `eTrig1`, `eTrig2` | double | trigger-counter deposits, MeV |
-| `ePbGlass` | double | Pb-glass tail-catcher deposit, GeV (leakage) |
-| `x`, `y` | double | this event's primary position, mm (beam-spot truth) |
-| `Ew` | double | GeV summed over all 28 W plates (sampling-fraction studies) |
-| `Elayer` | vector[29] | GeV per LYSO layer — longitudinal profile, shower max/COG per event |
-| `NpeCorner` | vector[4] | photons per corner — asymmetry, beam-spot starvation |
-| `tUp`, `tDn` | vector[4] | first-photon time per corner per end, ns (−999 = none) — rebuild dT any way you like, or reference against `tMCP` |
+| `ePbGlass` | double | Pb-glass tail-catcher deposit, GeV — leakage, and a **measurable shower-depth proxy** |
 
 Example draws, no rerun required:
 
