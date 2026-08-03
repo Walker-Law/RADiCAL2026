@@ -137,14 +137,14 @@ the OOM risk (5×10⁸ vs 2.5×10⁸ photons/event, against no budget cap — A6
   wrong and B must be re-derived from the direct points only.
 - ⚠️ **Smoke-test first** (3 events, ~2 min) — A6 means this is untested territory.
 
-### Run B — B(25 GeV), and TRUE LIGHT for free [perseverence, ~14.8 h]
+### Run B — B(25 GeV), and TRUE LIGHT for free [~14.8 h]
 **f = 0.3 (1500 ev, 3.4 h) then f = 1.0 (1500 ev, 11.4 h), 25 GeV only.**
 At 25 GeV, **f = 1.0 IS true light — zero thinning, zero extrapolation** — and
 costs only 11 h because cost scales with E. This is the single most defensible
 timing number the project can produce. Also finds the 25 GeV turnover, giving
 **B(E)** (gap A2).
 
-### Run C — the estimator study [either cluster, ~5.4 h] ← *best value per hour*
+### Run C — the estimator study [~5.4 h] ← *best value per hour*
 **`RADSIMPLE_STORE_PHOTON_TIMES=1`** at f=0.1 (500 ev) and f=0.5 (200 ev),
 120 GeV, written to an isolated `dump/` subdir. Records **every** detected
 photon's time and channel, which makes the following testable **entirely
@@ -155,7 +155,7 @@ offline, with no further cluster time**:
 This converts two of the three critical gaps from "needs a run" to "needs an
 afternoon".
 
-### Run D — center E-type production sweep [either cluster, ~4.7 h]
+### Run D — center E-type production sweep [~4.7 h]
 **`RADSIMPLE_CENTER_ETYPE=1`, 6 energies, 5000 ev, f=1e-2.** Analysis is
 already written (D7). Gives the SiPM-only depth correction that targets the
 high-E energy turn-up (A8) — the last blocker on the <10% goal.

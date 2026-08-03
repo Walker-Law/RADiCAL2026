@@ -11,45 +11,6 @@ the two ends of a fiber — nothing else.
 
 ---
 
-## What changed today (2026-07-28)
-
-1. **Added the CERN H2 test-beam line**: two coincidence trigger counters, an
-   MCP-PMT timing reference, and a Pb-glass tail-catcher — each behind its own
-   on/off flag (`RADSIMPLE_WITH_TRIGGERS`, `RADSIMPLE_WITH_MCP`,
-   `RADSIMPLE_WITH_PBGLASS`, all default ON). Pure truth energy-deposit/time
-   quantities — no electronics.
-2. **Added an optional central E-type fiber** (`RADSIMPLE_CENTER_ETYPE`,
-   default OFF): the tile's central hole is now *always* drilled (matching the
-   real, tested module), and can optionally be instrumented with a full-length
-   WLS fiber + SiPM pair for future energy-measurement studies.
-3. **Added a Gaussian beam spot** (`RADSIMPLE_BEAM_SPOT_MM`, default 2.9 mm) —
-   required once the central hole is always present, since a zero-width beam
-   at (0,0) can dive straight down it without ever showering.
-4. **Renamed the flags for clarity** — old names still work as fallbacks:
-   `RADSIMPLE_LYSO_SCALE`→`RADSIMPLE_LIGHT_SCALE`,
-   `RADSIMPLE_OPT_MAXSTEP`→`RADSIMPLE_PHOTON_STEP_CAP`,
-   `RADSIMPLE_ETYPE`→`RADSIMPLE_CORNER_ETYPE`.
-5. **Grew the world volume** (70×70×620 mm) and moved the beam start to
-   z = −450 mm to fit the new beamline; extended the output to 8 columns:
-   `Elyso, Npe, dT, NpeCenter, tMCP, eTrig1, eTrig2, ePbGlass`.
-6. **Fixed a CPU-throttling bug**: a hardcoded `/run/numberOfThreads 64` in the
-   shared macros (a leftover perseverence workaround) was silently limiting
-   curiosity's 512-core machine to ~12.5% utilization. Thread count now comes
-   from a `RADSIMPLE_THREADS` env var read in `radsimple.cc`'s `main()`
-   (default = all cores); removed from all three `.mac` files.
-7. **Dropped `run.mac` to 5 000 events/energy** (from 10 000) for faster
-   iteration — still tight enough (σ_E/E to ~±0.3%, σ_t to ~±1 ps).
-8. **Gave the three beamline components distinct colors** in the geometry
-   viewer: MCP = light blue, coincidence counters = darker blue, Pb-glass =
-   light green (previously all three shared one green color).
-9. **Deployed and validated on perseverence** from a bare starting state
-   (Geant4 10.5.0 → miniforge + conda `g4` env matching curiosity); fixed a
-   worker-thread hang from a missing photon step cap (now defaults to 20 000)
-   and an `ENSDFSTATE` data-path naming mismatch between source-built and
-   conda-forge Geant4.
-
----
-
 ## The light chain (the whole point)
 
 **Two different populations of light reach the SiPMs, and telling them apart is
@@ -360,23 +321,31 @@ energy resolution that would result from … all 29 LYSO:Ce layers." So the
 characterization of this geometry, but **not** comparable to either paper, nor
 to the ~10 %/√E design goal (which is for a 3×3 array, a different detector).
 
-## Results (2026-07-25 — 10 000 events/energy, light scale 1e-2)
+## Results (2026-07-30 — 15 000 events/energy, light scale 1e-2)
 
-> **These predate the 2026-07-28 geometry update** (beam line + always-drilled
-> central hole + 2.9 mm beam spot — previously a pencil beam and no hole).
-> Trends and conclusions stand; exact numbers will shift slightly on rerun.
+> Current reference numbers. These use everything: `dTwls` timing, the beam
+> fiducial cut, and the 5% Pb-glass containment veto. **`σ_t` is measured at
+> 1% light** — see the note under the table for what that means.
 
 | E (GeV) | σ_t (ps) | eff | σ/E, `Npe` (measured) | σ/E, `Elyso` (truth) |
 |---|---|---|---|---|
-| 5   | 38.7 ± 0.7 | 100 % | 20.34 ± 0.25 | 5.09 ± 0.06 |
-| 10  | 29.9 ± 0.4 | 100 % | 14.39 ± 0.17 | 3.66 ± 0.04 |
-| 25  | 21.0 ± 0.2 | 100 % | 10.51 ± 0.12 | 2.30 ± 0.03 |
-| 50  | 17.2 ± 0.2 | 100 % | **9.63 ± 0.12** | 1.65 ± 0.02 |
-| 100 | 15.2 ± 0.2 | 100 % | 10.43 ± 0.14 | 1.23 ± 0.01 |
-| 120 | 14.6 ± 0.2 | 100 % | 10.88 ± 0.15 | 1.12 ± 0.01 |
+| 5   | 306.4 ± 4.6 | 100 % | 23.03 ± 0.35 | 5.54 ± 0.09 |
+| 10  | 148.4 ± 2.3 | 100 % | 16.56 ± 0.25 | 3.97 ± 0.06 |
+| 25  |  66.1 ± 0.9 | 100 % | 11.75 ± 0.18 | 2.76 ± 0.04 |
+| 50  |  43.1 ± 0.7 | 100 % | 10.68 ± 0.19 | 2.22 ± 0.03 |
+| 100 |  28.8 ± 0.5 | 100 % | **10.56 ± 0.19** | 1.86 ± 0.03 |
+| 120 |  26.2 ± 0.4 | 100 % | 11.03 ± 0.18 | 1.77 ± 0.03 |
 
-- **Measured (`Npe`): σ_E/E = 40.5 %/√E ⊕ 7.31 %** (fit ≤ 50 GeV) vs the paper's
-  **52.04 %/√E ⊕ 31.62 %/E ⊕ 9.31 %**. Same order, constant term within ~2 %.
+> **Why σ_t here is ~26 ps but the project quotes a ~8 ps floor.** These are at
+> `RADSIMPLE_LIGHT_SCALE=1e-2` — 1% of the real light. More light means better
+> timing, and `RADiCALsimLightScan` measured how much better by running a
+> ladder of light levels: the light-independent floor is **B = 8.24 ± 0.61 ps
+> at 120 GeV**. The scaling is *not* the naive 1/√N, because first-photon
+> timing is a **minimum** (an order statistic) — measured exponent 1.41 ± 0.05.
+> Do not extrapolate these numbers by hand; see `../RADiCALsimLightScan/`.
+
+- **Measured (`Npe`): σ_E/E = 46.9 %/√E ⊕ 7.82 %** (fit ≤ 50 GeV) vs the paper's
+  **52.04 %/√E ⊕ 31.62 %/E ⊕ 9.31 %**. Same order, constant term within ~1.5 %.
   (Their `b/E` term is electronic noise, which this sim does not model at all.)
 - **The resolution stops improving above ~50 GeV and gets 13 % worse by 120 GeV.**
   This is real, not noise (9.63 ± 0.12 → 10.88 ± 0.15). The DSB1 window is a
@@ -476,3 +445,74 @@ run ~100× photon-starved, so σ_t is ~10× worse than the true-light value.
 None of these change the *shape* of the timing physics; they change absolute
 light level and add real-detector degradation. Start here to understand the
 system, then layer complexity back in one piece at a time.
+
+---
+
+## Changelog
+
+Newest first. Dates are when the change landed, not when it was written up.
+
+### 2026-08-02
+
+- **Documented the two light populations** (see "The light chain" above).
+  The README previously described only the WLS path and never mentioned
+  `dTwls` at all — a reader had no way to know which of the two timing
+  columns to use, or why there were two.
+- **Documented the four WLS-timing ntuple columns** (`dTwls`, `NpeWLS`,
+  `tUpWLS`, `tDnWLS`). They existed in the code since 07-29 but were missing
+  from the schema table, which listed 15 of the 19 branches.
+- Added `RADSIMPLE_OUT_SUBDIR` so non-standard runs write to their own
+  subfolder and cannot overwrite production data.
+
+### 2026-07-29
+
+- **Process-tagged timing (`dTwls`)** — the big one. Every detected photon is
+  tagged by creator process, and timing is computed from WLS photons only.
+  Fixes the multi-modal all-light `dT` described above. Added `NpeWLS` and
+  per-corner `tUpWLS`/`tDnWLS`.
+- **Beam fiducial cut** in the analysis (>1.5 mm from any capillary hole,
+  r < 3.5 mm). Events whose beam went down a hole or missed the 14 mm tile
+  were contaminating every width; the cut restores 100% timing efficiency
+  and proper 1/sqrt(E) energy scaling. The real experiment cuts the same way
+  (arXiv:2303.05580 sec 3).
+- **Rich ntuple** (8 -> 15 columns): per-layer energy, per-corner light and
+  times, primary x/y, tungsten deposit. Enough that most new plots are a
+  `TTree::Draw` away instead of a rerun.
+- `run_simple.sh N` generates its macro, eliminating the stale-macro trap.
+
+### 2026-07-28
+
+1. **Added the CERN H2 test-beam line**: two coincidence trigger counters, an
+   MCP-PMT timing reference, and a Pb-glass tail-catcher — each behind its own
+   on/off flag (`RADSIMPLE_WITH_TRIGGERS`, `RADSIMPLE_WITH_MCP`,
+   `RADSIMPLE_WITH_PBGLASS`, all default ON). Pure truth energy-deposit/time
+   quantities — no electronics.
+2. **Added an optional central E-type fiber** (`RADSIMPLE_CENTER_ETYPE`,
+   default OFF): the tile's central hole is now *always* drilled (matching the
+   real, tested module), and can optionally be instrumented with a full-length
+   WLS fiber + SiPM pair for future energy-measurement studies.
+3. **Added a Gaussian beam spot** (`RADSIMPLE_BEAM_SPOT_MM`, default 2.9 mm) —
+   required once the central hole is always present, since a zero-width beam
+   at (0,0) can dive straight down it without ever showering.
+4. **Renamed the flags for clarity** — old names still work as fallbacks:
+   `RADSIMPLE_LYSO_SCALE`→`RADSIMPLE_LIGHT_SCALE`,
+   `RADSIMPLE_OPT_MAXSTEP`→`RADSIMPLE_PHOTON_STEP_CAP`,
+   `RADSIMPLE_ETYPE`→`RADSIMPLE_CORNER_ETYPE`.
+5. **Grew the world volume** (70×70×620 mm) and moved the beam start to
+   z = −450 mm to fit the new beamline; extended the output to 8 columns:
+   `Elyso, Npe, dT, NpeCenter, tMCP, eTrig1, eTrig2, ePbGlass`.
+6. **Fixed a CPU-throttling bug**: a hardcoded `/run/numberOfThreads 64` in the
+   shared macros (a leftover perseverence workaround) was silently limiting
+   curiosity's 512-core machine to ~12.5% utilization. Thread count now comes
+   from a `RADSIMPLE_THREADS` env var read in `radsimple.cc`'s `main()`
+   (default = all cores); removed from all three `.mac` files.
+7. **Dropped `run.mac` to 5 000 events/energy** (from 10 000) for faster
+   iteration — still tight enough (σ_E/E to ~±0.3%, σ_t to ~±1 ps).
+8. **Gave the three beamline components distinct colors** in the geometry
+   viewer: MCP = light blue, coincidence counters = darker blue, Pb-glass =
+   light green (previously all three shared one green color).
+9. **Deployed and validated on perseverence** from a bare starting state
+   (Geant4 10.5.0 → miniforge + conda `g4` env matching curiosity); fixed a
+   worker-thread hang from a missing photon step cap (now defaults to 20 000)
+   and an `ENSDFSTATE` data-path naming mismatch between source-built and
+   conda-forge Geant4.
