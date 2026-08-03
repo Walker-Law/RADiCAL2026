@@ -52,32 +52,80 @@ the two ends of a fiber — nothing else.
 
 ## The light chain (the whole point)
 
+**Two different populations of light reach the SiPMs, and telling them apart is
+the single most important thing to understand about this simulation.**
+
 ```
- e- ─► LYSO/W stack ─► LYSO scintillates (420 nm blue)
-                          │
-                          ▼  a blue photon reaches a corner fiber
-                         quartz guide ──► DSB1 (15 mm at shower max)
-                          │                 │  absorbs blue, re-emits GREEN (495 nm) = "OpWLS"
-                          ▼                 ▼
-                     guided by TIR ──► SiPM (PD) at each end ──► record FIRST photon time
+ e- ─► LYSO/W stack ─► LYSO scintillates (420 nm blue)          ┐
+                          │                                      │  SLOW path
+                          ▼  a blue photon reaches a corner fiber│  = 99% of light
+                         quartz guide ──► DSB1 (15 mm)           │  arrives ~12 ns
+                          │                 │ absorbs blue,      │
+                          │                 │ re-emits GREEN     │
+                          ▼                 ▼ (495 nm) = "OpWLS" ┘
+                     guided by TIR ──► SiPM at each end
+                          ▲
+ shower particle ─────────┘   Cherenkov made IN the quartz/DSB1  ┐  FAST path
+ crossing the fiber            — no absorption/re-emission step   │  = 1% of light
+                                                                  ┘  arrives ~2 ns
 ```
 
-1. the shower deposits energy in the LYSO plates,
-2. LYSO scintillates → 420 nm photons,
-3. a photon reaching a corner fiber enters the quartz; at the 15 mm **DSB1**
-   section (placed at shower max) it is absorbed and re-emitted at 495 nm
-   (Geant4 process `OpWLS`),
-4. the green photon is guided by total internal reflection to the SiPM at each end,
-5. we keep the **earliest** arrival time at each end and form
-   `dT = t(down) − t(up)`, averaged over the 4 corners.
+**The slow path (99%, the real signal).** Shower energy → LYSO scintillates at
+420 nm → a blue photon reaches a corner fiber → the 15 mm **DSB1** section at
+shower max absorbs it and re-emits green at 495 nm (Geant4 process `OpWLS`) →
+guided by total internal reflection to a SiPM at each end. It is *slow* because
+it inherits LYSO's 36 ns emission time before DSB1's own 3.5 ns re-emission.
 
-The single-ended timing resolution is `σ_t = σ(dT) / 2` (the ÷2 because dT is a
-symmetric down−up difference about the shower-max source).
+**The fast path (1%, a trap).** A charged shower particle crossing the quartz
+or DSB1 makes **Cherenkov light directly in the fiber** — no absorption/
+re-emission, so it is essentially prompt. Measured: prompt ⟨t⟩ = 2.0 ns vs
+WLS ⟨t⟩ = 12.3 ns — a **~10 ns head start.**
+
+### Why that 1% causes trouble: the estimator is a *minimum*
+
+We time on the **earliest** photon at each end, and form
+`dT = t(down) − t(up)`, averaged over the 4 corners.
+`σ_t = σ(dT)/2` (the ÷2 because dT is a symmetric down−up difference about the
+shower-max source).
+
+A first-photon estimator is a **minimum**, so a rare-but-early population can
+dominate it completely. Whichever photon arrives first sets the answer — even
+if it is 1-in-100.
+
+At the default `RADSIMPLE_LIGHT_SCALE=1e-2`, only ~0.9 prompt photons reach
+each SiPM per event: a Poisson coin flip. Corners that catch one read ~3.7 ns
+early; corners that miss read late. The 4-corner mean of a two-valued
+quantity produces **5 discrete spikes, 3.7/4 = 0.93 ns apart** — a comb, not a
+peak. Fitting a Gaussian to it returns confident nonsense (it once gave 43 ps
+at one energy and 867 ps at the next).
+
+**This is a thinning artifact, not detector physics.** At full light every SiPM
+catches ~90 prompt photons, the coin flip disappears, and the distribution goes
+unimodal again (prompt-dominated).
+
+### The fix: two timing columns, and you almost always want `dTwls`
+
+Every detected photon is tagged by its creator process, so the sim records:
+
+| column | what it is | use it? |
+|---|---|---|
+| `dT` | earliest photon of **either** population | ⚠️ multi-modal at thinned light — **don't fit this** |
+| **`dTwls`** | earliest **WLS** photon only | ✅ **the timing observable** — unimodal at any thinning |
+
+`dTwls` is also the better physical proxy: a real device's CFD fires on the
+leading edge of the WLS bulk (99% of the light), not on a 1% prompt precursor.
+`RADiCALsimDSB` reached the same conclusion independently with its
+process-tagged "scint-only" estimator.
+
+Every analysis macro prefers `dTwls` automatically and carries a
+**multi-modality guard** that counts peaks and refuses to report a σ_t from a
+comb.
 
 > **Design choice:** the DSB1 fiber is a **pure wavelength shifter** (no self-
-> scintillation). So the fiber light is unambiguously the LYSO→WLS chain — this
-> also sidesteps the self-scint/WLS composition ambiguity that complicated the
-> full DSB sim.
+> scintillation). So the fiber's slow light is unambiguously the LYSO→WLS chain
+> — this sidesteps the self-scint/WLS composition ambiguity that complicated
+> the full DSB sim. The prompt Cherenkov above is a *separate* population, born
+> in the fiber material rather than emitted by it.
 
 ---
 
