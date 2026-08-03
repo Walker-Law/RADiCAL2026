@@ -89,6 +89,23 @@ and flipped the fit from failing to passing. A >30% relative-error guard now
 excludes such points from turnover verdicts. **Lesson: a bad histogram can
 masquerade as a precise measurement — guard the histogram, not just the model.**
 
+**D10. Architecture pivot: from "pick an estimator" to "record everything"
+(2026-08-02).** `dTwls` — first-photon-per-corner — is an order statistic
+(D5) and, at thinned light, was shown by D2 to go multi-modal. Rather than
+patch estimator #3, the sim was rebuilt as a **light recorder**: every
+detected photon's arrival time, SiPM-end, and WLS-vs-prompt tag is now
+stored unconditionally (`phT`/`phId`/`phWls`, no flag, no opt-in — this used
+to require `RADSIMPLE_STORE_PHOTON_TIMES=1`, now removed), and the sim
+computes exactly one in-simulation trigger from it: an electronics-free
+**5% CFD** (`dTcfd`) — the arrival time of the `⌈0.05N⌉`-th photon at each
+SiPM face, via `std::nth_element`. This is the direct light-level analog of
+the real test-beam's own 5% CFD convention, so simulated and real timing
+numbers are comparable for the first time. Every other estimator (first-
+photon, Nth-photon, alternate CFD fractions, SPTR-smeared variants) is now
+a `TTree::Draw` on the stored waveform, offline, no rerun. Consequence:
+**B = 8.24 ps (D8) was measured on the retired `dTwls` and must be
+re-derived on `dTcfd`** before it can be called final — gap A1c, §4 Run C.
+
 ---
 
 ## 3. Accuracy gaps, ranked by how much they now matter
