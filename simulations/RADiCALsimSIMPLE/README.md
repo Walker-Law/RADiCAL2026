@@ -42,71 +42,63 @@ or DSB1 makes **Cherenkov light directly in the fiber** — no absorption/
 re-emission, so it is essentially prompt. Measured: prompt ⟨t⟩ = 2.0 ns vs
 WLS ⟨t⟩ = 12.3 ns — a **~10 ns head start.**
 
-### Why that 1% causes trouble: the estimator is a *minimum*
+### Why the naive estimator breaks — and why we don't use it anymore
 
-We time on the **earliest** photon at each end, and form
-`dT = t(down) − t(up)`, averaged over the 4 corners.
-`σ_t = σ(dT)/2` (the ÷2 because dT is a symmetric down−up difference about the
-shower-max source).
+An early version of this sim timed on the **earliest** photon at each end.
+That is a **minimum**, and a minimum is dominated by whichever population
+happens to arrive first — even a rare one. At `RADSIMPLE_LIGHT_SCALE=1e-2`
+only ~0.9 prompt photons reach each SiPM per event: a Poisson coin flip.
+Corners that catch one read ~3.7 ns early, corners that miss read late, and
+the 4-corner mean of that two-valued quantity produced **5 discrete spikes,
+0.93 ns apart** — a comb, not a peak. A Gaussian fit across it returned
+confident nonsense (43 ps at one energy, 867 ps at the next). This was a
+**thinning artifact**, not detector physics — at full light every SiPM
+catches ~90 prompt photons and the comb would vanish — but it also raised an
+unresolved question: does a *first-WLS-photon* estimator even correspond to
+anything a real device measures?
 
-A first-photon estimator is a **minimum**, so a rare-but-early population can
-dominate it completely. Whichever photon arrives first sets the answer — even
-if it is 1-in-100.
+### The architecture (2026-08-02): stop guessing, store everything, replay the real trigger
 
-At the default `RADSIMPLE_LIGHT_SCALE=1e-2`, only ~0.9 prompt photons reach
-each SiPM per event: a Poisson coin flip. Corners that catch one read ~3.7 ns
-early; corners that miss read late. The 4-corner mean of a two-valued
-quantity produces **5 discrete spikes, 3.7/4 = 0.93 ns apart** — a comb, not a
-peak. Fitting a Gaussian to it returns confident nonsense (it once gave 43 ps
-at one energy and 867 ps at the next).
+**This simulation is a light recorder, not a timing algorithm.** Every
+detected photon's arrival time, which SiPM face it hit, and which of the two
+populations made it — the complete record, the last thing that exists before
+any electronics touches the signal — is stored in the ntuple, always, no flag
+required (`phT`, `phId`, `phWls`). That record is the **perfect waveform**.
 
-**This is a thinning artifact, not detector physics.** At full light every SiPM
-catches ~90 prompt photons, the coin flip disappears, and the distribution goes
-unimodal again (prompt-dominated).
+From it, the sim computes exactly one trigger, chosen to match the real
+experiment rather than to be numerically convenient: an **electronics-free 5%
+CFD**. With no amplifier there is no analog pulse to take "5% of peak" on, so
+the light-only equivalent is a **quantile**: `t05` = the arrival time of the
+5%-of-light point at that SiPM (the ⌈0.05·N⌉-th photon, N = photons detected
+on that face that event). `dTcfd = t05(down) − t05(up)`, averaged over the 4
+corners that have light at both ends; `σ_t = σ(dTcfd)/2`.
 
-### The fix: two timing columns, and you almost always want `dTwls`
+A 5%-quantile rides on ~N/20 photons rather than 1, so it is far more
+mean-like than a single minimum — it does not chase a rare early population,
+and it is unimodal at any light level without needing to know in advance
+which population is "real". It is also the direct light-level analog of the
+test-beam analysis's own 5% CFD convention, so `dTcfd` is comparable to real
+data in a way a first-photon time never was.
 
-Every detected photon is tagged by its creator process, so the sim records:
+**Every other estimator is now an offline analysis choice, not a rerun.**
+Want first-WLS-photon back, for comparison? Filter `phWls==1`, take the min
+per corner-end from `phT`. Want a different CFD fraction, or SPTR jitter
+applied before triggering? Same data, different offline cut. The sim's job
+stopped being "pick the right estimator" and became "record enough that the
+estimator question never needs a rerun again."
 
-| column | what it is | use it? |
-|---|---|---|
-| `dT` | earliest photon of **either** population | ⚠️ multi-modal at thinned light — **don't fit this** |
-| **`dTwls`** | earliest **WLS** photon only | ✅ **the timing observable** — unimodal at any thinning |
+> **Open question this does NOT resolve:** whether the prompt-Cherenkov
+> precursor crosses the 5% threshold itself. At true light a 120 GeV event
+> puts ~890 prompt photons on a SiPM alongside ~110,600 WLS ones; because the
+> prompt population is ~6× narrower in time, its *peak rate* is roughly 2–5%
+> of the WLS peak — close enough to the threshold that it can't be waved away.
+> This is exactly what the stored waveform is FOR: build the real pulse shape
+> from `phT`/`phWls` and check directly, rather than assume.
 
-`dTwls` is the right estimator *for this sim* — it is the only one that is
-unimodal and fittable at thinned light. Whether it is the right proxy for the
-**real device** is a genuinely open question, and worth stating precisely:
-
-> **The prompt precursor may sit right at the real CFD threshold.** At true
-> light a 120 GeV event puts ~110,600 WLS + ~890 prompt photons on each SiPM.
-> The prompt population is ~6× narrower in time (RMS 0.69 ns vs 4.14 ns), so
-> its *peak instantaneous rate* is **~5% of the WLS peak** — and the test-beam
-> analysis uses a **5% CFD threshold**. Because the WLS pulse is
-> exponential-tailed its true peak is higher than a Gaussian estimate, putting
-> the precursor more likely at **2–4%** — just under. But this is a
-> back-of-envelope from arrival-time RMS, not a waveform calculation, and the
-> conclusion flips if it is off by a factor of ~1.5.
->
-> If the CFD fires on the precursor, the real device times on **Cherenkov**,
-> not WLS, and `dTwls` is the wrong proxy. `RADiCALsimDSB` hit exactly this —
-> its σ_t floor turned out to be "prompt quartz-rod Cherenkov dominating the
-> leading edge" — so this is a known failure mode in this project, not a
-> hypothetical.
->
-> **Settled by:** the photon-dump run (`RADSIMPLE_STORE_PHOTON_TIMES=1`), which
-> records every photon time and lets the actual pulse shape — and any
-> threshold estimator on it — be built offline. Until then, treat `dTwls` as
-> the light-transport observable, not as a prediction of the device.
-
-Every analysis macro prefers `dTwls` automatically and carries a
-**multi-modality guard** that counts peaks and refuses to report a σ_t from a
-comb.
-
-> **Design choice:** the DSB1 fiber is a **pure wavelength shifter** (no self-
-> scintillation). So the fiber's slow light is unambiguously the LYSO→WLS chain
-> — this sidesteps the self-scint/WLS composition ambiguity that complicated
-> the full DSB sim. The prompt Cherenkov above is a *separate* population, born
-> in the fiber material rather than emitted by it.
+> **Design choice, unchanged:** the DSB1 fiber is a **pure wavelength shifter**
+> (no self-scintillation), so the slow-path light is unambiguously the
+> LYSO→WLS chain. The prompt Cherenkov above is a separate population, born in
+> the fiber material rather than emitted by it.
 
 ---
 

@@ -200,23 +200,23 @@ void wrap_scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pb
 
             double mu, sg, sgErr;
 
-            // Timing: sigma_t = sigma(dT)/2, WLS-only (2026-07-29 fix — the
-            // all-light dT is multi-modal at thinned light), rebuilt from the
-            // ntuple so the fiducial cut applies. Old files lack dTwls (and
-            // x/y): fall back to the stored all-light histogram, flagged.
-            const bool wlsTiming = (t->GetBranch("dTwls") != nullptr);
-            const bool hasXY     = (t->GetBranch("x")     != nullptr);
-            usedWLS[ic][ie] = wlsTiming;
+            // Timing estimator preference: dTcfd (5% CFD, 2026-08-02) >
+            // dTwls (first WLS photon) > stored all-light dT (oldest,
+            // multi-modal). Rebuilt from the ntuple so the fiducial applies.
+            const char* tvar = t->GetBranch("dTcfd") ? "dTcfd"
+                             : t->GetBranch("dTwls") ? "dTwls" : nullptr;
+            const bool hasXY = (t->GetBranch("x") != nullptr);
+            usedWLS[ic][ie] = (tvar != nullptr);
             TH1* d = nullptr;
             double nFid = t->GetEntries();
-            if (wlsTiming && hasXY) {
+            if (tvar && hasXY) {
                 nFid = t->Draw("Npe", gFID, "goff");
-                d = fineHist(t, "dTwls", "dTfine", "dTwls>-999");
+                d = fineHist(t, tvar, "dTfine", Form("%s>-999", tvar));
             } else {
                 d = (TH1*)f.Get("dT");
             }
             coreFit(d, Form("#DeltaT%s, %s at %.0f GeV;#DeltaT (ns);events",
-                            wlsTiming ? " (WLS only, fiducial)" : " (ALL light - unfittable)",
+                            tvar ? Form(" (%s, fiducial)", tvar) : " (ALL light - unfittable)",
                             cfg[ic].c_str(), E[ie]),
                     Form("%s/fits/dT_%s_E%.0fGeV.png", PLOTS.Data(), cfg[ic].c_str(), E[ie]),
                     mu, sg, sgErr);

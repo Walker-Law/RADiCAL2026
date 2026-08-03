@@ -2,59 +2,32 @@
 #include "EventAction.hh"
 #include "G4AnalysisManager.hh"
 #include "G4Run.hh"
-#include <cstdlib>
 #include <vector>
-#include <filesystem>
 
 RunAction::RunAction(EventAction* eventAction) {
     auto a = G4AnalysisManager::Instance();
     a->SetDefaultFileType("root");
-
-    // ALL .root output goes in build/rootfiles/ — the repo-wide convention
-    // (see simulations/README_LOGGING.md, which covers build/logs/ the same
-    // way). Created HERE in C++, not in a launch script, so it exists no
-    // matter how the binary was started: ./radsimple, run_simple.sh, or a
-    // macro that calls /analysis/setFileName rootfiles/<name>.
-    std::error_code ec;
-    std::filesystem::create_directories("rootfiles", ec);
-
-    a->SetFileName("rootfiles/radwrap_output");  // default; a macro overrides
-                                           // with /analysis/setFileName before
-                                           // /run/beamOn (Geant4's built-in UI
-                                           // command) — run.mac uses it to write
-                                           // one file per energy.
+    a->SetFileName("radsimple_output");   // default; a macro can override with
+                                           // /analysis/setFileName before /run/beamOn
+                                           // (Geant4's built-in UI command) — used
+                                           // by the sweep macros to write one file
+                                           // per energy.
     a->SetVerboseLevel(0);
     a->SetNtupleMerging(true);          // merge per-thread ntuples on MT runs
 
     a->CreateH1("Elyso", "LYSO energy;E_{LYSO} (GeV);events",      250, 0., 25.);
     a->CreateH1("Npe",   "photons detected;N_{pe};events",         200, 0., 40000.);
-    // dT range: with the realistic beam spot (RADSIMPLE_BEAM_SPOT_MM) the
-    // distribution is much wider than the old pencil-beam one (starved far
-    // corners at thinned light -> ns-scale tails), so the window must be wide
-    // or the tails silently overflow and bias the core fit. 2.5 ps bins.
-    a->CreateH1("dT",    "t_{down}-t_{up}, 4-corner mean;#DeltaT (ns);events",
+    // dTcfd — the electronics-free 5% CFD (see EventAction.hh). Wide window:
+    // with the realistic beam spot the distribution is much wider than a
+    // pencil-beam one, and a too-narrow window silently overflows and biases
+    // the core fit. 2.5 ps bins.
+    a->CreateH1("dTcfd", "5%-CFD t_{down}-t_{up}, 4-corner mean;#DeltaT (ns);events",
                 4000, -5.0, 5.0);
-    a->CreateH1("dTc",   "t_{down}-t_{up}, per corner;#DeltaT (ns);corners",
-                4000, -5.0, 5.0);
-    // dTwls — the SAME estimator restricted to WLS-created photons. Fit THIS
-    // one: the all-light dT above is bimodal at thinned light (prompt
-    // Cherenkov vs delayed WLS supplying the first photon at random), which
-    // makes a Gaussian core fit meaningless. See EventAction::RecordPhoton.
-    a->CreateH1("dTwls", "t_{down}-t_{up}, WLS photons only;#DeltaT (ns);events",
-                4000, -5.0, 5.0);
-
-    // Full photon-time dump: only if RADSIMPLE_STORE_PHOTON_TIMES=1 (grows the
-    // files ~100x — see README "How much data is stored"). The flag must be
-    // read HERE (not just in EventAction) because the column has to exist in
-    // the ntuple schema on every thread AND on the master for merging.
-    const char* sp = std::getenv("RADSIMPLE_STORE_PHOTON_TIMES");
-    const bool storePhotons = (sp && std::atof(sp) != 0.);
-    if (eventAction) eventAction->SetStorePhotons(storePhotons);
 
     a->CreateNtuple("ev", "one row per event");
     a->CreateNtupleDColumn("Elyso");     // GeV, all 29 LYSO plates (truth dE/dx)
     a->CreateNtupleDColumn("Npe");       // detected photons, 4 corner fibres
-    a->CreateNtupleDColumn("dT");        // ns, 4-corner mean (-999 = no timing)
+    a->CreateNtupleDColumn("dTcfd");     // ns, 5% CFD, 4-corner mean (-999 = none) <- THE timing observable
     a->CreateNtupleDColumn("NpeCenter"); // central E-type light (0 unless RADSIMPLE_CENTER_ETYPE=1)
     a->CreateNtupleDColumn("tMCP");      // MCP particle-arrival time, ns (-1 = MCP off/missed)
     a->CreateNtupleDColumn("eTrig1");    // trigger counter 1 deposit, MeV
@@ -63,7 +36,6 @@ RunAction::RunAction(EventAction* eventAction) {
     a->CreateNtupleDColumn("x");         // primary x at the gun, mm (beam spot truth)
     a->CreateNtupleDColumn("y");         // primary y, mm
     a->CreateNtupleDColumn("Ew");        // GeV, all 28 W plates (absorber dE/dx)
-    a->CreateNtupleDColumn("dTwls");     // ns, WLS-only 4-corner mean (-999 = none) <- FIT THIS
     a->CreateNtupleDColumn("NpeWLS");    // of Npe, how many were OpWLS-created
 
     // Vector columns — bound BY REFERENCE to the EventAction's members, read
@@ -72,24 +44,24 @@ RunAction::RunAction(EventAction* eventAction) {
     static std::vector<G4double> dummy;
     auto& lay = eventAction ? eventAction->fLayerE    : dummy;
     auto& npc = eventAction ? eventAction->fCornerNpe : dummy;
-    auto& tup = eventAction ? eventAction->fCornerTup  : dummy;
-    auto& tdn = eventAction ? eventAction->fCornerTdn  : dummy;
-    auto& tuw = eventAction ? eventAction->fCornerTupW : dummy;
-    auto& tdw = eventAction ? eventAction->fCornerTdnW : dummy;
+    auto& tu5 = eventAction ? eventAction->fT05Up     : dummy;
+    auto& td5 = eventAction ? eventAction->fT05Dn     : dummy;
+    auto& pht = eventAction ? eventAction->fPhT       : dummy;
+    auto& phi = eventAction ? eventAction->fPhId      : dummy;
+    auto& phw = eventAction ? eventAction->fPhWls     : dummy;
     a->CreateNtupleDColumn("Elayer",    lay);  // GeV per LYSO layer [29] -> longitudinal profile
-    a->CreateNtupleDColumn("NpeCorner", npc);  // photons per corner [4]  -> asymmetry / starvation
-    a->CreateNtupleDColumn("tUp",       tup);  // first-photon time per corner, up end [4] (-999 = none)
-    a->CreateNtupleDColumn("tDn",       tdn);  // same, down end [4]
-    a->CreateNtupleDColumn("tUpWLS",    tuw);  // first WLS photon per corner, up end [4]
-    a->CreateNtupleDColumn("tDnWLS",    tdw);  // same, down end [4]
-    if (storePhotons) {
-        auto& pht = eventAction ? eventAction->fPhT   : dummy;
-        auto& phi = eventAction ? eventAction->fPhId  : dummy;
-        auto& phw = eventAction ? eventAction->fPhWls : dummy;
-        a->CreateNtupleDColumn("phT",   pht);  // EVERY detected photon's time (ns)
-        a->CreateNtupleDColumn("phId",  phi);  // its channel: corner + 4*(down end)
-        a->CreateNtupleDColumn("phWls", phw);  // 1 = WLS-created, 0 = prompt
-    }
+    a->CreateNtupleDColumn("NpeCorner", npc);  // photons per corner [4]  -> asymmetry / position
+    a->CreateNtupleDColumn("t05Up",     tu5);  // 5% CFD time per corner, up end [4] (-999 = none)
+    a->CreateNtupleDColumn("t05Dn",     td5);  // same, down end [4]
+    // THE PERFECT WAVEFORM — every detected photon, always stored. This is
+    // the complete record of the light just before electronics; any estimator
+    // (first-photon, other CFD fractions, SPTR smearing, pulse shapes) is
+    // derivable from these three columns offline, so estimator studies are
+    // analysis work, not reruns. Channel-end ids: 0-3 corner up, 4-7 corner
+    // down, 8/9 center up/down (EventAction::ChanEnd).
+    a->CreateNtupleDColumn("phT",   pht);      // arrival time (ns)
+    a->CreateNtupleDColumn("phId",  phi);      // channel-end id
+    a->CreateNtupleDColumn("phWls", phw);      // 1 = WLS-created, 0 = prompt
     a->FinishNtuple();
 }
 

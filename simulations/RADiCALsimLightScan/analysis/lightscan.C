@@ -109,7 +109,8 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
             // WLS-only timing — the all-light dT is multi-modal at low light
             // (a ~1% prompt-Cherenkov population wins the first-photon race at
             // random). See RADiCALsimSIMPLE/include/EventAction.hh.
-            const char* tvar = t->GetBranch("dTwls") ? "dTwls" : "dT";
+            const char* tvar = t->GetBranch("dTcfd") ? "dTcfd"
+                             : t->GetBranch("dTwls") ? "dTwls" : "dT";
             TString tcut = FID + Form(" && %s>-999", tvar);
             TH1D* h = new TH1D("dTf", "", 400, -3, 3);
             t->Draw(Form("%s>>dTf", tvar), tcut, "goff");

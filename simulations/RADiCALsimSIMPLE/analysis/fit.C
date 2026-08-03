@@ -10,9 +10,13 @@ void fit(const char* file = "build/radsimple_output.root") {
 
     // WLS-only timing (2026-07-29 fix); all-light "dT" is multi-modal at
     // thinned light and unfittable — see scan.C for the full explanation.
-    TH1* d = (TH1*)f.Get("dTwls");
+    // dTcfd = the 5% CFD (2026-08-02); older files carry first-photon
+    // dTwls/dT, which are NOT comparable to CFD numbers.
+    TH1* d = (TH1*)f.Get("dTcfd");
+    if (!d) { d = (TH1*)f.Get("dTwls");
+              printf("  [!] no dTcfd (old file) -- first-photon fallback, not comparable to CFD\n"); }
     if (!d) { d = (TH1*)f.Get("dT");
-              printf("  [!] no dTwls (old file) -- sigma_t below is NOT reliable\n"); }
+              printf("  [!] oldest schema: all-light first photon, unreliable\n"); }
     TH1* e = (TH1*)f.Get("Elyso");
     TH1* n = (TH1*)f.Get("Npe");
     printf("\n%-14s %s\n", "events", "");

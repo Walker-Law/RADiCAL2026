@@ -175,11 +175,16 @@ void scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac 
         // the ntuple with FID applied — otherwise the beam-acceptance
         // pathologies documented above leak straight back into sigma_t.
         TTree* t = (TTree*)f.Get("ev");
-        const bool wlsTiming = (t->GetBranch("dTwls") != nullptr);
-        if (!wlsTiming)
-            printf("  [!] %s: no dTwls (pre-2026-07-29 file) -- sigma_t from"
-                   " all-light dT is NOT reliable\n", fname.Data());
-        const char* tvar = wlsTiming ? "dTwls" : "dT";
+        // Estimator preference: dTcfd (5% CFD, 2026-08-02, THE observable)
+        // > dTwls (first WLS photon, 07-29..08-02 files) > dT (all-light
+        // first photon, oldest files -- multi-modal, unreliable).
+        const char* tvar = t->GetBranch("dTcfd") ? "dTcfd"
+                         : t->GetBranch("dTwls") ? "dTwls" : "dT";
+        if (strcmp(tvar, "dTcfd") != 0)
+            printf("  [!] %s: no dTcfd (pre-2026-08-02 file) -- falling back"
+                   " to %s (first-photon estimator, NOT comparable to CFD"
+                   " results)\n", fname.Data(), tvar);
+        const bool wlsTiming = (strcmp(tvar, "dT") != 0);
         const TString tcut = FID + Form(" && %s>-999", tvar);
 
         TH1D* d = new TH1D("dTfine", "", 400, -3, 3);
