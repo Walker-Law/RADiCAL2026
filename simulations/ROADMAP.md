@@ -198,7 +198,10 @@ high-E energy turn-up (A8) — the last blocker on the <10% goal.
 - **Position S-curve study** — formalize D4 into a defensible figure.
 - **Pb-glass depth correction** on existing 15k data — corr(Npe, ePbGlass) =
   −0.65; ceiling says ~16.5% → ~11% at 120 GeV.
-- **Estimator + SPTR analysis** on Run C output as soon as it lands.
+- **Estimator + SPTR analysis (A3)** on ANY waveform-bearing file as soon as
+  it lands — no longer specific to Run C, every run now carries `phT`/`phId`/
+  `phWls`. Alternate CFD fractions, Nth-photon estimators, and SPTR smearing
+  are all `TTree::Draw`-level offline work.
 
 ---
 
