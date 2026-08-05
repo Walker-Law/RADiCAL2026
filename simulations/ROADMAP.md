@@ -188,7 +188,19 @@ used to be "later" is now the critical path.
 
 ---
 
-## 4. The two-day campaign (2026-08-02 → 08-04)
+## 4. The two-day campaign (2026-08-02 → 08-04) — **✅ COMPLETED 2026-08-04**
+
+**All four runs finished on curiosity and are analyzed. Outcomes:**
+
+| run | result | verdict |
+|---|---|---|
+| **C** CFD ladder | B = 20.4 ± 5.8 ps, true-light σ_t = 27.1 ± 2.5 ps | 8.24 ps refuted (D11) |
+| **A** 120 GeV f=0.5 | σ_t = 28.2 ± 1.8 ps direct | confirms the ladder |
+| **B** 25 GeV f=1.0 | σ_t = 34.5 ± 2.2 ps at TRUE light | most defensible number |
+| **D** centerE | σ_E/E 11.67% → 6.03% @120 GeV | **energy goal met** (A8) |
+
+Plus two offline products: the fraction scan (`cfdfrac.C`, D12) and the
+`scan.C` adaptive-binning fix (D13). The plan below is kept for the record.
 
 **⚠️ CURIOSITY ONLY — perseverence is shut down.** The campaign therefore runs
 **serially on one cluster**: ~40 h of work into a ~48 h window, no slack for a
