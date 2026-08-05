@@ -88,7 +88,8 @@ optical model is not obviously over-collecting.
 ratio depth-proxy automatically. **Never run in production** — that is D-tier
 work now queued (§4 Run D).
 
-**D8. THE FLOOR, MEASURED.** Once rungs existed on *both* sides of the σ_t·√f
+**D8. THE FLOOR, MEASURED — since superseded by D11 (the number was
+estimator-specific, not physical).** Once rungs existed on *both* sides of the σ_t·√f
 minimum, the 3-parameter model σ_t = √(C·f^−q + B²) became identifiable:
 **B = 8.24 ± 0.61 ps at 120 GeV, χ²/ndf = 2.71.** Before the turnover existed
 the same fit was degenerate (χ²/ndf 8–13). The fit is now in `lightscan.C`,
