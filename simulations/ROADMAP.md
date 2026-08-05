@@ -119,6 +119,52 @@ a `TTree::Draw` on the stored waveform, offline, no rerun. Consequence:
 **B = 8.24 ps (D8) was measured on the retired `dTwls` and must be
 re-derived on `dTcfd`** before it can be called final — gap A1c, §4 Run C.
 
+**D11. THE 8.24 ps FLOOR DID NOT SURVIVE THE ESTIMATOR SWITCH (2026-08-04,
+§4 campaign results).** Under `dTcfd` the 120 GeV ladder gives **B = 20.4 ±
+5.8 ps** (q = 0.90 ± 0.07, χ²/ndf = 0.42, clean 4-rise turnover), the linear
+A/B fit predicts true-light **σ_t = 27.1 ± 2.5 ps**, and the direct f=0.5
+run confirms it: **28.2 ± 1.8 ps**. The scaling exponent flipped to the
+*other* side of naive photon counting (σ_t ~ f^−0.40 vs first-photon's
+f^−0.7): a quantile improves *slower* than √N. So the old 8.24 ps was a
+property of the minimum-of-N statistic, not of the light. At 25 GeV, true
+light, measured directly with zero extrapolation: **σ_t = 34.5 ± 2.2 ps**
+(still photostatistics-limited — f=0.3→1.0 was still improving steeply, so
+the 25 GeV floor is below this). Light transport under a realizable
+estimator sits at ~28 ps at 120 GeV: **the <10 ps goal is not met by light
+alone**, and estimator/correction engineering on the stored waveforms is
+now the timing critical path.
+
+**D12. The offline fraction scan (`analysis/cfdfrac.C`, on stored
+waveforms — zero cluster time) mapped the whole estimator landscape:**
+
+| estimator (120 GeV, f=0.5) | σ_t (ps) | prompt share below threshold |
+|---|---|---|
+| first photon | 18.1 ± 1.2 | 100% — pure Cherenkov |
+| 0.5–2% quantile | unstable/bimodal | 9–35% — the prompt/WLS transition zone |
+| **5% CFD (the in-sim trigger)** | **30.7 ± 2.4** | **3.7% — safely WLS** |
+| 10% / 20% | 35.8 / 45.0 | 1.9% / 1.0% |
+
+Three findings: **(a) A1b is answered — the 5% threshold does NOT fire on
+the Cherenkov precursor** (≈4% prompt contamination, at both 120 and 25
+GeV); the back-of-envelope worry was wrong in the safe direction. **(b) 5%
+is near-optimal among stable WLS-side fractions** — going lower hits the
+bimodal transition zone (the D2 comb, resurfacing at the quantile level).
+**(c) The first photon is pure Cherenkov and *beats* the CFD** (18 ps at
+120 GeV, 25 ps at 25 GeV). Not realizable as a single photon (SPTR ~60 ps),
+but at true light the prompt cluster is ~10³ photons/end — a CFD *within
+the Cherenkov cluster* would average enough of them to beat SPTR, and is
+computable offline from `phT`/`phWls`. That is the one identified path
+back toward ~20 ps or below without touching electronics.
+
+**D13. D9 recurred in `scan.C` (2026-08-04).** Its timing fit had a fixed
+400-bin/±3 ns histogram; on the 293-fiducial-event Run A it quantized the
+core and reported 48.9 ± 9.8 ps where the true value was 30.7 ± 2.4 (caught
+because the stored-column refit and the waveform recomputation in
+`cfdfrac.C` agreed with each other and disagreed with `scan.C`). Now
+adaptive (~8 events/bin, clamped [20,300]) like `lightscan.C`; the 15k
+production numbers reproduce exactly. **Lesson upgraded: every fit macro
+gets adaptive binning the day it's written, not the day it fails.**
+
 ---
 
 ## 3. Accuracy gaps, ranked by how much they now matter
