@@ -2,17 +2,26 @@
 *Rewritten 2026-08-02. Every number is measured from data on disk — sources
 noted inline. Supersedes the 2026-07-30 version (in git history).*
 
-**HEADLINE: the light-transport timing floor is now MEASURED, not assumed:**
+**HEADLINE (updated 2026-08-04, from the §4 campaign):**
 
-> **B = 8.24 ± 0.61 ps at 120 GeV** (q = 1.41 ± 0.05, χ²/ndf = 2.71)
-> — light side only, no electronics. Under the 10 ps goal, with **~1.8 ps of
-> headroom** for SPTR + amplifier + digitizer combined.
-> ⚠️ Measured with the now-retired first-photon estimator (`dTwls`) — see D10
-> and gap A1c. Re-deriving this under the new 5% CFD estimator (`dTcfd`) is
-> the top item in §4's campaign, not yet done.
+> **Timing, realizable estimator:** under the electronics-free **5% CFD**
+> (`dTcfd`) the light-transport resolution at 120 GeV, true light, is
+> **≈ 28 ps** (direct f=0.5 point 28.2 ± 1.8 ps; ladder extrapolation
+> 27.1 ± 2.5 ps; turnover floor B = 20.4 ± 5.8 ps, χ²/ndf = 0.42).
+> **The old B = 8.24 ± 0.61 ps was an artifact of the retired first-photon
+> estimator** (D11) — the <10 ps goal is NOT met by light transport alone
+> under the estimator a real device uses.
+>
+> **Energy: the <10% goal is MET in sim.** The center E-type depth
+> correction (D7 hardware, run 2026-08-03) brings σ_E/E at 120 GeV from
+> 11.67% → **6.03%**, and every energy 10–120 GeV lands at 6.0–9.5%.
+>
+> **Most defensible single number:** 25 GeV at f = 1.0 — TRUE light, zero
+> thinning, zero extrapolation — **σ_t = 34.5 ± 2.2 ps** (5% CFD).
 
-That single number reframes the whole project: **the light is no longer the
-problem — the electronics are.** Everything below is organized around that.
+The framing has flipped twice in two days: the light side is a real problem
+again (~28 ps, not ~8), but the energy goal — which looked blocked — is
+closed. Everything below is organized around that.
 
 ---
 
