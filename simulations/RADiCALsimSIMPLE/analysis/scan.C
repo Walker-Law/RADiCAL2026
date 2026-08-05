@@ -189,8 +189,12 @@ void scan(const char* dir = "build/rootfiles", double rMax = 3.5, double pbFrac 
 
         TH1D* d = new TH1D("dTfine", "", 400, -3, 3);
         t->Draw(Form("%s>>dTfine", tvar), tcut, "goff");
+        // Rebin adaptively: ~8 events/bin, clamped [20,300] (D9 — a fixed
+        // 300-bin fit on low statistics quantized the core and faked
+        // 48.9 +- 9.8 ps out of a 30.7 +- 2.4 ps dataset, 2026-08-04).
         double mD = d->GetMean(), rD = d->GetRMS();
-        if (rD > 0) { d->SetBins(300, mD - 5*rD, mD + 5*rD);
+        const int nbA = std::min(300, std::max(20, (int)(d->GetEntries()/8)));
+        if (rD > 0) { d->SetBins(nbA, mD - 5*rD, mD + 5*rD);
                       t->Draw(Form("%s>>dTfine", tvar), tcut, "goff"); }
         d->SetDirectory(nullptr);
         coreFitAndSave(d, Form("#DeltaT%s at %.0f GeV;#DeltaT = t_{down}-t_{up} (ns);events",
