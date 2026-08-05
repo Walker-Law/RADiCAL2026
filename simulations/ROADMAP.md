@@ -29,9 +29,13 @@ closed. Everything below is organized around that.
 
 | dataset | events | state |
 |---|---|---|
-| SIMPLE 15k × 6E (curiosity) | 15000/E | on Mac — production reference |
+| SIMPLE 15k × 6E (curiosity) | 15000/E | on Mac — production reference (pre-CFD schema) |
 | Wrap tyvek 2.5k × 6E | 2500/E | on Mac — wrap verdict complete |
-| Light-scan ladder, 6 rungs × {25,120} | 200–2000/pt | on Mac — **floor measured at 120 GeV** |
+| Light-scan ladder, 6 rungs × {25,120} | 200–2000/pt | on Mac — dTwls-era floor (superseded by D11) |
+| **CFD ladder, 6 rungs × 120 GeV** | 500/pt | on Mac — **dTcfd floor measured**, full waveforms |
+| **Run A: 120 GeV f=0.5** | 800 | on Mac — direct floor point + waveforms |
+| **Run B: 25 GeV f=0.3, f=1.0** | 1500 each | on Mac — TRUE-LIGHT timing + waveforms |
+| **centerE: 6E × 5000** | 5000/E | on Mac — energy depth-correction, goal met |
 | archives | — | 5k SIMPLE, 10k 3-branch, DSB+firstsim frozen in `archive/` |
 
 **Production reference (15k, fiducial, dTwls):** σ_t = 26.2 ± 0.4 ps @120 GeV
