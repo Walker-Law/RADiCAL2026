@@ -184,7 +184,7 @@ used to be "later" is now the critical path.
 | A5 | **PDE(λ) flat 0.36.** DSB uses the real MicroFJ curve. Blue Cherenkov vs green WLS are detected at different efficiencies → changes the population mix that sets where the 5% threshold lands (A1b). | Moderate — shifts the prompt/WLS balance. | code + rerun |
 | A6 | **No photon budget cap.** DSB caps at 4M/event; SIMPLE has none. At f=1, 120 GeV that is ~5×10⁸ photons/event, and now EVERY one of them gets pushed into the waveform vectors (more memory pressure than before, not less). | Practical: an f→1 run may OOM, more so now than pre-08-02. Mitigated by choosing f=0.5 (§4) and smoke-testing first. | small code change if needed |
 | A7 | Single module ≠ 3×3 array (the papers' goal geometry) | **Needs your scope decision.** | large |
-| A8 | Fixed 15 mm WLS window → high-E energy turn-up | Owns the remaining energy gap | window scan |
+| A8 | ~~Fixed 15 mm WLS window energy turn-up~~ **CLOSED 2026-08-04:** the center E-type depth correction (ratio NpeCenter/Npe, both real SiPM sums, no truth) takes 120 GeV from 11.67% → **6.03%**; all of 10–120 GeV lands at 6.0–9.5%. Only 5 GeV (13.2%) stays over 10%. | The <10% energy goal is met in sim. | **Done** (centerE run + `scan.C`'s built-in correction). |
 
 ---
 
