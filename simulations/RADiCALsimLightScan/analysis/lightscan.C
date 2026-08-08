@@ -168,6 +168,10 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
            "E(GeV)", "A (ps.sqrt f)", "B (ps)", "chi2/ndf",
            "TRUE LIGHT sigma_t (ps)");
     auto c = new TCanvas("cl", "", 850, 620);
+    // log-log: 1/f spans ~3 decades and sigma_t^2 spans ~3 more — on linear
+    // axes all but the lowest-f rung collapse into the origin corner and the
+    // plot looks like "2 points" (2026-08-08).
+    c->SetLogx(); c->SetLogy();
     auto mg = new TMultiGraph();
     auto lg = new TLegend(0.15, 0.68, 0.45, 0.88);
     lg->SetBorderSize(0); lg->SetFillStyle(0);
