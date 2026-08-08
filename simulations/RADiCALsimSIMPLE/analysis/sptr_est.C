@@ -103,8 +103,8 @@ void sptr_est(const char* file = "build/rootfiles/run_a_f05/E120GeV.root",
                                 // SPTR values -- isolates the noise effect
         const double sptrNs = sptrPs / 1000.0;
 
-        std::vector<double> dCFD, dTruth;
-        std::vector<std::vector<double>> dEarly(earlyFracs.size());
+        std::vector<double> dCFD, dTruth, dBurst;
+        std::vector<std::vector<double>> dEarly(earlyK.size());
 
         for (Long64_t ev : fid) {
             t->GetEntry(ev);
