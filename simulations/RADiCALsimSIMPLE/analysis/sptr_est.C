@@ -131,12 +131,12 @@ void sptr_est(const char* file = "build/rootfiles/run_a_f05/E120GeV.root",
                 T[e].swap(Ts); W[e].swap(Ws);
             }
 
-            double sumCFD = 0, sumTruth = 0;
-            std::vector<double> sumEarly(earlyFracs.size(), 0.);
-            int nc = 0; bool truthOk = true;
+            double sumCFD = 0, sumTruth = 0, sumBurst = 0;
+            std::vector<double> sumEarly(earlyK.size(), 0.);
+            int nc = 0; bool truthOk = true, burstOk = true;
             for (int c = 0; c < 4; ++c) {
                 const size_t nu = T[c].size(), nd = T[c+4].size();
-                if (nu == 0 || nd == 0) { truthOk = false; continue; }
+                if (nu == 0 || nd == 0) { truthOk = burstOk = false; continue; }
                 ++nc;
 
                 // CFD5, on smeared+resorted times
@@ -146,32 +146,53 @@ void sptr_est(const char* file = "build/rootfiles/run_a_f05/E120GeV.root",
                 };
                 sumCFD += q05(T[c+4]) - q05(T[c]);
 
-                // TRUTH-mean: mean of smeared Cherenkov-tagged photons
-                auto chMean = [&](std::vector<double>& v, std::vector<char>& w) -> double {
+                // TRUTH-mean (WRONG, kept as the cautionary number): mean of
+                // ALL Cherenkov-tagged photons in the whole event, no time
+                // cut. Late-shower Cherenkov drags this to nanoseconds.
+                auto chMeanAll = [&](std::vector<double>& v, std::vector<char>& w) -> double {
                     double s = 0; long n = 0;
                     for (size_t j = 0; j < v.size(); ++j) if (!w[j]) { s += v[j]; ++n; }
                     return n > 0 ? s/n : NAN;
                 };
-                double mu = chMean(T[c], W[c]), md = chMean(T[c+4], W[c+4]);
+                double mu = chMeanAll(T[c], W[c]), md = chMeanAll(T[c+4], W[c+4]);
                 if (std::isnan(mu) || std::isnan(md)) truthOk = false;
                 else sumTruth += md - mu;
 
-                // EARLY-mean: mean of the first frac*N smeared-sorted photons
-                for (size_t jf = 0; jf < earlyFracs.size(); ++jf) {
+                // BURST-mean (the fix): mean of Cherenkov-tagged photons that
+                // arrive BEFORE the first WLS-tagged photon at that end --
+                // "before any WLS light shows up" is a genuine early cluster,
+                // not a truth-wide tag or a fixed fraction of total light.
+                // Still uses the truth tag (ceiling, not realizable) but
+                // isolates the right population this time.
+                auto burstMean = [&](std::vector<double>& v, std::vector<char>& w) -> double {
+                    size_t firstWls = v.size();
+                    for (size_t j = 0; j < v.size(); ++j) if (w[j]) { firstWls = j; break; }
+                    double s = 0; long n = 0;
+                    for (size_t j = 0; j < firstWls; ++j) if (!w[j]) { s += v[j]; ++n; }
+                    return n > 0 ? s/n : NAN;
+                };
+                double bu = burstMean(T[c], W[c]), bd = burstMean(T[c+4], W[c+4]);
+                if (std::isnan(bu) || std::isnan(bd)) burstOk = false;
+                else sumBurst += bd - bu;
+
+                // EARLY-mean: mean of the first FIXED K smeared-sorted
+                // photons (not a fraction -- see earlyK comment above)
+                for (size_t jk = 0; jk < earlyK.size(); ++jk) {
                     auto eMean = [&](std::vector<double>& v) {
-                        size_t k = (size_t)std::ceil(earlyFracs[jf] * v.size());
-                        if (k < 1) k = 1;
+                        size_t k = std::min((size_t)earlyK[jk], v.size());
+                        if (k < 1) return v.empty() ? 0.0 : v[0];
                         double s = 0; for (size_t j = 0; j < k; ++j) s += v[j];
                         return s / k;
                     };
-                    sumEarly[jf] += eMean(T[c+4]) - eMean(T[c]);
+                    sumEarly[jk] += eMean(T[c+4]) - eMean(T[c]);
                 }
             }
             if (nc == 4) {
                 dCFD.push_back(sumCFD / nc);
                 if (truthOk) dTruth.push_back(sumTruth / nc);
-                for (size_t jf = 0; jf < earlyFracs.size(); ++jf)
-                    dEarly[jf].push_back(sumEarly[jf] / nc);
+                if (burstOk) dBurst.push_back(sumBurst / nc);
+                for (size_t jk = 0; jk < earlyK.size(); ++jk)
+                    dEarly[jk].push_back(sumEarly[jk] / nc);
             }
         }
 
