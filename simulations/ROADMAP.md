@@ -315,7 +315,7 @@ high-E energy turn-up (A8) — the last blocker on the <10% goal.
 
 | goal | status | what closes it |
 |---|---|---|
-| **<10 ps** | **NOT met by light alone under a realizable estimator**: ~28 ps at 120 GeV true light with the 5% CFD (D11). The old "MET at 8.2 ps" was the first-photon artifact. | The one identified path is A1d — Cherenkov-cluster timing on the stored waveforms (~10³ prompt photons/end at true light), plus SPTR study (A3), all offline and free. Failing that, the goal needs hardware/estimator ideas, not more Geant4 runs. |
+| **<10 ps** | **NOT met by light alone, and now confirmed robust to that conclusion**: ~28–31 ps at 120 GeV (5% CFD, SPTR-immune per D14); 35–37 ps at 25 GeV true light. The old "MET at 8.2 ps" was the first-photon artifact (D11); estimator cleverness is exhausted (D14). | **Hardware, not analysis**: faster light path — prompt-light collection, thinner/faster WLS, geometry. Sim's remaining role: B(E) curve (local mini-ladders running) and testing hardware variants (e.g. window length, wrap) under `dTcfd`. |
 | **<10% σ_E/E** | **MET in sim (2026-08-04)**: 6.0–9.5% across 10–120 GeV with the center E-type depth correction (A8, D7). | Done at sim level. Remaining: does it survive SiPM saturation (A4) and real PDE (A5)? |
 | **1 mm position** | **MET in sim** (0.33–0.61 mm, improves with light) | Formalize offline |
 
