@@ -167,6 +167,38 @@ adaptive (~8 events/bin, clamped [20,300]) like `lightscan.C`; the 15k
 production numbers reproduce exactly. **Lesson upgraded: every fit macro
 gets adaptive binning the day it's written, not the day it fails.**
 
+**D14. SPTR is harmless to the CFD, and Cherenkov-cluster timing dies on
+contact with data (2026-08-08, `analysis/sptr_est.C` — all offline, zero
+cluster time).** Gaussian-smeared every stored photon time and re-derived
+every estimator at SPTR = 0/30/60/100 ps:
+
+| estimator, σ_t (ps) | 120 GeV f=0.5, SPTR 0 → 60 | 25 GeV TRUE light, SPTR 0 → 60 |
+|---|---|---|
+| **5% CFD (recomputed)** | **30.7 → 30.8** | **35.5 → 37.3** |
+| all-event Cherenkov mean (truth) | ~3700 (wrong population) | ~5600 (wrong population) |
+| pre-WLS burst mean (truth ceiling) | 47.6 → 47.3 | 89.0 → 87.7 |
+| mean of first 10 photons | 22.3 → 26.1 | 136.1 → 140.7 |
+
+Four verdicts. **(a) A3 is answered: the CFD is SPTR-immune** — even 100 ps
+of single-photon jitter moves it by ~1 ps, because a quantile of ~10³–10⁴
+photons averages the noise away. The ~28–31 ps light-side number stands
+as-is in front of a real SiPM. **(b) Naive cluster averaging fails for a
+reason worth remembering:** averaging only reduces noise when every sample
+measures the *same* thing. The Cherenkov tag spans the whole shower
+duration (late-shower Cherenkov → ns-scale spread), and any early *window*
+(fraction- or count-based) that reaches past the true prompt spike mixes
+two populations and inherits the wider one's variance. **(c) The one
+partial survivor:** mean-of-first-~10-photons beats the CFD at 120 GeV
+(26 vs 31 ps, SPTR-robust) — but collapses at 25 GeV (140 ps), because the
+prompt cluster shrinks with energy and K=10 over-reaches it. An
+energy-dependent estimator that needs per-configuration tuning is not a
+result to build on. **(d) A1d is closed, negative: no realizable estimator
+found below ~26 ps at 120 GeV, and none that generalizes across energy.**
+Light transport + estimator cleverness ends at ~28–31 ps (120 GeV) /
+~35–37 ps (25 GeV, true light, SPTR 60). Getting under 10 ps is now
+squarely a *hardware* question (faster light path — thinner window,
+prompt-light collection, faster WLS), not an analysis question.
+
 ---
 
 ## 3. Accuracy gaps, ranked by how much they now matter
