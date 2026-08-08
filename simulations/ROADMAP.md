@@ -36,6 +36,7 @@ closed. Everything below is organized around that.
 | **Run A: 120 GeV f=0.5** | 800 | on Mac — direct floor point + waveforms |
 | **Run B: 25 GeV f=0.3, f=1.0** | 1500 each | on Mac — TRUE-LIGHT timing + waveforms |
 | **centerE: 6E × 5000** | 5000/E | on Mac — energy depth-correction, goal met |
+| **CFD ladders 25/10/5 GeV, 5 rungs (f≤0.1)** | 500/pt | **RUNNING locally 08-08 → 08-09** — B(E) under `dTcfd` |
 | archives | — | 5k SIMPLE, 10k 3-branch, DSB+firstsim frozen in `archive/` |
 
 **Production reference (15k, fiducial, dTwls):** σ_t = 26.2 ± 0.4 ps @120 GeV
