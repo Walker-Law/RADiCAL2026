@@ -92,7 +92,10 @@ void sptr_est(const char* file = "build/rootfiles/run_a_f05/E120GeV.root",
     printf("events: %lld total, %zu fiducial\n", N, fid.size());
 
     const std::vector<double> sptrList = {0., 30., 60., 100.};   // ps
-    const std::vector<double> earlyFracs = {0.005, 0.01, 0.02};
+    const std::vector<int> earlyK = {10, 30, 100, 300, 1000};   // FIXED photon
+                                        // count, not a fraction -- a genuine
+                                        // early burst is set by particle
+                                        // multiplicity, not by total light
     long avgN = 0;
 
     for (double sptrPs : sptrList) {
