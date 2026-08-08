@@ -154,8 +154,9 @@ bimodal transition zone (the D2 comb, resurfacing at the quantile level).
 120 GeV, 25 ps at 25 GeV). Not realizable as a single photon (SPTR ~60 ps),
 but at true light the prompt cluster is ~10³ photons/end — a CFD *within
 the Cherenkov cluster* would average enough of them to beat SPTR, and is
-computable offline from `phT`/`phWls`. That is the one identified path
-back toward ~20 ps or below without touching electronics.
+computable offline from `phT`/`phWls`. That was the one identified path
+back toward ~20 ps or below without touching electronics — **tested in
+D14: it mostly does not survive.**
 
 **D13. D9 recurred in `scan.C` (2026-08-04).** Its timing fit had a fixed
 400-bin/±3 ns histogram; on the 293-fiducial-event Run A it quantized the
