@@ -301,6 +301,27 @@ under a realizable estimator?" — into a single, moderate-cost run.
 already written (D7). Gives the SiPM-only depth correction that targets the
 high-E energy turn-up (A8) — the last blocker on the <10% goal.
 
+### 4b. The local Mac campaign (2026-08-08 →)
+
+**Both clusters are down until end of August** (perseverence permanently,
+curiosity for the month). The Mac is now the only compute: 8 cores, 8 GB
+RAM, ~12 GB disk free. Benchmarked at **1.5 core-s per event·GeV at
+f=1e-2** (~3.7× faster per core than curiosity), which makes low-f ladder
+work entirely feasible locally — an overnight run buys ~230k event·GeV.
+
+**Running now (launched 08-08 evening, serial, ~15 h total):** 5-rung CFD
+ladders (f = 1e-3…1e-1, 500 ev/rung) at **25, 10, and 5 GeV** →
+`RADiCALsimLightScan/build/rootfiles/cfdladder{25,10,5}/`. Purpose: the
+**B(E) curve under `dTcfd`** (gap A2). If B falls with energy as the
+path-length argument predicts, low-energy operation may sit meaningfully
+under the 120 GeV ~28 ps — the first question any hardware discussion will
+ask. Analyze each with
+`root -l -b -q 'analysis/lightscan.C("build/rootfiles/cfdladder25")'` etc.
+
+Not feasible locally: true-light or f≥0.3 runs at 120 GeV (days of wall
+time, GBs of waveform per run against 12 GB free). Those wait for
+curiosity's return in September.
+
 ### Offline, free, no cluster (do while runs execute)
 - **Position S-curve study** — formalize D4 into a defensible figure.
 - **Pb-glass depth correction** on existing 15k data — corr(Npe, ePbGlass) =
