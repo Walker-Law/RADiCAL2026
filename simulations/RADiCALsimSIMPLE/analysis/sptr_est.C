@@ -203,12 +203,15 @@ void sptr_est(const char* file = "build/rootfiles/run_a_f05/E120GeV.root",
         printf("  %-28s sigma_t = %6.1f +- %4.1f ps  (n=%zu)\n",
                "CFD 5% (recomputed)", 1000*sg/2, 1000*err/2, dCFD.size());
         coreFit(dTruth, sg, err);
-        printf("  %-28s sigma_t = %6.1f +- %4.1f ps  (n=%zu)  [not realizable -- uses truth tag]\n",
-               "TRUTH Cherenkov-mean", 1000*sg/2, 1000*err/2, dTruth.size());
-        for (size_t jf = 0; jf < earlyFracs.size(); ++jf) {
-            coreFit(dEarly[jf], sg, err);
-            printf("  EARLY-mean %4.1f%% of light      sigma_t = %6.1f +- %4.1f ps  (n=%zu)\n",
-                   100*earlyFracs[jf], 1000*sg/2, 1000*err/2, dEarly[jf].size());
+        printf("  %-28s sigma_t = %6.1f +- %4.1f ps  (n=%zu)  [all-event tag: WRONG population, cautionary]\n",
+               "TRUTH all-Cherenkov mean", 1000*sg/2, 1000*err/2, dTruth.size());
+        coreFit(dBurst, sg, err);
+        printf("  %-28s sigma_t = %6.1f +- %4.1f ps  (n=%zu)  [truth-tag ceiling, pre-WLS burst only]\n",
+               "BURST Cherenkov mean", 1000*sg/2, 1000*err/2, dBurst.size());
+        for (size_t jk = 0; jk < earlyK.size(); ++jk) {
+            coreFit(dEarly[jk], sg, err);
+            printf("  EARLY-mean first %-5d photons sigma_t = %6.1f +- %4.1f ps  (n=%zu)\n",
+                   earlyK[jk], 1000*sg/2, 1000*err/2, dEarly[jk].size());
         }
     }
 
