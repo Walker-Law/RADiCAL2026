@@ -74,9 +74,31 @@ void DetectorConstruction::DefineMaterials() {
     const std::vector<G4double> phE =
         {1.55*eV, 2.07*eV, 2.48*eV, 2.76*eV, 3.10*eV, 3.54*eV};   // 800..350 nm
 
+    // DISPERSION (2026-08-08). RINDEX gets its own finer grid: Geant4
+    // propagates optical photons at the GROUP velocity it derives numerically
+    // from n(E), so flat or coarsely-sampled RINDEX silently means "no
+    // chromatic dispersion" — photons of every colour travel at c/n. At our
+    // ~25 ps floor precision that is a real omission: the group index of
+    // LYSO at its 420 nm emission is ~1.95 vs the phase index 1.82, i.e.
+    // in-crystal light is ~7% slower than the flat table said, and the
+    // emission band's group-index spread adds genuine arrival-time jitter
+    // that the old tables could not produce. Same energy SPAN as phE on
+    // purpose: the RINDEX range also defines the Cherenkov emission band,
+    // and widening it would change the Cherenkov yield.
+    const std::vector<G4double> phEfine =
+        {1.5498*eV, 1.7712*eV, 1.9997*eV, 2.2140*eV, 2.4311*eV, 2.5830*eV,
+         2.6953*eV, 2.8178*eV, 2.9173*eV, 3.0240*eV, 3.0996*eV, 3.1791*eV,
+         3.2627*eV, 3.3509*eV, 3.4440*eV, 3.5424*eV};   // 800..350 nm, dense in blue
+
     // --- Fused quartz: transparent light guide (n ~ 1.46). ---
+    // Malitson (1965) Sellmeier, evaluated on the fine grid. Derived group
+    // index at 420 nm comes out ~1.508 — silica's blue-end dispersion is
+    // strong, and the old 6-point table under-resolved it slightly.
     auto qMPT = new G4MaterialPropertiesTable();
-    qMPT->AddProperty("RINDEX",    phE, {1.455,1.457,1.460,1.462,1.466,1.472});
+    qMPT->AddProperty("RINDEX", phEfine,
+        {1.4533, 1.4553, 1.4574, 1.4595, 1.4618, 1.4635,
+         1.4648, 1.4663, 1.4676, 1.4691, 1.4701, 1.4713,
+         1.4725, 1.4738, 1.4753, 1.4769});
     qMPT->AddProperty("ABSLENGTH", phE, {10.*m,10.*m,10.*m,10.*m,8.*m,5.*m});
     quartz->SetMaterialPropertiesTable(qMPT);
 
