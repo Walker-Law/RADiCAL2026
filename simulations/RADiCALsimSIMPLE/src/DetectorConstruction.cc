@@ -122,7 +122,17 @@ void DetectorConstruction::DefineMaterials() {
         double v = std::atof(s); if (v > 0.) lysoScale = v;
     }
     auto yMPT = new G4MaterialPropertiesTable();
-    yMPT->AddProperty("RINDEX",    phE, std::vector<G4double>(6, 1.81));
+    // Effective single-pole Sellmeier n² = 1 + 2.0978·λ²/(λ² − 0.12796² µm²),
+    // anchored to the two numbers that matter for timing: phase index
+    // n(420 nm) = 1.820 (datasheet) and group index n_g(420 nm) ≈ 1.95
+    // (literature, LSO light-transport measurements). CAVEAT: this effective
+    // curve runs ~0.015 low in the red (n(633) = 1.785 vs ~1.80 measured) —
+    // acceptable, since almost no detected light is red — and n_g ≈ 1.95
+    // should be re-checked against a Sellmeier fit for our specific LYSO.
+    yMPT->AddProperty("RINDEX", phEfine,
+        {1.7756, 1.7805, 1.7864, 1.7926, 1.7996, 1.8051,
+         1.8093, 1.8143, 1.8185, 1.8232, 1.8267, 1.8305,
+         1.8347, 1.8392, 1.8442, 1.8497});
     yMPT->AddProperty("ABSLENGTH", phE, std::vector<G4double>(6, 40.*cm));
     yMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, {0.00,0.02,0.25,0.70,0.80,0.00}); // 420 nm peak
     yMPT->AddConstProperty("SCINTILLATIONYIELD",        33200./MeV * lysoScale);
