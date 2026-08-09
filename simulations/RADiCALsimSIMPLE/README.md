@@ -477,6 +477,24 @@ system, then layer complexity back in one piece at a time.
 
 Newest first. Dates are when the change landed, not when it was written up.
 
+### 2026-08-08
+
+- **Added chromatic dispersion to the optical model** (SIMPLE + Wrap,
+  `DetectorConstruction.cc`). Geant4 propagates optical photons at the group
+  velocity it derives from `RINDEX(E)`; our flat LYSO/DSB1 tables therefore
+  meant "no dispersion" — every wavelength travelled at c/n. New: 16-point
+  `RINDEX` curves (same energy span, so the Cherenkov band is unchanged) —
+  quartz from the Malitson Sellmeier; LYSO from an effective single-pole
+  Sellmeier anchored to n(420) = 1.82 and group index n_g(420) ≈ 1.95
+  (literature — in-crystal light is ~7% slower than the flat table said);
+  DSB1 with a polystyrene-like slope renormalized to keep n(500) = 1.500, so
+  light-guiding at the WLS emission is unchanged. Spectra/ABSLENGTH stay on
+  the old 6-point grid. Expected effect: a few-ps-scale increase in the
+  timing floor (chromatic arrival-time spread the old tables could not
+  produce). ⚠️ **Source-only so far: NOT yet rebuilt or A/B-validated** —
+  the local ladder campaign was running on the old binary when this landed.
+  Rebuild + one-rung A/B (f=1e-2, 120 GeV) before trusting any new run.
+
 ### 2026-08-02 (later)
 
 - **Replaced the first-photon timing estimator with an electronics-free 5%

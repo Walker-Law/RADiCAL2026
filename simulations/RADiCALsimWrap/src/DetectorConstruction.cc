@@ -82,9 +82,31 @@ void DetectorConstruction::DefineMaterials() {
     const std::vector<G4double> phE =
         {1.55*eV, 2.07*eV, 2.48*eV, 2.76*eV, 3.10*eV, 3.54*eV};   // 800..350 nm
 
+    // DISPERSION (2026-08-08). RINDEX gets its own finer grid: Geant4
+    // propagates optical photons at the GROUP velocity it derives numerically
+    // from n(E), so flat or coarsely-sampled RINDEX silently means "no
+    // chromatic dispersion" — photons of every colour travel at c/n. At our
+    // ~25 ps floor precision that is a real omission: the group index of
+    // LYSO at its 420 nm emission is ~1.95 vs the phase index 1.82, i.e.
+    // in-crystal light is ~7% slower than the flat table said, and the
+    // emission band's group-index spread adds genuine arrival-time jitter
+    // that the old tables could not produce. Same energy SPAN as phE on
+    // purpose: the RINDEX range also defines the Cherenkov emission band,
+    // and widening it would change the Cherenkov yield.
+    const std::vector<G4double> phEfine =
+        {1.5498*eV, 1.7712*eV, 1.9997*eV, 2.2140*eV, 2.4311*eV, 2.5830*eV,
+         2.6953*eV, 2.8178*eV, 2.9173*eV, 3.0240*eV, 3.0996*eV, 3.1791*eV,
+         3.2627*eV, 3.3509*eV, 3.4440*eV, 3.5424*eV};   // 800..350 nm, dense in blue
+
     // --- Fused quartz: transparent light guide (n ~ 1.46). ---
+    // Malitson (1965) Sellmeier, evaluated on the fine grid. Derived group
+    // index at 420 nm comes out ~1.508 — silica's blue-end dispersion is
+    // strong, and the old 6-point table under-resolved it slightly.
     auto qMPT = new G4MaterialPropertiesTable();
-    qMPT->AddProperty("RINDEX",    phE, {1.455,1.457,1.460,1.462,1.466,1.472});
+    qMPT->AddProperty("RINDEX", phEfine,
+        {1.4533, 1.4553, 1.4574, 1.4595, 1.4618, 1.4635,
+         1.4648, 1.4663, 1.4676, 1.4691, 1.4701, 1.4713,
+         1.4725, 1.4738, 1.4753, 1.4769});
     qMPT->AddProperty("ABSLENGTH", phE, {10.*m,10.*m,10.*m,10.*m,8.*m,5.*m});
     quartz->SetMaterialPropertiesTable(qMPT);
 
@@ -108,7 +130,17 @@ void DetectorConstruction::DefineMaterials() {
         double v = std::atof(s); if (v > 0.) lysoScale = v;
     }
     auto yMPT = new G4MaterialPropertiesTable();
-    yMPT->AddProperty("RINDEX",    phE, std::vector<G4double>(6, 1.81));
+    // Effective single-pole Sellmeier n² = 1 + 2.0978·λ²/(λ² − 0.12796² µm²),
+    // anchored to the two numbers that matter for timing: phase index
+    // n(420 nm) = 1.820 (datasheet) and group index n_g(420 nm) ≈ 1.95
+    // (literature, LSO light-transport measurements). CAVEAT: this effective
+    // curve runs ~0.015 low in the red (n(633) = 1.785 vs ~1.80 measured) —
+    // acceptable, since almost no detected light is red — and n_g ≈ 1.95
+    // should be re-checked against a Sellmeier fit for our specific LYSO.
+    yMPT->AddProperty("RINDEX", phEfine,
+        {1.7756, 1.7805, 1.7864, 1.7926, 1.7996, 1.8051,
+         1.8093, 1.8143, 1.8185, 1.8232, 1.8267, 1.8305,
+         1.8347, 1.8392, 1.8442, 1.8497});
     yMPT->AddProperty("ABSLENGTH", phE, std::vector<G4double>(6, 40.*cm));
     yMPT->AddProperty("SCINTILLATIONCOMPONENT1", phE, {0.00,0.02,0.25,0.70,0.80,0.00}); // 420 nm peak
     yMPT->AddConstProperty("SCINTILLATIONYIELD",        33200./MeV * lysoScale);
@@ -125,7 +157,15 @@ void DetectorConstruction::DefineMaterials() {
     //     WLSABSLENGTH at 400-449 nm, covering LYSO's 420 nm), re-emits green
     //     (WLSCOMPONENT peaked 495 nm), fast 3.5 ns. n=1.50. ---
     auto lMPT = new G4MaterialPropertiesTable();
-    lMPT->AddProperty("RINDEX",       phE, std::vector<G4double>(6, 1.50));
+    // Cauchy n = 1.4642 + 0.00895/λ²(µm) — polystyrene-LIKE dispersion slope,
+    // renormalized so n(500 nm) = 1.500 exactly: the old flat value at the
+    // green WLS emission peak, so light-guiding/trapping at the wavelengths
+    // that carry the signal is unchanged; only the wavelength DEPENDENCE
+    // (group velocity, chromatic spread) is new. n_g(500 nm) = 1.572.
+    lMPT->AddProperty("RINDEX", phEfine,
+        {1.4782, 1.4825, 1.4875, 1.4927, 1.4986, 1.5030,
+         1.5065, 1.5104, 1.5138, 1.5174, 1.5201, 1.5230,
+         1.5262, 1.5296, 1.5333, 1.5373});
     lMPT->AddProperty("ABSLENGTH",    phE, std::vector<G4double>(6, 1.*m));
     lMPT->AddProperty("WLSABSLENGTH", phE, {5.*m,5.*m,5.*m,2.*mm,2.*mm,5.*mm});     // eats blue
     lMPT->AddProperty("WLSCOMPONENT", phE, {0.08,0.45,1.00,0.20,0.02,0.00});        // emits green 495 nm
