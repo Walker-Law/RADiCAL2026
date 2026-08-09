@@ -149,7 +149,15 @@ void DetectorConstruction::DefineMaterials() {
     //     WLSABSLENGTH at 400-449 nm, covering LYSO's 420 nm), re-emits green
     //     (WLSCOMPONENT peaked 495 nm), fast 3.5 ns. n=1.50. ---
     auto lMPT = new G4MaterialPropertiesTable();
-    lMPT->AddProperty("RINDEX",       phE, std::vector<G4double>(6, 1.50));
+    // Cauchy n = 1.4642 + 0.00895/λ²(µm) — polystyrene-LIKE dispersion slope,
+    // renormalized so n(500 nm) = 1.500 exactly: the old flat value at the
+    // green WLS emission peak, so light-guiding/trapping at the wavelengths
+    // that carry the signal is unchanged; only the wavelength DEPENDENCE
+    // (group velocity, chromatic spread) is new. n_g(500 nm) = 1.572.
+    lMPT->AddProperty("RINDEX", phEfine,
+        {1.4782, 1.4825, 1.4875, 1.4927, 1.4986, 1.5030,
+         1.5065, 1.5104, 1.5138, 1.5174, 1.5201, 1.5230,
+         1.5262, 1.5296, 1.5333, 1.5373});
     lMPT->AddProperty("ABSLENGTH",    phE, std::vector<G4double>(6, 1.*m));
     lMPT->AddProperty("WLSABSLENGTH", phE, {5.*m,5.*m,5.*m,2.*mm,2.*mm,5.*mm});     // eats blue
     lMPT->AddProperty("WLSCOMPONENT", phE, {0.08,0.45,1.00,0.20,0.02,0.00});        // emits green 495 nm
