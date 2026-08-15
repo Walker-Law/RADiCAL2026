@@ -200,6 +200,40 @@ Light transport + estimator cleverness ends at ~28–31 ps (120 GeV) /
 squarely a *hardware* question (faster light path — thinner window,
 prompt-light collection, faster WLS), not an analysis question.
 
+**D14. B(E) RUNS THE WRONG WAY — low energy is WORSE (2026-08-09).** The
+25 GeV CFD ladder (5 local rungs f=1e-3…1e-1, joined to the existing f=0.3
+and f=1.0 Run B points → 7 rungs spanning 3 decades) turns over cleanly:
+**B = 32.8 ± 2.4 ps** (q = 1.12 ± 0.05, χ²/ndf = 0.83), linear A/B fit
+29.0 ps, and the **direct f=1.0 true-light point 35.5 ± 1.9 ps** — three
+methods agreeing. Against 120 GeV's B = 20.4 ± 5.8 / direct 28.2 ± 1.8 ps:
+**the floor FALLS with energy**, the opposite of gap A2's stated
+expectation ("B should GROW with E — deeper shower, more path spread, so
+low-E may be better"). That reasoning was wrong: B is not set by fixed
+path-length geometry but by **shower-to-shower fluctuation in the light
+emission profile**, which averages down as particle multiplicity grows.
+More energy → more particles → more reproducible pulse → lower floor.
+
+**The scaling is shallow, and that closes a door.** Direct points give
+B ~ E^−0.15; the turnover fits give E^−0.30. Even at the steeper exponent,
+reaching 10 ps from 28 ps at 120 GeV needs ~3500 GeV. **No achievable beam
+energy closes the timing gap** — energy is not a lever, and CMS-relevant
+energies are *below* our best measured point, i.e. worse than 28 ps.
+
+**D15. The turnover guard was counting the wrong thing (2026-08-09).**
+`lightscan.C` claimed "≥2 **consecutive** rises" but counted rises
+*anywhere* in the sequence. The 5-rung 25 GeV ladder — σ_t·√f = 22.7, 20.6,
+23.1, 18.6, 19.2, i.e. **flat within errors**, dn/UP/dn/UP scatter — scored
+"2 rises", passed the guard, and printed **B = 18.8 ± 30.7 ps: a 163%
+relative error reported as a measurement.** Two fixes: rises must now be
+an unbroken run, and B is suppressed unless its own relative error clears
+the same 30% bar the input points must clear. Re-verified: the 5-rung
+ladder now correctly says "possible turnover (1 rise)", while the 7-rung
+25 GeV and 6-rung 120 GeV verdicts are unchanged. **This is D9's lesson
+recurring a third time** (after `scan.C`'s fixed binning, D13) — and the
+first time the failure was in a *guard* rather than a fit. Guards need
+their own regression tests; a guard that never fires looks identical to a
+guard that works.
+
 ---
 
 ## 3. Accuracy gaps, ranked by how much they now matter
