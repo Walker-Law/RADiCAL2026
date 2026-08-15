@@ -17,7 +17,12 @@ noted inline. Supersedes the 2026-07-30 version (in git history).*
 > 11.67% → **6.03%**, and every energy 10–120 GeV lands at 6.0–9.5%.
 >
 > **Most defensible single number:** 25 GeV at f = 1.0 — TRUE light, zero
-> thinning, zero extrapolation — **σ_t = 34.5 ± 2.2 ps** (5% CFD).
+> thinning, zero extrapolation — **σ_t = 35.5 ± 1.9 ps** (5% CFD, fiducial;
+> the 34.5 ± 2.2 first quoted came from `scan.C` before its binning fix, D13).
+>
+> **B(E) falls with energy** (D14): 32.8 ± 2.4 ps at 25 GeV vs 20.4 ± 5.8 ps
+> at 120 GeV, scaling as only E^−0.15…−0.30 — so **beam energy cannot close
+> the timing gap**, and CMS-relevant energies are worse than our best point.
 
 The framing has flipped twice in two days: the light side is a real problem
 again (~28 ps, not ~8), but the energy goal — which looked blocked — is
