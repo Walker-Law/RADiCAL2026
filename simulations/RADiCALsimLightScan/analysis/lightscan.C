@@ -272,7 +272,15 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
     for (int ie = 0; ie < NE; ++ie) {
         printf("  %.0f GeV:", E[ie]);
         std::vector<double> x, y, ey;
-        double prev = -1; int nRises = 0, nFalls = 0;
+        // CONSECUTIVE rises, not total (bug fixed 2026-08-09): the old code
+        // counted every rise anywhere in the sequence, so a zigzag like
+        // dn,UP,dn,UP -- pure statistical scatter around a FLAT sigma_t*sqrt(f)
+        // -- scored 2 "rises" and triggered the turnover verdict, which then
+        // let the floor fit run and print B = 18.8 +- 30.7 ps (163% error) off
+        // a 5-rung 25 GeV ladder that had not turned over at all. A real
+        // turnover is a MINIMUM FOLLOWED BY A SUSTAINED RISE, so only an
+        // unbroken run of rises counts. (D9's lesson, third recurrence.)
+        double prev = -1; int nRises = 0, runRises = 0, nFalls = 0;
         for (int jf = 0; jf < NF; ++jf) {
             if (!(sigT[ie][jf] > 0)) continue;
             double v = sigT[ie][jf] * sqrt(F[jf]);
@@ -281,17 +289,18 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
             if (unreliable) {
                 arrow = " [UNRELIABLE >30% rel.err -- excluded from verdict]";
             } else if (prev >= 0) {
-                if (v > prev) { arrow = " UP"; ++nRises; }
-                else          { arrow = " dn"; ++nFalls; }
+                if (v > prev) { arrow = " UP"; ++runRises;
+                                if (runRises > nRises) nRises = runRises; }
+                else          { arrow = " dn"; ++nFalls; runRises = 0; }
             }
             printf("  f=%g:%.2f%s", F[jf], v, arrow);
             x.push_back(F[jf]); y.push_back(v);
             ey.push_back(sqrt(F[jf]) * sigTerr[ie][jf]);
             if (!unreliable) prev = v;   // don't chain off a garbage point
         }
-        printf("  ->  %s\n", nRises >= 2 ? "TURNOVER SEEN (>=2 consecutive rises)"
+        printf("  ->  %s\n", nRises >= 2 ? "TURNOVER SEEN (>=2 CONSECUTIVE rises)"
                             : nRises == 1 ? "possible turnover (1 rise) -- need one more rung to confirm"
-                            : "still falling -- no floor visible in this range yet");
+                            : "still falling / flat -- no floor visible in this range yet");
         auto g2 = new TGraphErrors(x.size(), &x[0], &y[0], nullptr, &ey[0]);
         g2->SetMarkerStyle(20 + ie); g2->SetMarkerColor(COL[ie % 6]);
         g2->SetLineColor(COL[ie % 6]);
