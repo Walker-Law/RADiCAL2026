@@ -332,16 +332,31 @@ void lightscan(const char* dir = "build/rootfiles", double rMax = 3.5) {
                 double B = ffit->GetParameter(2), eB = ffit->GetParError(2);
                 double q = ffit->GetParameter(1), eq = ffit->GetParError(1);
                 double c2n = ffit->GetNDF() > 0 ? ffit->GetChisquare()/ffit->GetNDF() : 999;
-                if (c2n < CHI2_BAD) {
+                // A good chi2 only says the CURVE fits; it says nothing about
+                // whether B itself is pinned down. A degenerate fit can ride a
+                // flat ladder with chi2/ndf ~ 1 and still return B = 18.8 +-
+                // 30.7 ps. Demand the SAME >30% relative-error bar the input
+                // points must pass -- a number whose error exceeds a third of
+                // itself is not a measurement. (2026-08-09.)
+                const bool badChi2 = !(c2n < CHI2_BAD);
+                const bool badErr  = !(B > 0) || (eB / B) > REL_ERR_BAD;
+                if (!badChi2 && !badErr) {
                     printf("      FLOOR (light-independent): B = %.2f +- %.2f ps"
                            "   [q = %.2f +- %.2f, chi2/ndf = %.2f]\n"
                            "      -> light-side true-light sigma_t at %.0f GeV = B"
                            " (power term ~0 at f=1); compare to the 10 ps goal,\n"
                            "         REMEMBERING electronics (SPTR, DRS4) add on top.\n",
                            B, eB, q, eq, c2n, E[ie]);
-                } else {
+                } else if (badChi2) {
                     printf("      floor fit attempted but chi2/ndf = %.1f fails the"
                            " %.0f cut -- not reported\n", c2n, CHI2_BAD);
+                } else {
+                    printf("      floor fit attempted: B = %.2f +- %.2f ps is"
+                           " %.0f%% relative error (>%.0f%% cut) -- UNCONSTRAINED,"
+                           " not reported.\n"
+                           "      The ladder needs rungs past the turnover to pin"
+                           " B down.\n",
+                           B, eB, 100*eB/(B > 0 ? B : 1), 100*REL_ERR_BAD);
                 }
             }
         }
