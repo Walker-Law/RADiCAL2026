@@ -325,7 +325,8 @@ a special flag anymore.
 only **1.8%** in quadrature — this measures B essentially *directly*, with no
 model extrapolation at all. Chosen over f=1.0 deliberately: f=1.0 buys only 1.1
 percentage points more (0.7% vs 1.8% excess) for **double** the cost and double
-the OOM risk (5×10⁸ vs 2.5×10⁸ photons/event, against no budget cap — Gap A6).
+the out-of-memory risk (5×10⁸ vs 2.5×10⁸ photons/event, against no budget cap
+— Gap A6).
 Now reads `dTcfd` automatically (no flag needed) — this is a second,
 independent cross-check of whatever Run C finds.
 - **Success:** σ_t(dTcfd) lands close to Run C's fitted B → confirms the floor
