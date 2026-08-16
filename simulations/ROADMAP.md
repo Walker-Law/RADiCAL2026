@@ -16,7 +16,8 @@ from data on disk — sources noted inline. Supersedes the 2026-07-30 version
 > **Three independent escape routes were checked and all failed — this is
 > now a settled conclusion, not an open question:**
 > 1. **A cleverer estimator?** No. First photon (pure Cherenkov) beats the
->    CFD, but averaging over the early burst to make it realizable either
+>    constant fraction discriminator, but averaging over the early burst to
+>    make it realizable either
 >    hits the wrong photon population (Discovery 12) or is too energy-fragile to
 >    trust (Discovery 14). Best found: 26 ps at 120 GeV, useless at 25 GeV.
 > 2. **Is single-photon time resolution the real problem, so a better silicon photomultiplier would fix it?** No —
