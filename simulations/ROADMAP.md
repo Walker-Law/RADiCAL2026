@@ -359,7 +359,8 @@ under a realizable estimator?" — into a single, moderate-cost run.
 already written (D7). Gives the SiPM-only depth correction that targets the
 high-E energy turn-up (A8) — the last blocker on the <10% goal.
 
-### 4b. The local Mac campaign (2026-08-08 →)
+### 4b. The local Mac campaign (2026-08-08 → 08-09) — **✅ DONE for the
+question it was launched to answer**
 
 **Both clusters are down until end of August** (perseverence permanently,
 curiosity for the month). The Mac is now the only compute: 8 cores, 8 GB
@@ -367,18 +368,27 @@ RAM, ~12 GB disk free. Benchmarked at **1.5 core-s per event·GeV at
 f=1e-2** (~3.7× faster per core than curiosity), which makes low-f ladder
 work entirely feasible locally — an overnight run buys ~230k event·GeV.
 
-**Running now (launched 08-08 evening, serial, ~15 h total):** 5-rung CFD
-ladders (f = 1e-3…1e-1, 500 ev/rung) at **25, 10, and 5 GeV** →
-`RADiCALsimLightScan/build/rootfiles/cfdladder{25,10,5}/`. Purpose: the
-**B(E) curve under `dTcfd`** (gap A2). If B falls with energy as the
-path-length argument predicts, low-energy operation may sit meaningfully
-under the 120 GeV ~28 ps — the first question any hardware discussion will
-ask. Analyze each with
-`root -l -b -q 'analysis/lightscan.C("build/rootfiles/cfdladder25")'` etc.
+**Launched 08-08 evening as a 3-energy serial chain** (25, then 10, then
+5 GeV, 5-rung CFD ladders each). **In practice only 25 GeV ran**: the
+terminal that launched it was closed without `nohup` protecting the outer
+chain, which SIGHUP-killed the whole script mid-way through the 25 GeV
+ladder's 5th rung. The single missing rung was relaunched properly
+detached and finished 08-09; 10 GeV and 5 GeV were never reached and the
+chain was not restarted for them (see below for why).
 
-Not feasible locally: true-light or f≥0.3 runs at 120 GeV (days of wall
-time, GBs of waveform per run against 12 GB free). Those wait for
-curiosity's return in September.
+**Result: the question this was for — B(E), gap A2 — is answered (D15).**
+Joining the 5 local rungs to the existing f=0.3/f=1.0 Run B points gave a
+clean 7-rung turnover: B(25 GeV) = 32.8 ± 2.4 ps, *higher* than 120 GeV's
+20.4 ± 5.8 ps. Since B falls as E rises rather than the reverse, 10 GeV and
+5 GeV would only confirm an even higher (worse) floor — informative for a
+complete published B(E) curve, but not decision-relevant for the <10 ps
+question, which is why they're marked deprioritized in §1 rather than
+relaunched. A genuine analysis-macro bug (D16) was also caught and fixed
+along the way, on the 5-rung 25 GeV data before the rescue rung landed.
+
+Not feasible locally, regardless: true-light or f≥0.3 runs at 120 GeV
+(days of wall time, GBs of waveform per run against 12 GB free). Those
+wait for curiosity's return in September.
 
 ### Offline, free, no cluster (do while runs execute)
 - **Position S-curve study** — formalize D4 into a defensible figure.
