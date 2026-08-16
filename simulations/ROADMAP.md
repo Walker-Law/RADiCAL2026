@@ -1,8 +1,9 @@
 # RADiCAL roadmap — toward <10 ps, <10% σ_E/E, 1 mm position
-*Rewritten 2026-08-02. Every number is measured from data on disk — sources
-noted inline. Supersedes the 2026-07-30 version (in git history).*
+*Rewritten 2026-08-02, continuously updated since. Every number is measured
+from data on disk — sources noted inline. Supersedes the 2026-07-30 version
+(in git history).*
 
-**HEADLINE (updated 2026-08-04, from the §4 campaign):**
+**HEADLINE (updated 2026-08-09):**
 
 > **Timing, realizable estimator:** under the electronics-free **5% CFD**
 > (`dTcfd`) the light-transport resolution at 120 GeV, true light, is
@@ -12,6 +13,25 @@ noted inline. Supersedes the 2026-07-30 version (in git history).*
 > estimator** (D11) — the <10 ps goal is NOT met by light transport alone
 > under the estimator a real device uses.
 >
+> **Three independent escape routes were checked and all failed — this is
+> now a settled conclusion, not an open question:**
+> 1. **A cleverer estimator?** No. First photon (pure Cherenkov) beats the
+>    CFD, but averaging over the early burst to make it realizable either
+>    hits the wrong photon population (D12) or is too energy-fragile to
+>    trust (D14). Best found: 26 ps at 120 GeV, useless at 25 GeV.
+> 2. **Is SPTR the real problem, so a better SiPM would fix it?** No —
+>    the opposite: `dTcfd` is **SPTR-immune** (D14). 100 ps of single-photon
+>    jitter moves it ~1 ps. The floor was never an electronics-noise
+>    problem to begin with.
+> 3. **Would a different beam energy help?** No — **B falls as energy
+>    RISES** (D15, backwards from the original guess), only as E^−0.15,
+>    so closing 28→10 ps needs ~3500 GeV. Not a lever.
+>
+> **Net: <10 ps is now purely a hardware-geometry question** (faster light
+> path, thinner/prompt-collecting design), not an analysis or estimator
+> question. The simulation's remaining timing role is testing hardware
+> variants under `dTcfd`, plus one still-open systematic (dispersion, A9).
+>
 > **Energy: the <10% goal is MET in sim.** The center E-type depth
 > correction (D7 hardware, run 2026-08-03) brings σ_E/E at 120 GeV from
 > 11.67% → **6.03%**, and every energy 10–120 GeV lands at 6.0–9.5%.
@@ -19,14 +39,14 @@ noted inline. Supersedes the 2026-07-30 version (in git history).*
 > **Most defensible single number:** 25 GeV at f = 1.0 — TRUE light, zero
 > thinning, zero extrapolation — **σ_t = 35.5 ± 1.9 ps** (5% CFD, fiducial;
 > the 34.5 ± 2.2 first quoted came from `scan.C` before its binning fix, D13).
->
-> **B(E) falls with energy** (D14): 32.8 ± 2.4 ps at 25 GeV vs 20.4 ± 5.8 ps
-> at 120 GeV, scaling as only E^−0.15…−0.30 — so **beam energy cannot close
-> the timing gap**, and CMS-relevant energies are worse than our best point.
 
-The framing has flipped twice in two days: the light side is a real problem
-again (~28 ps, not ~8), but the energy goal — which looked blocked — is
-closed. Everything below is organized around that.
+Three flips in a week: the light side went from "solved" (8 ps) to "broken"
+(28 ps, D11) to "broken and confirmed unfixable by estimator/electronics/
+energy tricks" (D14, D15) — while the energy goal, which looked blocked,
+turned out to be closed all along (A8). Everything below is organized
+around that. One open systematic remains before ~28 ps itself is fully
+trusted: chromatic dispersion was missing from the optical model and is
+fixed in source but not yet rebuilt or measured (A9).
 
 ---
 
