@@ -224,7 +224,7 @@ reaching 10 ps from 28 ps at 120 GeV needs ~3500 GeV. **No achievable beam
 energy closes the timing gap** — energy is not a lever, and CMS-relevant
 energies are *below* our best measured point, i.e. worse than 28 ps.
 
-**D15. The turnover guard was counting the wrong thing (2026-08-09).**
+**D16. The turnover guard was counting the wrong thing (2026-08-09).**
 `lightscan.C` claimed "≥2 **consecutive** rises" but counted rises
 *anywhere* in the sequence. The 5-rung 25 GeV ladder — σ_t·√f = 22.7, 20.6,
 23.1, 18.6, 19.2, i.e. **flat within errors**, dn/UP/dn/UP scatter — scored
