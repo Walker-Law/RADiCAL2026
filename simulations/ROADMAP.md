@@ -149,7 +149,7 @@ Section 4 campaign results).** Under `dTcfd` the 120 GeV ladder gives **B = 20.4
 5.8 ps** (q = 0.90 ± 0.07, χ²/ndf = 0.42, clean 4-rise turnover), the linear
 A/B fit predicts true-light **σ_t = 27.1 ± 2.5 ps**, and the direct f=0.5
 run confirms it: **28.2 ± 1.8 ps**. The scaling exponent flipped to the
-*other* side of naive photon counting (σ_t ~ f^−0.40 vs first-photon's
+*other* side of naive photon counting (σ_t ~ f^−0.40 versus first-photon's
 f^−0.7): a quantile improves *slower* than √N. So the old 8.24 ps was a
 property of the minimum-of-N statistic, not of the light. At 25 GeV, true
 light, measured directly with zero extrapolation: **σ_t = 34.5 ± 2.2 ps**
@@ -213,7 +213,7 @@ duration (late-shower Cherenkov → ns-scale spread), and any early *window*
 (fraction- or count-based) that reaches past the true prompt spike mixes
 two populations and inherits the wider one's variance. **(c) The one
 partial survivor:** mean-of-first-~10-photons beats the constant fraction discriminator at 120 GeV
-(26 vs 31 ps, robust to single-photon time resolution) — but collapses at 25 GeV (140 ps), because the
+(26 versus 31 ps, robust to single-photon time resolution) — but collapses at 25 GeV (140 ps), because the
 prompt cluster shrinks with energy and K=10 over-reaches it. An
 energy-dependent estimator that needs per-configuration tuning is not a
 result to build on. **(d) Gap A1d is closed, negative: no realizable estimator
@@ -240,12 +240,12 @@ More energy → more particles → more reproducible pulse → lower floor.
 B ~ E^−0.15; the turnover fits give E^−0.30. Even at the steeper exponent,
 reaching 10 ps from 28 ps at 120 GeV needs ~3500 GeV. **No achievable beam
 energy closes the timing gap** — energy is not a lever, and CMS-relevant
-energies are *below* our best measured point, i.e. worse than 28 ps.
+energies are *below* our best measured point, that is, worse than 28 ps.
 
 **Discovery 16. The turnover guard was counting the wrong thing (2026-08-09).**
 `lightscan.C` claimed "≥2 **consecutive** rises" but counted rises
 *anywhere* in the sequence. The 5-rung 25 GeV ladder — σ_t·√f = 22.7, 20.6,
-23.1, 18.6, 19.2, i.e. **flat within errors**, dn/UP/dn/UP scatter — scored
+23.1, 18.6, 19.2 — that is, **flat within errors**, dn/UP/dn/UP scatter — scored
 "2 rises", passed the guard, and printed **B = 18.8 ± 30.7 ps: a 163%
 relative error reported as a measurement.** Two fixes: rises must now be
 an unbroken run, and B is suppressed unless its own relative error clears
@@ -274,13 +274,13 @@ standing between "~28 ps" and a fully trusted number.
 | **Gap A1b** | ~~Is the 5% threshold safe?~~ **ANSWERED 2026-08-04 (Discovery 12): yes.** Prompt contamination below the 5% threshold is ≈4% at both 120 and 25 GeV — the constant fraction discriminator times on wavelength-shifted light, not Cherenkov. The transition zone is at 0.5–2%, and it is unstable there — do not lower the fraction into it. | Was the one question that could flip the timing story. | **Done** (`analysis/cfdfrac.C` on stored waveforms). |
 | **Gap A1c** | ~~Does B = 8.24 ps survive `dTcfd`?~~ **ANSWERED 2026-08-04 (Discovery 11): no.** True-light 120 GeV under the 5% constant fraction discriminator is ≈28 ps (three independent routes agree). 8.24 ps was the order-statistic artifact. | The headline number changed: light alone no longer meets <10 ps. | **Done** (constant fraction discriminator ladder + Run A). |
 | **Gap A1d** | ~~Cherenkov-cluster timing~~ **ANSWERED 2026-08-08 (Discovery 14): mostly no.** Best realizable variant (mean of first ~10 photons) gives 26 ps at 120 GeV and survives single-photon time resolution smearing, but collapses to 140 ps at 25 GeV — energy-fragile, not a foundation. No estimator found below ~26 ps. | The last identified analysis-side path under ~20 ps is closed; <10 ps is now a hardware question. | **Done** (`analysis/sptr_est.C`). |
-| **Gap A2** | ~~B(E)?~~ **ANSWERED 2026-08-09 (Discovery 15): B falls with energy, shallowly.** 25 GeV B = 32.8 ± 2.4 ps vs 120 GeV B = 20.4 ± 5.8 ps; B ~ E^−0.15…−0.30. The gap's own stated expectation (B grows with E) was backwards. | **Energy is not a lever** — closing 28→10 ps would need ~3500 GeV, and real running is below 120 GeV, i.e. worse. | **Done** (7-rung 25 GeV ladder). |
+| **Gap A2** | ~~B(E)?~~ **ANSWERED 2026-08-09 (Discovery 15): B falls with energy, shallowly.** 25 GeV B = 32.8 ± 2.4 ps versus 120 GeV B = 20.4 ± 5.8 ps; B ~ E^−0.15…−0.30. The gap's own stated expectation (B grows with E) was backwards. | **Energy is not a lever** — closing 28→10 ps would need ~3500 GeV, and real running is below 120 GeV, that is, worse. | **Done** (7-rung 25 GeV ladder). |
 | **Gap A3** | ~~Single-photon time resolution (~60 ps single-photon jitter)~~ **ANSWERED 2026-08-08 (Discovery 14): harmless to the constant fraction discriminator.** Even 100 ps of single-photon time resolution jitter shifts `dTcfd` by ~1 ps (quantile of ~10³–10⁴ photons). The light-side numbers stand unchanged in front of a real silicon photomultiplier. | The largest feared electronics term costs ~nothing at the trigger level. | **Done** (`analysis/sptr_est.C`). |
 | Gap A4 | **Silicon photomultiplier saturation.** ~9×10⁵ photons on 5676 microcells = ~20× oversubscribed at true light. | Kills the true-light *energy* number. Timing is largely immune to the EARLY photons that set a 5% quantile — worth stating explicitly rather than assuming. | code + rerun |
 | Gap A5 | **Photon detection efficiency as a function of wavelength flat at 0.36.** DSB uses the real MicroFJ curve. Blue Cherenkov versus green wavelength-shifted light are detected at different efficiencies → changes the population mix that sets where the 5% threshold lands (Gap A1b). | Moderate — shifts the prompt-versus-wavelength-shifted-light balance. | code + rerun |
 | Gap A6 | **No photon budget cap.** DSB caps at 4M/event; SIMPLE has none. At f=1, 120 GeV that is ~5×10⁸ photons/event, and now EVERY one of them gets pushed into the waveform vectors (more memory pressure than before, not less). | Practical: an f→1 run may run out of memory, more so now than pre-08-02. Mitigated by choosing f=0.5 (Section 4) and smoke-testing first. | small code change if needed |
 | Gap A7 | Single module ≠ 3×3 array (the papers' goal geometry) | **Needs your scope decision.** | large |
-| **Gap A9** | **No chromatic dispersion (found 2026-08-08).** LYSO/DSB1 `RINDEX` was flat → Geant4's derived group velocity = c/n for every wavelength: in-crystal light ~7% too fast (real n_g(420) ≈ 1.95 vs 1.82) and ZERO chromatic arrival-time spread. Biases B low by an unmeasured few-ps-scale amount. | The floor numbers (Discovery 11) carry this as a systematic until re-run. | **Source ready** (16-pt Sellmeier curves, SIMPLE + Wrap, syntax-checked). Rebuild + 1-rung A/B (f=1e-2, 120 GeV, ~40 min local) once the running ladder finishes. |
+| **Gap A9** | **No chromatic dispersion (found 2026-08-08).** LYSO/DSB1 `RINDEX` was flat → Geant4's derived group velocity = c/n for every wavelength: in-crystal light ~7% too fast (real n_g(420) ≈ 1.95 versus 1.82) and ZERO chromatic arrival-time spread. Biases B low by an unmeasured few-ps-scale amount. | The floor numbers (Discovery 11) carry this as a systematic until re-run. | **Source ready** (16-pt Sellmeier curves, SIMPLE + Wrap, syntax-checked). Rebuild + 1-rung A/B (f=1e-2, 120 GeV, ~40 min local) once the running ladder finishes. |
 | Gap A8 | ~~Fixed 15 mm wavelength-shifting window energy turn-up~~ **CLOSED 2026-08-04:** the center E-type depth correction (ratio NpeCenter/Npe, both real silicon-photomultiplier sums, no truth) takes 120 GeV from 11.67% → **6.03%**; all of 10–120 GeV lands at 6.0–9.5%. Only 5 GeV (13.2%) stays over 10%. | The <10% energy goal is met in simulation. | **Done** (centerE run + `scan.C`'s built-in correction). |
 
 ---
@@ -325,8 +325,8 @@ a special flag anymore.
 **f = 0.5, 120 GeV, 800 events.** At f=0.5 the photostatistics term contributes
 only **1.8%** in quadrature — this measures B essentially *directly*, with no
 model extrapolation at all. Chosen over f=1.0 deliberately: f=1.0 buys only 1.1
-percentage points more (0.7% vs 1.8% excess) for **double** the cost and double
-the out-of-memory risk (5×10⁸ vs 2.5×10⁸ photons/event, against no budget cap
+percentage points more (0.7% versus 1.8% excess) for **double** the cost and double
+the out-of-memory risk (5×10⁸ versus 2.5×10⁸ photons/event, against no budget cap
 — Gap A6).
 Now reads `dTcfd` automatically (no flag needed) — this is a second,
 independent cross-check of whatever Run C finds.
