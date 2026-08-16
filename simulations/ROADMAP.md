@@ -69,15 +69,11 @@ fixed in source but not yet rebuilt or measured (A9).
 (at f=1e-2); σ_E/E = 46.9%/√E ⊕ 7.82% (fit ≤50 GeV), best **10.56% @100 GeV**,
 11.03% @120; 100% timing efficiency; σ_x ≈ 0.33 mm @120 GeV (probe).
 
-**The ladder (120 GeV), σ_t·√f — the turnover that made B measurable:**
-
-| f | 0.001 | 0.003 | 0.01 | 0.03 | 0.1 | 0.3 |
-|---|---|---|---|---|---|---|
-| σ_t (ps) | 134.1 | 55.0 | 25.8 | 15.0 | 9.5 | 7.5 |
-| σ_t·√f | 4.24 | 3.01 | **2.58 ←min** | 2.60 ↑ | 3.00 ↑ | 4.10 ↑ |
-
-25 GeV is still falling at f=0.1 (4.86) — **its floor has not been reached**,
-which is itself informative (see A2 below).
+**The ladder above is the ORIGINAL dTwls-era 120 GeV ladder** (D8's now-
+superseded 8.24 ps fit) — kept here only as the historical record of what
+first showed a turnover existed. For the current, trusted numbers use the
+CFD-era ladders: 120 GeV (D11, B=20.4±5.8 ps) and 25 GeV (D15, B=32.8±2.4
+ps).
 
 ---
 
