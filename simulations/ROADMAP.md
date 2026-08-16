@@ -233,7 +233,8 @@ relative error reported as a measurement.** Two fixes: rises must now be
 an unbroken run, and B is suppressed unless its own relative error clears
 the same 30% bar the input points must clear. Re-verified: the 5-rung
 ladder now correctly says "possible turnover (1 rise)", while the 7-rung
-25 GeV and 6-rung 120 GeV verdicts are unchanged. **This is D9's lesson
+25 GeV and 6-rung 120 GeV verdicts are unchanged (see D15 above for the
+correct 7-rung result this guard now protects). **This is D9's lesson
 recurring a third time** (after `scan.C`'s fixed binning, D13) — and the
 first time the failure was in a *guard* rather than a fit. Guards need
 their own regression tests; a guard that never fires looks identical to a
