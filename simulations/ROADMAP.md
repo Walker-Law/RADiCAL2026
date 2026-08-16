@@ -261,8 +261,11 @@ guard that works.
 
 ## 3. Accuracy gaps, ranked by how much they now matter
 
-With B = 8.2 ps and only ~1.8 ps of headroom, the ranking has inverted. What
-used to be "later" is now the critical path.
+The old framing here was "B = 8.2 ps, only ~1.8 ps of headroom." That's
+gone (D11) — the real number is B ≈ 20–33 ps depending on energy, and
+estimator/SPTR/energy fixes are all exhausted (D14, D15). Most of A1's
+children below are now CLOSED; A9 (dispersion) is the one open systematic
+standing between "~28 ps" and a fully trusted number.
 
 | # | gap | why it matters NOW | cost to close |
 |---|---|---|---|
