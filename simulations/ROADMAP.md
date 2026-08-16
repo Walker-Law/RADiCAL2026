@@ -205,7 +205,7 @@ Light transport + estimator cleverness ends at ~28–31 ps (120 GeV) /
 squarely a *hardware* question (faster light path — thinner window,
 prompt-light collection, faster WLS), not an analysis question.
 
-**D14. B(E) RUNS THE WRONG WAY — low energy is WORSE (2026-08-09).** The
+**D15. B(E) RUNS THE WRONG WAY — low energy is WORSE (2026-08-09).** The
 25 GeV CFD ladder (5 local rungs f=1e-3…1e-1, joined to the existing f=0.3
 and f=1.0 Run B points → 7 rungs spanning 3 decades) turns over cleanly:
 **B = 32.8 ± 2.4 ps** (q = 1.12 ± 0.05, χ²/ndf = 0.83), linear A/B fit
