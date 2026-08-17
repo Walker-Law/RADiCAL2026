@@ -475,3 +475,8 @@ wait for curiosity's return in September.
 - Non-standard runs use `RADSIMPLE_OUT_SUBDIR` so they cannot overwrite
   production rungs.
 - Estimated completion times come from measured per-cluster constants only.
+- **Check the error bar before trusting a low-statistics result** (Discovery
+  17 — a 50-event check returned 180 ± 109 ps and was correctly discarded
+  before use; the fourth time this project has hit the small-statistics
+  trap, the first time the discipline caught it in real time instead of
+  after the fact).
