@@ -67,6 +67,7 @@ regime itself (Gap A9b).
 | **centerE: 6E × 5000** | 5000/E | on Mac — energy depth-correction, goal met |
 | **25 GeV constant fraction discriminator ladder, 7 rungs (f=1e-3…1.0)** | 500–1500/pt | on Mac — **DONE 08-09**, B(25 GeV) measured (Discovery 15) |
 | 10 GeV / 5 GeV constant fraction discriminator ladders | — | **not run** — planned in Section 4b but the chain crashed after only 25 GeV finished; deprioritized since Discovery 15 already shows energy isn't a lever (lower E only gets worse) |
+| **dispersion_check, 120 GeV, f=0.01** | 500 (+ 50 discarded) | on Mac — **DONE 08-16**: +17% shift versus the pre-dispersion rung, direction confirmed, 1.1σ (Discovery 17); the 50-event first attempt was unusable and discarded, not reported |
 | archives | — | 5k SIMPLE, 10k 3-branch, DSB+firstsim frozen in `archive/` |
 
 **Production reference (15k, fiducial, dTwls):** σ_t = 26.2 ± 0.4 ps @120 GeV
