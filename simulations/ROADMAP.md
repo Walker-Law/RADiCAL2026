@@ -3,7 +3,7 @@
 from data on disk — sources noted inline. Supersedes the 2026-07-30 version
 (in git history).*
 
-**HEADLINE (updated 2026-08-09):**
+**HEADLINE (updated 2026-08-16):**
 
 > **Timing, realizable estimator:** under the electronics-free **5% constant fraction discriminator**
 > (`dTcfd`) the light-transport resolution at 120 GeV, true light, is
