@@ -48,8 +48,9 @@ Three flips in a week: the light side went from "solved" (8 ps) to "broken"
 energy tricks" (Discovery 14, Discovery 15) — while the energy goal, which looked blocked,
 turned out to be closed all along (Gap A8). Everything below is organized
 around that. One open systematic remains before ~28 ps itself is fully
-trusted: chromatic dispersion was missing from the optical model and is
-fixed in source but not yet rebuilt or measured (Gap A9).
+trusted: chromatic dispersion, now rebuilt and confirmed to shift the
+timing spread (+17%, Discovery 17), but not yet measured at the floor
+regime itself (Gap A9b).
 
 ---
 
