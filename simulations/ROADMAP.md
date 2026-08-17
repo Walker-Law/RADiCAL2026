@@ -262,6 +262,45 @@ first time the failure was in a *guard* rather than a fit. Guards need
 their own regression tests; a guard that never fires looks identical to a
 guard that works.
 
+**Discovery 17. Chromatic dispersion measurably shifts the timing spread,
+direction as predicted — magnitude at the floor itself still open
+(2026-08-15/16).** Rebuilt `RADiCALsimSIMPLE` with the Sellmeier curves
+prepared for Gap A9 (Malitson quartz; an effective single-pole LYSO curve
+anchored to phase index n(420)=1.82 and group index n_g(420)≈1.95; a
+renormalized wavelength-shifting-material curve) — first clean build of
+that source, confirmed with `make` before any run. Same-configuration
+comparison, 120 GeV, f=0.01 (standard production thinning), 500 events,
+`dTcfd`:
+
+| | σ_t (ps) | source |
+|---|---|---|
+| pre-dispersion (flat RINDEX) | 99.7 ± 8.1 | the Discovery 11 ladder, same rung |
+| with dispersion | 116.9 ± 12.9 | this check, 500 events, 30.6% fiducial keep |
+
+**+17% (+17.2 ps), in the predicted direction** — dispersion adds a
+chromatic-spread mechanism the flat tables structurally could not produce
+— but at only **1.1σ significance** (combined error 15.2 ps): real-looking,
+not proven at this statistics.
+
+**A first attempt at this same check used only 50 events and had to be
+discarded.** It returned 180.6 ± 108.9 ps — a 60% relative error, with the
+light-yield fit even worse (23.15 ± 52.18%, error bigger than the value) —
+off only ~16 fiducial events. **This is the fourth time this project has
+hit the small-statistics trap**, after Discovery 9 (the binning bug),
+Discovery 13 (`scan.C`'s recurrence), and Discovery 16 (the turnover
+guard's recurrence). This time is different in kind: the standing
+discipline (Section 6) worked as intended — the bad number was visibly
+bad (its own error bar said so) and was discarded before being used for
+anything, rather than silently reported as a result.
+
+**What this does and does not establish.** f=0.01 is deep in the
+photostatistics-dominated part of the curve, not the near-true-light
+regime (f≥0.5) where the actual ~28 ps headline floor (B) was measured. A
+confirmed shift at a thinned rung is real evidence that dispersion
+matters, but it is not yet a measurement of how much B itself moves.
+Closing that is Gap A9b: rerun the direct f=0.5 point (or the full 120 GeV
+ladder) with dispersion enabled.
+
 ---
 
 ## 3. Accuracy gaps, ranked by how much they now matter
