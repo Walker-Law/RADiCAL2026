@@ -308,8 +308,10 @@ ladder) with dispersion enabled.
 The old framing here was "B = 8.2 ps, only ~1.8 ps of headroom." That's
 gone (Discovery 11) — the real number is B ≈ 20–33 ps depending on energy, and
 estimator, single-photon-time-resolution, and energy fixes are all exhausted (Discovery 14, Discovery 15). Most of Gap A1's
-children below are now CLOSED; Gap A9 (dispersion) is the one open systematic
-standing between "~28 ps" and a fully trusted number.
+children below are now CLOSED; Gap A9b (does dispersion move the floor
+itself) is the one open systematic standing between "~28 ps" and a fully
+trusted number — Gap A9's existence and direction are now confirmed
+(Discovery 17).
 
 | # | gap | why it matters NOW | cost to close |
 |---|---|---|---|
