@@ -31,9 +31,12 @@ from data on disk — sources noted inline. Supersedes the 2026-07-30 version
 > **Net: <10 ps is now purely a hardware-geometry question** (faster light
 > path, thinner/prompt-collecting design), not an analysis or estimator
 > question. The simulation's remaining timing role is testing hardware
-> variants under `dTcfd`. Dispersion (Gap A9) is now confirmed to matter —
-> **+17% at a thinned rung, direction as predicted, 1.1σ** (Discovery 17) —
-> but its effect on the ~28 ps floor itself is still open (Gap A9b).
+> variants under `dTcfd`. Dispersion (Gap A9) was rebuilt and given a first
+> check (+17%, 1.1σ, Discovery 17), but **a second independent check
+> contradicts it** — opposite-sign shift, and an unrelated quantity moved
+> by a similar amount (Discovery 18). The honest state: dispersion's real
+> effect, if any, is currently smaller than sample-to-sample noise: open,
+> not confirmed either way.
 >
 > **Energy: the <10% goal is MET in simulation.** The center E-type depth
 > correction (Discovery 7 hardware, run 2026-08-03) brings σ_E/E at 120 GeV from
