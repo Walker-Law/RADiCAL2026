@@ -301,6 +301,52 @@ matters, but it is not yet a measurement of how much B itself moves.
 Closing that is Gap A9b: rerun the direct f=0.5 point (or the full 120 GeV
 ladder) with dispersion enabled.
 
+**Discovery 18. A second, independent check does NOT confirm Discovery
+17 — dispersion's effect is smaller than sample-to-sample noise at this
+statistics, and the direction isn't even consistent (2026-08-19).** Ran a
+three-point f-scan at 25 GeV (f = 0.01, 0.1, 0.5; 500, 500, 250 events) on
+the dispersion-enabled build, purpose-built macro `analysis/fscan25.C`
+(same cuts and two-pass core-fit convention as `scan.C`, so it's directly
+comparable). The f=0.5 rung took 26.4 hours locally — one of 250 events
+ran essentially alone for most of that time while the other seven worker
+threads sat idle, a live example of Gap A6 (no photon-budget cap): one
+unusually large shower can dominate a run's wall-clock time.
+
+Timing fell steeply with more light as expected — 201.0 ± 13.8 ps → 76.3
+± 5.1 ps → 35.6 ± 4.2 ps across f = 0.01 → 0.1 → 0.5 — and energy
+resolution stayed roughly flat (12–14%), both consistent with the
+established physics. But re-deriving the pre-dispersion 25 GeV baseline
+*with `scan.C`'s own cuts* (not `lightscan.C`'s, which turned out to skip
+the Pb-glass containment veto entirely — caught before trusting the
+comparison) gave a genuinely confusing result:
+
+| f | no dispersion | with dispersion | shift |
+|---|---|---|---|
+| 0.01 | 284.2 ± 42.0 ps | 201.0 ± 13.8 ps | **−29%, 1.9σ — DECREASE** |
+| 0.1 | 64.8 ± 5.6 ps | 76.3 ± 5.1 ps | **+18%, 1.5σ — increase** |
+
+Two f values, opposite-sign shifts. The decisive piece of evidence that
+this is noise, not physics: the Npe-based energy resolution — a photon
+*count*, which chromatic dispersion of arrival *time* has no mechanism to
+touch — also shifted by a comparable amount at f=0.1 (10.44% → 12.64%,
+1.5σ). Dispersion cannot cause that. The only honest read is that two
+independent 500-event samples, different random seeds, differ from each
+other by about this much just from ordinary shower-to-shower statistical
+fluctuation — and that fluctuation is comparable to or larger than
+whatever the true dispersion signal is. **Discovery 17's +17%, 1.1σ
+result is not confirmed by this second test; if anything, this shows the
+true effect is noisier and less settled than one measurement could say.**
+
+**The path to actually resolving this:** brute-force independent samples
+at this size can't separate a several-percent optical effect from
+shower-to-shower variance. A **paired comparison** — identical random
+seed for the dispersion-on and dispersion-off runs, so the same shower
+develops both times and only the optical transport differs — would
+cancel the dominant noise source and need far fewer events to reach the
+same statistical power. That's the right next move if this is worth
+pinning down precisely, rather than more brute-force statistics at
+independent seeds.
+
 ---
 
 ## 3. Accuracy gaps, ranked by how much they now matter
