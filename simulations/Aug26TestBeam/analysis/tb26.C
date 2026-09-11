@@ -147,7 +147,7 @@ void tb26(const char* base = "build/rootfiles", double rMax = 3.5) {
         bool anyG = false;
         for (size_t im = 0; im < MATS.size(); ++im) {
             std::vector<double> x, y, ey, x2, y2, ey2;
-            for (const Point& p : all[im]) {
+            for (const TbPoint& p : all[im]) {
                 double v = 0, e = 0;
                 if (which == 0) { v = p.ly;   e = p.lyErr; }
                 if (which == 1) { v = p.resN; e = p.resNErr; }
@@ -183,7 +183,7 @@ void tb26(const char* base = "build/rootfiles", double rMax = 3.5) {
     for (size_t im = 0; im < MATS.size(); ++im) {
         if (all[im].size() < 3) continue;
         std::vector<double> x, yE, eE, yT, eT;
-        for (const Point& p : all[im]) {
+        for (const TbPoint& p : all[im]) {
             if (p.resN > 0) { x.push_back(p.E); yE.push_back(p.resN); eE.push_back(p.resNErr); }
         }
         TF1 fE("fE", "sqrt([0]*[0]/x+[1]*[1])", 0.5, 12);
@@ -194,7 +194,7 @@ void tb26(const char* base = "build/rootfiles", double rMax = 3.5) {
                std::fabs(fE.GetParameter(0)), std::fabs(fE.GetParameter(1)),
                fE.GetNDF() > 0 ? fE.GetChisquare()/fE.GetNDF() : 0.);
         x.clear();
-        for (const Point& p : all[im]) {
+        for (const TbPoint& p : all[im]) {
             if (p.sT > 0 && p.sTErr/p.sT <= 0.30) { x.push_back(p.E); yT.push_back(p.sT); eT.push_back(p.sTErr); }
         }
         if (x.size() >= 3) {
