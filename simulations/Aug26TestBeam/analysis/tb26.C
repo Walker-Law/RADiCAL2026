@@ -66,7 +66,7 @@ static bool coreFit(TTree* t, const char* expr, const TString& cut,
     return true;
 }
 
-struct Point { double E, ly, lyErr, resN, resNErr, sT, sTErr, sU, sUErr;
+struct TbPoint { double E, ly, lyErr, resN, resNErr, sT, sTErr, sU, sUErr;
                double fCher, fDirect, fWls, fFil; long nFid; };
 
 void tb26(const char* base = "build/rootfiles", double rMax = 3.5) {
