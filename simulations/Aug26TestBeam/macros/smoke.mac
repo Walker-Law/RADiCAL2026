@@ -1,0 +1,10 @@
+# smoke.mac — 20 events at 5 GeV: proves the pipeline end to end in a minute.
+# Run from the sim root with the filament set:
+#   RADSIMPLE_CAPILLARY=LUAG bash run_tb26.sh LUAG 20      (preferred: logs itself)
+# or from build/:
+#   RADSIMPLE_CAPILLARY=LUAG ./radtb26 smoke.mac
+/run/initialize
+/run/printProgress 5
+/analysis/setFileName rootfiles/smoke/E5GeV
+/gun/energy 5 GeV
+/run/beamOn 20
