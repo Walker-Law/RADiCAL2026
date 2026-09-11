@@ -29,6 +29,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include "TTreeFormula.h"
 
 static const char* kHoleDist =
     "min(min(sqrt(x*x+y*y),min(sqrt((x-3.5)*(x-3.5)+(y-3.5)*(y-3.5)),"
