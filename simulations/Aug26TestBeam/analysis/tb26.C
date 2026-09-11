@@ -96,7 +96,7 @@ void tb26(const char* base = "build/rootfiles", double rMax = 3.5) {
                                "E(GeV)", "fiducial", "<Npe>", "sigma_E/E (%)",
                                "sigma_t pair(ps)", "sigma_t ideal(ps)",
                                "light: Cher/direct/shifted/filament"); any = true; }
-            Point p{}; p.E = E;
+            TbPoint p{}; p.E = E;
             p.nFid = t->GetEntries(FID);
             double mu, sg, se;
             const TString tag = Form("%s_E%.0f", mat.c_str(), E);
