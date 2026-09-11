@@ -119,8 +119,6 @@ void tb26(const char* base = "build/rootfiles", double rMax = 3.5) {
             }
             // light composition (mean fractions over fiducial events)
             auto frac = [&](const char* col) {
-                TH1D hh("hh", "", 1, -1e9, 1e9);
-                t->Draw(Form("%s/Npe>>hh", col), FID + " && Npe>0", "goff");
                 double m = 0; long n = 0;
                 TTreeFormula fx("fx", Form("%s/Npe", col), t); TTreeFormula fc("fc", FID + " && Npe>0", t);
                 for (long i = 0; i < t->GetEntries(); ++i) { t->GetEntry(i);
