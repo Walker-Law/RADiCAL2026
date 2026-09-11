@@ -530,3 +530,45 @@ wait for curiosity's return in September.
   before use; the fourth time this project has hit the small-statistics
   trap, the first time the discipline caught it in real time instead of
   after the fact).
+
+---
+
+## 7. August 2026 CERN T10 beam test — simulation (started 2026-09-11)
+
+**New goal.** Reproduce the configurations actually run at T10 in the last
+week of August 2026 and compare the three corner-filament materials on light
+yield, energy resolution, and timing resolution versus beam energy. The
+readout was **upstream only** (the downstream sensors and their card were
+removed), the beam was 1 to 11 GeV electrons, and there was no lead glass and
+no timing reference in the analysis. Everything lives in
+`simulations/Aug26TestBeam/` — its README is the full description.
+
+**Decisions taken with the beam-test lead (2026-09-11):** same 14 × 14 mm
+module, all four corners T-type with the 15 mm filament window left at the
+120 GeV shower-max depth, centre hole empty, downstream end open, electrons
+at the manifest energies (LuAG:Ce and DSB1 at 1, 3, 5, 7, 9, 11 GeV; EJ199 at
+1, 3, 5, 7, 9 GeV), electronics-free light recorder with the stored waveform,
+LuAG:Ce from literature values, EJ199 deferred until its properties are known,
+true light (no thinning) on the cluster.
+
+**Two things worth knowing before the results arrive.**
+1. **Shower max is upstream of the filament window at these energies** —
+   roughly 21 to 33 mm depth versus a 33 to 48 mm window. The window was not
+   moved. The 120 GeV intuition about "light from shower max" does not
+   transfer; the filament samples the falling edge of the shower.
+2. **The timing observable had to change.** With one sensor per corner and no
+   reference, the old down-minus-up difference does not exist. The realizable
+   replacement is `dTpair`, the average of the two diagonal corner-pair
+   differences (its spread is the single-corner resolution directly); the
+   ideal-reference number `tUpMean` is kept as an upper bound.
+
+**Status.** Built, smoke-tested for both materials locally (240 events at
+5 GeV, 1% light): the pipeline, the per-photon origin tag, and the analysis
+macro all work. One bug found and fixed on the way: the LuAG:Ce emission
+table has to extend to 800 nm, as DSB1's does, or a rare red Cherenkov photon
+absorbed in the filament has no legal re-emission energy and Geant4 aborts.
+Cluster production (about 22 hours per material at true light) is the next
+step. Placeholders that a measurement would replace: the beam spot (2.9 mm,
+the H2 value), the counter positions (H2 spacings), and every LuAG:Ce optical
+constant — the 60 ns decay time most of all, since it is 17 times DSB1's and
+should dominate the timing comparison.

@@ -276,3 +276,9 @@ events are skipped, and timing errors above 30% are flagged.
   reference); per-photon origin code replaces the two-way shifted/prompt tag.
 - `analysis/tb26.C`: light yield, energy resolution, and timing versus energy,
   overlaid across materials.
+- Smoke-tested locally for both materials (240 events at 5 GeV, 1% light):
+  pipeline, origin tags, and analysis all work. One bug found and fixed: the
+  LuAG:Ce emission table must extend to 800 nm (as DSB1's does), otherwise a
+  rare red Cherenkov photon absorbed in the filament has no re-emission energy
+  at or below its own and Geant4 aborts with a fatal wavelength-shifter
+  exception. The shift absorption is now truly transparent above 500 nm too.
