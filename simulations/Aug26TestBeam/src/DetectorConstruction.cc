@@ -227,23 +227,31 @@ void DetectorConstruction::DefineMaterials() {
         }
         lMPT->AddProperty("RINDEX", nE, nV);
 
-        // Wavelength-shifting absorption: two Gaussian Ce3+ bands.
+        // Wavelength-shifting absorption: two Gaussian Ce3+ bands. Above 500 nm
+        // the material is transparent to the shift process (1e9 mm): a finite
+        // "cap" there let rare red Cherenkov photons be absorbed, which then
+        // had no legal re-emission energy (Geant4 cannot up-convert) — a
+        // fatal G4OpWLS exception, found in the first 240-event check.
         std::vector<G4double> aE, aL;
         for (double lam = 800.; lam >= 350.; lam -= 10.) {
             const double alpha = 2.0*std::exp(-0.5*std::pow((lam-450.)/20.,2))
                                + 2.0*std::exp(-0.5*std::pow((lam-345.)/15.,2));   // per mm
-            const double L = (alpha > 1e-4) ? std::min(1./alpha, 5000.) : 5000.; // mm, capped 5 m
+            const double L = (lam > 500. || alpha < 1e-6) ? 1e9 : 1./alpha;        // mm
             aE.push_back(hc_eVnm/lam*eV);
             aL.push_back(L*mm);
         }
         lMPT->AddProperty("WLSABSLENGTH", aE, aL);
         lMPT->AddProperty("ABSLENGTH", phE, std::vector<G4double>(6, 1.*m));   // bulk, non-shifting
 
-        // Emission spectrum (shared by the shift and the scintillation).
+        // Emission spectrum (shared by the shift and the scintillation): a
+        // Gaussian at 530 nm, 40 nm wide, TABULATED all the way to 800 nm (as
+        // DSB1's is) so that every absorbed photon has re-emission energies at
+        // or below its own — Geant4 samples the emission at or below the
+        // absorbed energy, and needs the table to reach that low.
         std::vector<G4double> eE, eV_;
-        for (double lam = 700.; lam >= 440.; lam -= 10.) {
+        for (double lam = 800.; lam >= 440.; lam -= 10.) {
             eE.push_back(hc_eVnm/lam*eV);
-            eV_.push_back(std::exp(-0.5*std::pow((lam-530.)/40.,2)));
+            eV_.push_back(std::max(1e-6, std::exp(-0.5*std::pow((lam-530.)/40.,2))));
         }
         lMPT->AddProperty("WLSCOMPONENT",            eE, eV_);
         lMPT->AddProperty("SCINTILLATIONCOMPONENT1", eE, eV_);
