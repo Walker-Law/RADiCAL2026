@@ -82,7 +82,7 @@ void tb26(const char* base = "build/rootfiles", double rMax = 3.5) {
     const TString FID = Form("%s>1.5 && sqrt(x*x+y*y)<%g", kHoleDist, rMax);
     printf("fiducial: r<%g mm, >1.5 mm from any hole; no containment veto\n", rMax);
 
-    std::vector<std::vector<Point>> all(MATS.size());
+    std::vector<std::vector<TbPoint>> all(MATS.size());
     for (size_t im = 0; im < MATS.size(); ++im) {
         const std::string& mat = MATS[im];
         bool any = false;
