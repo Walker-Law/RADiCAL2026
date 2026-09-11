@@ -1,0 +1,12 @@
+# vis.mac — geometry viewer. Run:  ./radsimple   (no argument)
+/run/initialize
+/vis/open OGL 900x700
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 70 20
+/vis/viewer/zoom 3
+/vis/viewer/set/style surface
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate 3
+# Fire a couple of showers so you can see the beam + optical photons:
+/gun/energy 50 GeV
+#/run/beamOn 2
