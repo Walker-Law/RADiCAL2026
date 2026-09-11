@@ -1,4 +1,5 @@
-# vis.mac — geometry viewer. Run:  ./radsimple   (no argument)
+# vis.mac — geometry viewer. Run from build/:
+#   RADSIMPLE_CAPILLARY=LUAG ./radtb26      (no macro argument)
 /run/initialize
 /vis/open OGL 900x700
 /vis/drawVolume
@@ -8,5 +9,5 @@
 /vis/scene/add/trajectories smooth
 /vis/scene/endOfEventAction accumulate 3
 # Fire a couple of showers so you can see the beam + optical photons:
-/gun/energy 50 GeV
+/gun/energy 5 GeV
 #/run/beamOn 2
