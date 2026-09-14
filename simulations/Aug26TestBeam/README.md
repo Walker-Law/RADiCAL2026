@@ -101,7 +101,7 @@ replace it:
 
 | column | definition | what it means |
 |---|---|---|
-| `dTpair` | average of the two diagonal corner-pair differences, `((t05[0]−t05[3]) + (t05[1]−t05[2]))/2` | **realizable** with exactly the channels read out; cancels the event start time; its spread equals the single-corner resolution directly, no factor of 2 |
+| `dTpair` | difference of the two diagonal corner-pair means, `(t05[0]+t05[3])/2 − (t05[1]+t05[2])/2` — the beam test's own reference-free estimator (`radical-t10-2026/macros/DiagDiff.C`) | **realizable** with exactly the channels read out; cancels the event start time and, to first order, a beam-position shift in x and in y; its spread equals the single-corner resolution, and half of it is the intrinsic four-corner-average resolution (the experiment's `sigma_intr`) |
 | `tUpMean` | mean of the four `t05[k]`, absolute | what a **perfect** external time reference would see; an upper bound on any reference-based measurement |
 
 Corner index convention: 0 = (+,+), 1 = (+,−), 2 = (−,+), 3 = (−,−), so the
