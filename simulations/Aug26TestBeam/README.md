@@ -323,7 +323,9 @@ simulation; the gains are anchored on one data point.
 | `src/RunAction.cc` | histograms and the ntuple schema |
 | `run_tb26.sh` | run one material at the manifest energies (generates its macro) |
 | `pull_tb26.sh` | copy cluster output to the Mac, all material folders |
-| `analysis/tb26.C` | the three comparisons, overlaid across materials |
+| `analysis/tb26.C` | the three comparisons, overlaid across materials (light level) |
+| `analysis/tb26_emulate.C` | the beam test's own analysis run on emulated waveforms; prints its tables |
+| `analysis/response_kernels.txt` | the fitted impulse responses of the two readout chains, with provenance |
 | `macros/smoke.mac`, `macros/vis.mac` | a one-minute check; the geometry viewer |
 
 ---
