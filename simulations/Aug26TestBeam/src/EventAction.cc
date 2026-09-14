@@ -35,10 +35,16 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
         if (fT05Up[c] > -999.) { sum += fT05Up[c]; ++n; }
     }
     const G4double tUpMean = (n > 0) ? sum / n : -999.;
-    // diagonal pairs 0-3 and 1-2 (corner convention in EventAction.hh)
+    // Diagonal-difference estimator, EXACTLY the beam test's DiagDiff.C:
+    //   (mean of one diagonal pair) - (mean of the other diagonal pair),
+    // pairs 0-3 and 1-2 (corner convention in EventAction.hh). Each pair mean
+    // is insensitive to a beam-position shift in EITHER x or y to first order
+    // (opposite corners move oppositely), so the difference cancels position
+    // drift as well as the event start time. (The previous definition,
+    // averaging the two within-pair differences, cancelled only one axis.)
     const bool all4 = (n == 4);
     const G4double dTpair = all4
-        ? 0.5 * ((fT05Up[0] - fT05Up[3]) + (fT05Up[1] - fT05Up[2]))
+        ? 0.5 * (fT05Up[0] + fT05Up[3]) - 0.5 * (fT05Up[1] + fT05Up[2])
         : -999.;
 
     a->FillH1(0, fElyso / GeV);
