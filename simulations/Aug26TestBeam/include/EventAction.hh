@@ -88,7 +88,7 @@ public:
     std::vector<G4double> fPhOrigin;   //                        origin code 0..3
 
     static constexpr G4int    kNLayers = 29;
-    static constexpr G4double kCfdFrac = 0.05;   // the test-beam convention
+    static constexpr G4double kCfdFrac = 0.05;   // SIMPLE's light-level convention (not the beam test's 15% waveform crossing)
 
 private:
     static constexpr G4double kBig = 1e9;
