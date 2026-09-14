@@ -15,13 +15,19 @@
 // times t05[k] (the arrival time of the ceil(0.05 N)-th photon at corner k,
 // the light-level analog of the test-beam's 5% constant-fraction convention):
 //
-//   dTpair  = ( (t05[0]-t05[3]) + (t05[1]-t05[2]) ) / 2
-//             The two DIAGONAL corner pairs, averaged. Each difference cancels
-//             the unknown event start time (no external reference needed), so
-//             this is REALIZABLE with exactly the channels that were read out.
-//             For four equal, independent corners sigma(dTpair) equals the
-//             single-corner resolution directly: no factor of 2 to remember.
-//             Corner index convention: 0=(+,+) 1=(+,-) 2=(-,+) 3=(-,-).
+//   dTpair  = ( t05[0]+t05[3] )/2  -  ( t05[1]+t05[2] )/2
+//             The difference of the two DIAGONAL corner-pair means — the beam
+//             test's own reference-free estimator (radical-t10-2026,
+//             macros/DiagDiff.C, "(NW+SE)/2 - (NE+SW)/2"). It cancels the
+//             unknown event start time (no external reference needed), so it
+//             is REALIZABLE with exactly the channels that were read out, and
+//             each pair mean is first-order insensitive to a beam-position
+//             shift in x AND y, so position drift cancels too. For four equal,
+//             independent corners sigma(dTpair) equals the single-corner
+//             resolution, and sigma(dTpair)/2 is the intrinsic four-corner-
+//             average resolution — the experiment's "sigma_intr" column.
+//             Corner index convention: 0=(+,+) 1=(+,-) 2=(-,+) 3=(-,-);
+//             the diagonals are {0,3} and {1,2}.
 //   tUpMean = mean of the t05[k] that exist, ABSOLUTE (relative to the gun
 //             firing at t=0). Its event-to-event spread is the resolution one
 //             would get against a PERFECT external time reference — an upper
