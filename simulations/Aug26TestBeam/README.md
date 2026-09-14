@@ -88,8 +88,12 @@ data arrives; nothing else needs to change.
 
 Every detected photon is stored (the "perfect waveform": `phT`, `phId`,
 `phOrigin`), and one electronics-free trigger is computed from it, exactly as
-in SIMPLE: `t05[k]`, the arrival time of the 5%-of-light photon at corner k,
-the light-level analog of the test beam's own 5% constant-fraction convention.
+in SIMPLE: `t05[k]`, the arrival time of the 5%-of-light photon at corner k.
+This is a light-level proxy, not the experiment's estimator: the beam test
+times each corner with a leading-edge crossing at 15% of the predicted
+high-gain pulse peak on the digitised waveform (its "srCFD"; see "Comparing
+with the beam-test data" below, and `analysis/tb26_emulate.C` for the exact
+reproduction).
 
 With no downstream sensor and no timing reference in the analysis, the old
 "downstream minus upstream" difference does not exist. Two timing observables
