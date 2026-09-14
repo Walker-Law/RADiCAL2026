@@ -10,11 +10,16 @@
 // plus the fitted histogram behind every number under build/plots/fits/.
 //
 // TIMING, two numbers per point, both from the per-corner 5% quantile times:
-//   sigma(dTpair)    the REALIZABLE one: diagonal corner pairs differenced and
-//                    averaged, no external reference; equals the single-corner
-//                    resolution directly (EventAction.hh explains the algebra).
+//   sigma(dTpair)    the REALIZABLE one: the beam test's diagonal-difference
+//                    estimator, (mean of one diagonal pair) - (mean of the
+//                    other), no external reference; equals the single-corner
+//                    resolution, and sigma/2 is the experiment's "sigma_intr"
+//                    (EventAction.hh explains the algebra).
 //   sigma(tUpMean)   the 4-corner mean against a PERFECT time reference — the
 //                    best any MCP-referenced measurement could do. Upper bound.
+// These are LIGHT-LEVEL numbers (photon quantiles). For the numbers that are
+// directly comparable with the beam test's tables — the same algorithm on
+// emulated digitiser waveforms — run analysis/tb26_emulate.C instead.
 //
 // Every number is a two-pass Gaussian CORE fit with ADAPTIVE binning (~8
 // events per bin, clamped to [20,300]) — a fixed-bin fit on low statistics has
