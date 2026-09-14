@@ -332,6 +332,11 @@ simulation; the gains are anchored on one data point.
 
 ## Known gaps, in order of how much they could matter
 
+0. **The simulated light is much slower than the measured light** (2–4%
+   prompt versus 25–40%; see "Comparing with the beam-test data"). Candidates,
+   untested: the filament absorption length (too short turns Cherenkov light
+   into delayed shifted light), the LuAG:Ce self-scintillation yield (a
+   bulk-crystal number), the LYSO-to-filament coupling.
 1. **EJ199 is not simulated.** Configuration C waits on its optical properties.
 2. **Shower max is upstream of the filament window** at these energies (see
    above). Real, not a modelling gap — but it means the 120 GeV intuition does
