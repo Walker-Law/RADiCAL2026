@@ -572,3 +572,56 @@ step. Placeholders that a measurement would replace: the beam spot (2.9 mm,
 the H2 value), the counter positions (H2 spacings), and every LuAG:Ce optical
 constant — the 60 ns decay time most of all, since it is 17 times DSB1's and
 should dominate the timing comparison.
+
+### 7b. Making the simulation comparable with the beam-test data (2026-09-14)
+
+**The data and the collaboration's analysis are now local.** The 27 raw
+waveform files (17 GB) live in `RADiCAL2026/data/2026-08-CERN_T10/`
+(git-ignored) and the analysis repository `jwwetzel/radical-t10-2026` is
+cloned at `~/Research/radical-t10-2026/` with its `data/download/` links
+pointing at the raw files. Running its `DiagDiff.C` on the DSB1 runs
+reproduced the published table byte for byte — the copy is complete and the
+algorithm is understood.
+
+**What the experiment actually measures (and the simulation did not).** The
+experiment sees two digitised waveforms per corner (a fast high-gain chain
+for timing, a slow low-gain chain for energy; CAEN DT5742 at 5 GS/s), and
+its published numbers are: the *sum of the four low-gain peak amplitudes*
+with a Gaussian core fit (energy), a *leading-edge crossing at 15% of the
+low-gain-predicted high-gain peak* against an MCP reference (timing,
+"srCFD"), and the reference-free *diagonal difference*
+(mean of one diagonal corner pair minus mean of the other, halved). The
+simulation's light-level quantities are not these. Two changes make them
+comparable:
+1. `dTpair` is now exactly the experiment's diagonal difference
+   (`(t0+t3)/2 − (t1+t2)/2`; the earlier average-of-differences form
+   cancelled beam-position drift in one axis only).
+2. `analysis/tb26_emulate.C` turns every event's stored photons into the two
+   waveforms per corner (impulse responses fitted to the measured pulse
+   shapes, measured noise, clip wall and pulse placement) and then runs the
+   experiment's functions verbatim, printing the EnergyScan and DiagDiff
+   tables in the experiment's own format.
+
+**Discovery 19 — the simulated light is far slower than the measured light
+(2026-09-14, from pulse shapes alone, before any true-light run).** With one
+electronics model shared by all three materials, the measured 7 GeV pulses
+are reproduced only if 25–40% of the detected light is prompt (DSB1 39%,
+LuAG 26%, EJ199 32% in a two-component model). The simulated DSB1 light is
+4% prompt (99% of it is wavelength-shifted LYSO scintillation carrying the
+40 ns decay) and the simulated LuAG light is 2% prompt (half of it the
+filament's own 60 ns scintillation). Pushed through the fitted electronics,
+the simulated pulses have tails the data does not have (residuals 0.19–0.21
+of the peak versus 0.05–0.07 for the fitted light model), and the emulated
+transfer ratio high-gain/low-gain — the experiment's "prompt-versus-slow
+balance" — comes out about half the measured value for LuAG. This is the
+first physics result of the comparison and it points at the light model
+(prompt Cherenkov versus shifted scintillation), not at the electronics.
+Untested candidates, in order: the filament's absorption length (too short
+turns every Cherenkov photon into delayed shifted light), the LuAG:Ce
+self-scintillation yield (25 000 photons per MeV is a bulk-crystal value),
+and the LYSO-to-filament coupling. The true-light cluster runs plus the
+emulation will settle the magnitude; the direction is already clear.
+
+**Practical warning.** The Mac's data volume had about 1 GB free after the
+move. True-light output with the stored waveform is roughly 3.7 GB per
+material for the full energy ladder — it cannot be pulled here as is.

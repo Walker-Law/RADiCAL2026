@@ -41,3 +41,8 @@ Makefile
 
 # Raw beam-test data (17 GB, CERN T10 August 2026) — lives here, never in git
 data/
+
+# ROOT ACLiC build products next to macros (root -l -b -q 'x.C+')
+*_C.so
+*_C.d
+*_ACLiC_dict_rdict.pcm
