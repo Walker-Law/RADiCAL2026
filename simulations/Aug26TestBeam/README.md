@@ -358,6 +358,21 @@ simulation; the gains are anchored on one data point.
 
 ## Changelog
 
+### 2026-09-14
+- The raw beam-test data moved to `RADiCAL2026/data/2026-08-CERN_T10/`
+  (git-ignored); the collaboration's analysis repository cloned beside the
+  research repository and wired to the data; its DSB1 `DiagDiff` table
+  reproduced exactly.
+- `dTpair` redefined as the experiment's diagonal difference,
+  `(t0+t3)/2 − (t1+t2)/2` (the earlier average-of-differences form cancelled
+  beam-position drift in one axis only). Histogram and column names unchanged.
+- New `analysis/tb26_emulate.C` + `analysis/response_kernels.txt`: the
+  experiment's algorithm, verbatim, on waveforms emulated from the stored
+  photons; prints the EnergyScan and DiagDiff tables in the experiment's
+  format. Pipeline-tested on the 1% light smoke files.
+- Measured pulse shapes versus simulated photons: the simulated light is far
+  slower than the data's (README "First finding", ROADMAP Discovery 19).
+
 ### 2026-09-11
 - Created from `RADiCALsimSIMPLE`: upstream-only readout (downstream sensors
   removed, downstream fibre end open), run-time filament choice (LuAG:Ce or
