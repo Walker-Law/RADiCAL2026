@@ -210,6 +210,87 @@ to `build/plots/` (`tb26_lightyield_vs_E.png`, `tb26_energyres_vs_E.png`,
 Adaptive binning and two-pass core fits throughout; points under 50 fiducial
 events are skipped, and timing errors above 30% are flagged.
 
+These are **light-level** numbers. For numbers that can be put next to the
+experiment's tables, see the next section.
+
+---
+
+## Comparing with the beam-test data
+
+**Where things are.** The 27 raw waveform files of the campaign (17 GB) and
+their DAQ metadata are in `RADiCAL2026/data/2026-08-CERN_T10/` (git-ignored).
+The collaboration's analysis repository, `jwwetzel/radical-t10-2026`, is
+cloned at `~/Research/radical-t10-2026/` with `data/download/run_N.root`
+linked to the raw files, so its macros run unchanged from that directory
+(`root -l -b -q 'macros/DiagDiff.C+(1)'` reproduces the published DSB1 table
+byte for byte; checked 2026-09-14). Its published results are in
+`Output/scan*/EnergyScan*_summary.txt` and `Output/summary/DiagDiff_*.txt`.
+
+**What the experiment records.** Per event, 18 waveforms of 1024 samples at
+0.2 ns (CAEN DT5742, two DRS4 groups). Each corner's silicon photomultiplier
+is read twice: a fast **high-gain** chain (timing; ~6.5 ns full width at half
+maximum, AC-coupled, clips 780 mV above baseline) and a slow **low-gain**
+chain (energy; an integrator peaking about 50 ns after the fast pulse). Two
+threshold Cherenkov counters tag electrons; a micro-channel plate gives the
+time reference.
+
+**Observable map.** What the experiment publishes, and the simulation's
+counterpart:
+
+| experiment (radical-t10-2026) | algorithm | simulation counterpart |
+|---|---|---|
+| response and σ/E (`EnergyScan*.C`) | sum of the four low-gain **peak amplitudes** of tagged, on-module events; Gaussian core fit ±1.7σ, iterated three times | `tb26_emulate.C`: same sum on emulated low-gain waveforms, same fit. (`Npe` from `tb26.C` is the total light, not the peak of an integrated pulse — comparable only in shape, not in value) |
+| shower-time σ, "t-MEDIAN" (`EnergyScan*.C`) | per corner: leading-edge crossing at 15% of the low-gain-**predicted** high-gain peak (guards: above 20 mV, below 0.9 × clip wall), linear interpolation; median over ≥ 2 corners, minus the micro-channel-plate time at 20%; width by `tebSigma` (truncated, debiased, Gaussian cross-check). Includes the reference (~110 ps) | `tb26_emulate.C`: same crossing on emulated high-gain waveforms; the reference is perfect, so a 110 ps Gaussian jitter is added to the reported "meanIncl" column and the perfect-reference value is printed beside it |
+| `sigma_intr` (`DiagDiff.C`) | all four corners required; `(t_TL+t_BR)/2 − (t_TR+t_BL)/2`, width halved | `dTpair`/2 (light level, `tb26.C`) and the identical waveform-level quantity in `tb26_emulate.C` |
+| electron selection | both Cherenkov counters above threshold; electron purity falls above ~7 GeV, 11 GeV excluded from fits | pure electrons by construction — the 9 and 11 GeV data points carry a purity caveat the simulation does not |
+| "on-module" | ΣLG above a floor `SMIN` per material and energy (there is no tracker) | the same `SMIN` gate in `tb26_emulate.C`. `tb26.C`'s truth fiducial cut (3.5 mm) is **not** the experiment's selection; the experiment's σ/E is position-smearing dominated by its own account |
+
+**The emulation.**
+
+```bash
+root -l -b -q 'analysis/tb26_emulate.C("build/rootfiles", 1.0)'
+```
+
+turns the stored photons of every event into the two waveforms per corner and
+runs the experiment's functions verbatim (`pulseOf`, `leTime`, the wall-aware
+transfer calibration, the 15% crossing with its guards, `tebSigma`, the core
+fit, the `SMIN` gate, copied from `EnergyScan.C` and `DiagDiff.C` with their
+constants), then prints both tables in the experiment's format. The second
+argument is the light scale the files were produced with; thinned files test
+the pipeline only. Inputs the simulation does not contain, each declared in
+the macro with its source:
+
+| input | value | source |
+|---|---|---|
+| impulse responses of the two chains | `analysis/response_kernels.txt` | fitted jointly with a free two-component light model to the measured mean pulse shapes of runs 33 (DSB1), 27 (LuAG), 42 (EJ199), 7 GeV; the header of the file has the model |
+| gains, ADC-equivalent per photon | calibrated at run time on the DSB1 5 GeV file: ΣLG peak 6769 and transfer slope 2.9 (run 37) | so DSB1's absolute scale is fixed by construction; LuAG's response, all energy dependences and all widths are predictions |
+| noise | high gain 6.6 mV, low gain 1.6 mV, white | pre-pulse RMS, run 33 |
+| clip wall | 780 mV above baseline | measured 99.5% walls 3143–3197 ADC-equivalent |
+| pulse placement | light onset at sample 22, high-gain peak near sample 62 | measured medians 58–66; the baseline window (samples 0–39) is then contaminated by the pulse foot exactly as in the data |
+| corner mapping | simulation 0,1,2,3 → caps TL, TR, BL, BR | so the diagonals {0,3},{1,2} are the experiment's (4,7),(5,6) |
+
+Emulated mean pulse shapes are written to `build/plots/emulate/meanshape_*.txt`
+in the same format as the measured ones (`build/plots/data_vs_sim/shape_*.txt`),
+so the comparison can be redone after any change to the light model.
+
+**First finding (2026-09-14), from the pulse shapes alone.** The measured
+7 GeV pulses of all three materials are reproduced only with 25–40% prompt
+light (DSB1 39%, LuAG 26%, EJ199 32% in a two-component fit with one shared
+electronics model). The simulated light is 4% prompt for DSB1 (99% is
+wavelength-shifted LYSO scintillation, with its 40 ns decay) and 2% for LuAG
+(half of it the filament's own 60 ns scintillation). Passed through the same
+electronics, the simulated pulses carry tails the data does not have
+(`build/plots/data_vs_sim/pulse_shapes_data_vs_sim.png`), and the emulated
+high-gain-to-low-gain transfer ratio — the experiment's prompt-versus-slow
+balance — is about half the measured one for LuAG. The light model, not the
+electronics, is what the data is testing; see ROADMAP Discovery 19.
+
+**Still not comparable, and known.** The beam spot is a placeholder and the
+experiment has no tracker, so on-module fractions are the only handle; the
+electron purity at 9 and 11 GeV is the experiment's problem, not the
+simulation's; EJ199 exists in the data (runs 39–44) and not yet in the
+simulation; the gains are anchored on one data point.
+
 ---
 
 ## Knobs
