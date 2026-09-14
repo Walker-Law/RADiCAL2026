@@ -12,8 +12,10 @@
 // at the upstream end of each corner fibre and nothing at the downstream end,
 // so the old "downstream minus upstream" timing difference does not exist.
 // Two timing observables are computed instead, from the per-corner 5% quantile
-// times t05[k] (the arrival time of the ceil(0.05 N)-th photon at corner k,
-// the light-level analog of the test-beam's 5% constant-fraction convention):
+// times t05[k] (the arrival time of the ceil(0.05 N)-th photon at corner k —
+// the SIMPLE convention, a light-level proxy; the beam test's own timing is a
+// leading-edge crossing at 15% of the predicted high-gain pulse peak on the
+// digitised waveform, reproduced offline by analysis/tb26_emulate.C):
 //
 //   dTpair  = ( t05[0]+t05[3] )/2  -  ( t05[1]+t05[2] )/2
 //             The difference of the two DIAGONAL corner-pair means — the beam
