@@ -183,17 +183,40 @@ void DetectorConstruction::DefineMaterials() {
            << " (RADSIMPLE_LIGHT_SCALE)" << G4endl;
 
     // --- DSB1: PURE wavelength shifter (no self-scintillation). Absorbs blue
-    //     (400-449 nm, covering LYSO's 420 nm), re-emits green (495 nm peak),
-    //     3.5 ns. n renormalised to 1.500 at 500 nm with polystyrene-like
-    //     dispersion. Unchanged from RADiCALsimSIMPLE. ---
+    //     (covering LYSO's 420 nm), re-emits green (495 nm peak), 3.5 ns.
+    //     n renormalised to 1.500 at 500 nm with polystyrene-like dispersion.
+    //
+    //     STOKES SAFETY (2026-09-15). The absorption and emission tables carried
+    //     over from RADiCALsimSIMPLE crashed a true-light run with G4Exception
+    //     WSL01 ("sampled photon energy is greater than the primary photon
+    //     energy"). G4OpWLS samples the emission spectrum without regard to the
+    //     absorbed photon's energy and aborts if the draw comes out higher, so
+    //     the two tables must not overlap in energy at all. Two overlaps existed:
+    //       1. WLSABSLENGTH was 5 m at 800/600/500 nm — meant as "transparent",
+    //          but a photon rattling down a fibre covers metres of path, so red
+    //          Cherenkov light DID get absorbed, and then every possible emission
+    //          energy was above it. This is what aborted the DSB1 run (an 800 nm
+    //          Cherenkov photon at 1.54981 eV, re-emitted at 1.55 eV).
+    //       2. Emission was non-zero at 450 and 400 nm, inside the absorbing
+    //          band, so even a correctly absorbed blue photon could be re-emitted
+    //          bluer than it arrived.
+    //     Now: absorption only above 2.76 eV (below ~450 nm), emission density
+    //     strictly zero above 2.58 eV (above ~480 nm) — a 0.18 eV margin, checked
+    //     at construction by CheckStokesSafety(). The cost is the 450 nm emission
+    //     shoulder, which in reality is self-absorbed by the shifter anyway. ---
     auto dMPT = new G4MaterialPropertiesTable();
     dMPT->AddProperty("RINDEX", phEfine,
         {1.4782, 1.4825, 1.4875, 1.4927, 1.4986, 1.5030,
          1.5065, 1.5104, 1.5138, 1.5174, 1.5201, 1.5230,
          1.5262, 1.5296, 1.5333, 1.5373});
     dMPT->AddProperty("ABSLENGTH",    phE, std::vector<G4double>(6, 1.*m));
-    dMPT->AddProperty("WLSABSLENGTH", phE, {5.*m,5.*m,5.*m,2.*mm,2.*mm,5.*mm});     // eats blue
-    dMPT->AddProperty("WLSCOMPONENT", phE, {0.08,0.45,1.00,0.20,0.02,0.00});        // emits green 495 nm
+    //                                    800nm   500nm   480nm    449nm   400nm   350nm
+    dMPT->AddProperty("WLSABSLENGTH",
+        {1.55*eV, 2.48*eV, 2.58*eV, 2.76*eV, 3.10*eV, 3.54*eV},
+        {  1e9*mm,  1e9*mm,  1e9*mm,   2.*mm,   2.*mm,   5.*mm});   // eats blue, truly transparent in the red
+    dMPT->AddProperty("WLSCOMPONENT",
+        {1.55*eV, 2.07*eV, 2.48*eV, 2.58*eV, 3.54*eV},
+        {    0.08,    0.45,    1.00,    0.00,    0.00});            // emits green, 495 nm peak, nothing above 480 nm
     dMPT->AddConstProperty("WLSTIMECONSTANT", 3.5*ns);
     dsb1->SetMaterialPropertiesTable(dMPT);
 
