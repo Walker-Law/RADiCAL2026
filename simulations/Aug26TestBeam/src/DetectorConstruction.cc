@@ -85,6 +85,54 @@ std::string DetectorConstruction::CapillaryChoice() {
 }
 
 // -------------------------------------------------------------------------
+// STOKES SAFETY CHECK.  G4OpWLS samples a shifter's emission spectrum without
+// any reference to the energy of the photon it just absorbed, and aborts the
+// whole run (G4Exception WSL01, "Sampled photon energy is greater than the
+// primary photon energy") the first time the draw comes out higher. A shifter
+// is therefore only safe in Geant4 if its emission band lies ENTIRELY below its
+// absorption band in energy — a strict Stokes shift with no overlap at all.
+//
+// Both filaments violated this and both killed true-light runs: LuAG:Ce in a
+// 240-event check (2026-09-11) and DSB1 four hours into cluster production
+// (2026-09-15, an 800 nm Cherenkov photon absorbed by a 5 m "transparent"
+// absorption length). The tables are now separated by construction, and this
+// check enforces it at start-up so any future edit fails in the first second
+// with a clear message instead of core-dumping hours into a run.
+static void CheckStokesSafety(const G4String& name, G4MaterialPropertiesTable* mpt)
+{
+    auto* absL = mpt->GetProperty("WLSABSLENGTH");
+    auto* emis = mpt->GetProperty("WLSCOMPONENT");
+    if (!absL || !emis) return;
+
+    // lowest energy at which the shifter genuinely absorbs
+    G4double eAbsMin = -1.;
+    for (std::size_t i = 0; i < absL->GetVectorLength(); ++i)
+        if ((*absL)[i] < 100.*mm) { eAbsMin = absL->Energy(i); break; }
+    if (eAbsMin < 0.) return;                      // never absorbs: nothing to check
+
+    // highest energy the emission sampler can return: linear interpolation ramps
+    // down to the first tabulated zero above the last non-zero point, so that
+    // zero's energy is the true ceiling (or the top of the table if none).
+    std::size_t last = 0;
+    for (std::size_t i = 0; i < emis->GetVectorLength(); ++i)
+        if ((*emis)[i] > 0.) last = i;
+    const G4double eEmMax = emis->Energy(std::min(last + 1, emis->GetVectorLength() - 1));
+
+    const G4double hc = 1239.842;                  // eV nm
+    G4cout << "[TB26] " << name << " Stokes check: absorbs at and above "
+           << eAbsMin/eV << " eV (" << hc/(eAbsMin/eV) << " nm and bluer), emits at and below "
+           << eEmMax/eV << " eV (" << hc/(eEmMax/eV) << " nm and redder), margin "
+           << (eAbsMin - eEmMax)/eV << " eV" << G4endl;
+
+    if (eEmMax >= eAbsMin)
+        G4Exception("DetectorConstruction", "TB26-STOKES", FatalException,
+            ("Wavelength shifter " + name + " can emit at or above the energy it absorbs "
+             "(emission reaches " + std::to_string(eEmMax/eV) + " eV, absorption starts at "
+             + std::to_string(eAbsMin/eV) + " eV). G4OpWLS will abort the run with WSL01 as "
+             "soon as one such photon is sampled — which on a true-light run is a certainty. "
+             "Separate WLSCOMPONENT from WLSABSLENGTH in DefineMaterials().").c_str());
+}
+
 // MATERIALS.  LYSO / quartz / DSB1 / Tyvek are byte-for-byte the verified
 // RADiCALsimSIMPLE tables (including the 2026-08-08 chromatic-dispersion
 // curves). LuAG:Ce is new here and built from literature values — every
