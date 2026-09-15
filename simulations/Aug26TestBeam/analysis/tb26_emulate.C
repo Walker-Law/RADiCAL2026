@@ -253,7 +253,7 @@ static bool onePoint(const std::string& mat, double E, const char* fn, Emulator&
     double S = 0; for (int j = 0; j < 4; ++j) S += pulseOf(em.ch[LGs[j]],+1,BASE_MOD).amp;
     if (S <= SMIN) continue;
     hS->Fill(S); ++nOnMod;
-    const double t1 = 0.2*22 + (0.0);                   // PERFECT reference: the event time on the grid
+    const double t1 = 0.2*kOnsetSample;                 // PERFECT reference: the event time on the grid
     const double t1r = t1 + em.rnd.Gaus(0, 0.110);      // + emulated MCP/digitiser floor (110 ps)
     double ts = 0; int nOK = 0; std::vector<double> tcv; double tc[4]; bool all4 = true;
     for (int j = 0; j < 4; ++j) {
