@@ -623,5 +623,69 @@ and the LYSO-to-filament coupling. The true-light cluster runs plus the
 emulation will settle the magnitude; the direction is already clear.
 
 **Practical warning.** The Mac's data volume had about 1 GB free after the
-move. True-light output with the stored waveform is roughly 3.7 GB per
+move. True-light output with the stored waveform is roughly 3.4 GB per
 material for the full energy ladder — it cannot be pulled here as is.
+
+### 7c. First true-light comparison, LuAG:Ce (2026-09-14)
+
+The LuAG:Ce ladder finished on curiosity (six energies, 2000 events each,
+true light, about 29 hours) and was pulled to the Mac. DSB1 was never
+launched — only `luag/` exists on the cluster — so this is a one-material
+comparison for now, anchored on LuAG's own 5 GeV point (the gains belong to
+the electronics card, which was the same at 29 V for every run from 13
+onward, so any material's 5 GeV point can set them).
+
+**Four emulator faults found and fixed by confronting the data**, each one
+measured rather than guessed. They are recorded because each produced
+plausible-looking numbers before it was caught:
+1. *Pulse placement.* The light onset was at sample 22; the data's high-gain
+   10% crossing sits at sample 41. The analysis takes its baseline from
+   samples 0 to 39, so the pulse foot was being subtracted as baseline and
+   amplitudes came out low (transfer slopes 1.3 to 1.5 against a measured
+   2.69). Onset is now sample 38, one number for every material and energy —
+   it is set by trigger and cable delays, not by the light.
+2. *Noise size.* The white component of the baseline (6.6 mV) is not the
+   baseline fluctuation. Measured in genuine miss events (Sum-LG below 300,
+   nothing on the module), the high-gain baseline RMS is 16 to 22 mV, and
+   because `pulseOf` takes the maximum over all 1024 samples this has an
+   envelope of 287 to 359 ADC-equivalent — which is precisely what puts the
+   125-to-270 intercept into the measured transfer fits and lets low-energy
+   corners clear the 20 mV threshold guard. With the white value instead,
+   almost no event had all four corners timed.
+3. *Circular gain calibration.* With noise on, the noise envelope dwarfs the
+   unscaled signal, so forcing the mean high-gain-to-low-gain ratio to the
+   measured slope drove the signal gain DOWN until noise plus signal reached
+   the target. Slopes collapsed to 0.6 and the timing became the noise
+   crossing time — which looked like 300 ps agreement with the data. Gains
+   are now fitted with the noise switched off.
+4. *Mean-to-peak fudge.* Replaced by one measured iteration (fit, then
+   rescale by target peak over fitted peak).
+
+**Discovery 20 — the energy response agrees, the timing does not, by a
+factor of 30 to 50.** With the gains fixed only at 5 GeV:
+
+| E (GeV) | Sum-LG peak, sim | measured | intrinsic sigma_t, sim | measured |
+|---|---|---|---|---|
+| 3 | 1675 | 1686 | 505 ps | 259 ps |
+| 5 | 2946 (anchor) | 2962 | 7140 ps | 223 ps |
+| 7 | 4311 | 4814 | 10243 ps | 188 ps |
+| 11 | 6928 | 5696 (purity caveat) | 10647 ps | 191 ps |
+
+The response ladder is right to 0.7% at 3 GeV and 10% at 7 GeV with a single
+anchor — the simulation's light YIELD and its linearity are sound. The
+timing is not: the measured resolution improves with energy as
+1/sqrt(E) while the simulated one gets *worse*, and the photon-level
+estimator (the 5% quantile, no electronics at all) sits at 9.6 to 10.9 ns at
+every energy, confirming the failure is in the light, not the waveform
+model. The mechanism is visible in the jump between 3 and 5 GeV: as the
+low-gain amplitude grows, the 15% threshold rises above the scarce prompt
+light and the crossing lands on the 60 ns filament scintillation. In the
+data the prompt fraction is 26%, so the threshold always sits on the fast
+edge. This is Discovery 19 confirmed at true light, with a number on it, by
+the experiment's own algorithm.
+
+**What to try, in order.** The filament absorption length (too short converts
+prompt Cherenkov light into delayed shifted light), the LuAG:Ce
+self-scintillation yield of 25 000 photons per MeV (a bulk-crystal value,
+and it supplies 42% of the detected light in the simulation), and the 60 ns
+decay constant itself. None of these is measured for these filaments.
