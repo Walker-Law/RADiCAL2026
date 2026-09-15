@@ -361,16 +361,29 @@ void tb26_emulate(const char* base = "build/rootfiles", double lightScale = 1.0,
     const bool okCal = onePoint(cm, cE, fn, em, PLOTS, dummy, true, &mLG, &mHG, &mN);
     em.noiseHG = nH; em.noiseLG = nL;
     if (!okCal) { printf("no file for calibration\n"); return; }
-    // mLG is the MEAN Sum-LG over all events at unit gain; the measured anchor is
-    // the PEAK of the on-module distribution. They differ by the miss/leakage
-    // tail, taken as 0.85 in this first pass (the printed transfer slope and the
-    // fitted peak in the table below are the checks on that factor).
-    if (kLG < 0) kLG = 0.85*peak / mLG;
-    if (kHG < 0) kHG = slope * kLG * (mLG/mHG);
-    printf("gain anchor: %s 5 GeV (%s), <Npe> %.0f, mean Sum-LG %.4g and Sum-HG %.4g at unit gain\n"
-           "  -> anchored to the measured %s peak %.0f ADC-eq and slope %.2f:  k_LG = %.4g, k_HG = %.4g ADC-eq per photon\n"
+    // mLG is the MEAN Sum-LG at unit gain; the measured anchor is the PEAK of the
+    // on-module distribution. They differ by the miss/leakage tail, so take
+    // mean -> peak as 0.85 for a first guess and then MEASURE the correction:
+    // run the real analysis once and rescale both gains by (target peak)/(fitted
+    // peak). One iteration is enough because the fitted peak is linear in the
+    // gain once the SMIN gate is cleared.
+    const bool freeLG = (kLG < 0), freeHG = (kHG < 0);
+    if (freeLG) kLG = 0.85*peak / mLG;
+    if (freeHG) kHG = slope * kLG * (mLG/mHG);
+    printf("gain anchor: %s 5 GeV (%s), <Npe> %.0f, mean Sum-LG %.4g and Sum-HG %.4g at unit gain (noise off)\n",
+           cm.c_str(), fn.Data(), mN, mLG, mHG);
+    if (freeLG || freeHG) {
+      em.kHG = kHG; em.kLG = kLG; Line cal{};
+      if (onePoint(cm, cE, fn, em, PLOTS, cal, false, nullptr, nullptr, nullptr) && cal.pk > 0) {
+        const double corr = peak / cal.pk;
+        if (freeLG) kLG *= corr;
+        if (freeHG) kHG *= corr;
+        printf("  first pass gave a fitted peak of %.0f against the measured %.0f -> gains rescaled by %.3f\n", cal.pk, peak, corr);
+      }
+    }
+    printf("  -> anchored to the measured %s 5 GeV peak %.0f ADC-eq and slope %.2f:  k_LG = %.4g, k_HG = %.4g ADC-eq per photon\n"
            "  Every other material, every other energy and every width below is a PREDICTION.\n",
-           cm.c_str(), fn.Data(), mN, mLG, mHG, cm.c_str(), peak, slope, kLG, kHG);
+           cm.c_str(), peak, slope, kLG, kHG);
     if (mN < 2000)
       printf("  [!] <Npe> = %.0f is far below true light — is this a thinned smoke file? The gains will be wrong by that factor.\n", mN);
   }
