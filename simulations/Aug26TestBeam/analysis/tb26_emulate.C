@@ -31,7 +31,16 @@
 //   gains k_HG, k_LG  ADC-eq per photon: calibrated on the DSB1 5 GeV file so
 //                     that Sum-LG peak = 6769 ADC-eq (run 37) and the transfer
 //                     slope HG/LG = 2.9 (run 37); printed, and overridable
-//   noise             white, HG 6.6 mV, LG 1.6 mV (pre-pulse RMS, run 33)
+//   noise             white, HG 19.0 mV, LG 1.27 mV. Measured on samples 0-39
+//                     of MISS events only (Sum-LG < 300: nothing on the module,
+//                     so the window is genuinely empty) — run 33 gives HG 22.3
+//                     and run 27 HG 15.9 mV, LG 1.26/1.27. This is the TOTAL
+//                     baseline fluctuation, not its white component (6.6 mV),
+//                     and the distinction matters: pulseOf takes the maximum
+//                     over all 1024 samples, so this noise has an ENVELOPE of
+//                     287-359 ADC-eq in the data, which is what puts the
+//                     125-270 intercept into the measured transfer fits and
+//                     lets low-energy corners clear the 20 mV threshold guard
 //   clip wall         HG saturates 780 mV above baseline (3194 ADC-eq; the
 //                     measured 99.5% walls are 3143-3197)
 //   placement         light onset at sample 38 (kOnsetSample). Fixed by the
