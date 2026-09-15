@@ -342,6 +342,12 @@ void DetectorConstruction::DefineMaterials() {
     lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
     luag->SetMaterialPropertiesTable(lMPT);
 
+    // Both shifters must satisfy the strict Stokes condition (see above). This
+    // runs for BOTH materials on every job, not just the selected one, so a
+    // broken table is caught even by a run that does not use it.
+    CheckStokesSafety("DSB1",    dMPT);
+    CheckStokesSafety("LuAG_Ce", lMPT);
+
     // --- Tyvek: needs n so a boundary exists; reflectivity is set by the surface below. ---
     auto tMPT = new G4MaterialPropertiesTable();
     tMPT->AddProperty("RINDEX", phE, std::vector<G4double>(6, 1.50));
