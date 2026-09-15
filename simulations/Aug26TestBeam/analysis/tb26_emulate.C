@@ -34,9 +34,14 @@
 //   noise             white, HG 6.6 mV, LG 1.6 mV (pre-pulse RMS, run 33)
 //   clip wall         HG saturates 780 mV above baseline (3194 ADC-eq; the
 //                     measured 99.5% walls are 3143-3197)
-//   placement         light onset at sample 22 so the HG peak sits near sample
-//                     62 (measured medians 58-66); baseline window 0-39 is then
-//                     contaminated by the pulse foot EXACTLY as in the data
+//   placement         light onset at sample 38 (kOnsetSample). Fixed by the
+//                     trigger and cable delays, so it is the SAME for every
+//                     material and energy. Measured: the high-gain 10% crossing
+//                     sits at sample 41 (median; 5-95% range 40-54 for DSB1,
+//                     40-51 for LuAG) and the peak at 58-66, with post-trigger
+//                     74%. The data's own baseline window (samples 0-39) is
+//                     therefore just barely clean — "tight", as run 14's QC
+//                     notes put it — and the emulation inherits that exactly
 //   reference         the simulation's event time is perfect. The DiagDiff
 //                     intrinsic column needs no reference; the "meanIncl"
 //                     column is reported twice: against the perfect reference
