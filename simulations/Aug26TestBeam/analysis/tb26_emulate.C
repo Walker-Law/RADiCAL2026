@@ -171,7 +171,7 @@ static Kernels readKernels(const char* fn) {
 // exactly the layout of the data's "channel" branch (slots 4-7 low gain,
 // 13-16 high gain; the rest stay empty).
 struct Emulator {
-  Kernels K; double kHG = 1, kLG = 1, noiseHG = 6.6, noiseLG = 1.6, wallMV = 780.;
+  Kernels K; double kHG = 1, kLG = 1, noiseHG = 19.0, noiseLG = 1.27, wallMV = 780.;
   double tOnset = 0;            // photon time (ns) mapped to sample 22
   int lgShift = -10;            // low-gain chain 2.0 ns earlier than high gain
   double invF = 1.0;            // 1 / light scale of the file
