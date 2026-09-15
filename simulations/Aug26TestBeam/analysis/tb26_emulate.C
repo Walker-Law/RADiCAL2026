@@ -304,19 +304,42 @@ void tb26_emulate(const char* base = "build/rootfiles", double lightScale = 1.0,
   printf("tb26_emulate: light scale of the files %.3g (amplitudes x %.3g)%s\n", lightScale, em.invF,
          lightScale < 0.999 ? "  [THINNED FILES: photon-statistics noise is wrong by sqrt(1/f); pipeline test only]" : "");
 
-  // ---- gain calibration on DSB1 5 GeV: Sum-LG peak 6769 ADC-eq and transfer slope 2.9 (run 37)
+  // ---- gain calibration: two numbers (ADC-equivalent per photon, one per chain).
+  // They belong to the ELECTRONICS, not to the material — the same card at the
+  // same 29 V bias read every run from 13 onward — so ANY material's 5 GeV point
+  // can anchor them, and every other material, energy and width is then a
+  // prediction. Measured 5 GeV anchors (Sum-LG Gaussian peak, ADC-equivalent,
+  // and mean transfer slope HG/LG):
+  //   LuAG  run 15: 2962 +/- 37   slope 2.69   (EnergyScan_summary, TransferFit)
+  //   DSB1  run 37: 6769 +/- 138  slope 2.91
+  //   EJ199 run 41: 2740 +/- 74   slope 2.91 (slope not separately fitted)
+  // Preference order dsb1 > luag > ej199 only because DSB1's 5 GeV run (37) is
+  // the cleanest of the three; the choice does not change the physics.
   if (kHG < 0 || kLG < 0) {
-    TString fn = Form("%s/dsb1/E5GeV.root", base); std::string cm = "dsb1"; double cE = 5;
-    if (gSystem->AccessPathName(fn)) { for (const auto& m : MATS) for (double E : ENERGIES) { TString g = Form("%s/%s/E%.0fGeV.root", base, m.c_str(), E); if (!gSystem->AccessPathName(g)) { fn = g; cm = m; cE = E; goto found; } } }
-    found:
+    struct Anchor { const char* mat; double peak, slope; };
+    const Anchor ANCH[3] = { {"dsb1", 6769., 2.91}, {"luag", 2962., 2.69}, {"ej199", 2740., 2.91} };
+    std::string cm; double cE = 5, peak = 0, slope = 0; TString fn;
+    for (const auto& a : ANCH) {
+      TString g = Form("%s/%s/E5GeV.root", base, a.mat);
+      if (gSystem->AccessPathName(g)) continue;
+      fn = g; cm = a.mat; peak = a.peak; slope = a.slope; break;
+    }
+    if (cm.empty()) { printf("gain calibration needs a 5 GeV file for one of dsb1/luag/ej199 under %s — none found.\n"
+                             "Pass the gains explicitly instead: tb26_emulate(base, lightScale, kHG, kLG)\n", base); return; }
     em.kHG = 1; em.kLG = 1; Line dummy; double mLG, mHG, mN;
     if (!onePoint(cm, cE, fn, em, PLOTS, dummy, true, &mLG, &mHG, &mN)) { printf("no file for calibration\n"); return; }
-    // mLG = mean Sum-LG (all events) in kernel units at k=1; anchor the DSB1 5 GeV PEAK to 6769 —
-    // the mean and the peak differ by the miss/leakage tail, so anchor the mean to 0.85 x 6769 as a first pass
-    if (kLG < 0) kLG = 0.85*6769.0 / mLG;
-    if (kHG < 0) kHG = 2.9 * kLG * (mLG/mHG);
-    printf("gain calibration on %s %.0f GeV (%s): mean Sum-LG %.4g and Sum-HG %.4g per unit gain, <Npe> %.0f  ->  k_LG = %.4g, k_HG = %.4g ADC-eq per photon-unit%s\n",
-           cm.c_str(), cE, fn.Data(), mLG, mHG, mN, kLG, kHG, cm == "dsb1" && cE == 5 ? "" : "  [NOT the DSB1 5 GeV anchor — gains provisional]");
+    // mLG is the MEAN Sum-LG over all events at unit gain; the measured anchor is
+    // the PEAK of the on-module distribution. They differ by the miss/leakage
+    // tail, taken as 0.85 in this first pass (the printed transfer slope and the
+    // fitted peak in the table below are the checks on that factor).
+    if (kLG < 0) kLG = 0.85*peak / mLG;
+    if (kHG < 0) kHG = slope * kLG * (mLG/mHG);
+    printf("gain anchor: %s 5 GeV (%s), <Npe> %.0f, mean Sum-LG %.4g and Sum-HG %.4g at unit gain\n"
+           "  -> anchored to the measured %s peak %.0f ADC-eq and slope %.2f:  k_LG = %.4g, k_HG = %.4g ADC-eq per photon\n"
+           "  Every other material, every other energy and every width below is a PREDICTION.\n",
+           cm.c_str(), fn.Data(), mN, mLG, mHG, cm.c_str(), peak, slope, kLG, kHG);
+    if (mN < 2000)
+      printf("  [!] <Npe> = %.0f is far below true light — is this a thinned smoke file? The gains will be wrong by that factor.\n", mN);
   }
   em.kHG = kHG; em.kLG = kLG;
 
