@@ -199,8 +199,12 @@ static bool onePoint(const std::string& mat, double E, const char* fn, Emulator&
   std::vector<double> *phT = nullptr, *phId = nullptr, *t05 = nullptr; double Npe = 0;
   t->SetBranchAddress("phT", &phT); t->SetBranchAddress("phId", &phId); t->SetBranchAddress("t05Up", &t05); t->SetBranchAddress("Npe", &Npe);
   const Long64_t nEnt = t->GetEntries();
-  // light onset for the placement: 1% quantile of all photon times in the file
-  { std::vector<double> all; for (Long64_t i = 0; i < nEnt; ++i) { t->GetEntry(i); for (double v : *phT) all.push_back(v); }
+  // Light onset for the placement: 1% quantile of the photon times, from the
+  // first 200 events only. At true light one event carries 3e4-1e5 photons, so
+  // loading the whole file's times at once would cost over a gigabyte of memory
+  // for a number that 200 events already pin down to well under a sample.
+  { std::vector<double> all; const Long64_t nSamp = std::min((Long64_t)200, nEnt);
+    for (Long64_t i = 0; i < nSamp; ++i) { t->GetEntry(i); for (double v : *phT) all.push_back(v); }
     if (all.empty()) return false; std::sort(all.begin(), all.end()); em.tOnset = all[all.size()/100]; }
   const double SMIN = sminOf(mat, E);
 
