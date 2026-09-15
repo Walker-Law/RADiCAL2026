@@ -146,6 +146,10 @@ static double sminOf(const std::string& mat, double E) {
   return 60.0*E + 120;
 }
 
+// Sample at which the light arrives, identical for every material and energy:
+// set by the trigger and cable delays, not by the light. See the header.
+static const int kOnsetSample = 38;
+
 struct Kernels { std::vector<double> hg, lg; };
 static Kernels readKernels(const char* fn) {
   Kernels k; std::ifstream in(fn); std::string l;
