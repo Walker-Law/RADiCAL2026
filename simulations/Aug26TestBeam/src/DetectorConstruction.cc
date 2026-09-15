@@ -250,29 +250,36 @@ void DetectorConstruction::DefineMaterials() {
         }
         lMPT->AddProperty("RINDEX", nE, nV);
 
-        // Wavelength-shifting absorption: two Gaussian Ce3+ bands. Above 500 nm
-        // the material is transparent to the shift process (1e9 mm): a finite
-        // "cap" there let rare red Cherenkov photons be absorbed, which then
-        // had no legal re-emission energy (Geant4 cannot up-convert) — a
-        // fatal G4OpWLS exception, found in the first 240-event check.
+        // Wavelength-shifting absorption: two Gaussian Ce3+ bands, cut off above
+        // 480 nm (1e9 mm = transparent to the shift process). The cutoff is NOT
+        // cosmetic: it has to sit above the emission band, because G4OpWLS
+        // samples the emission spectrum without reference to the absorbed
+        // photon's energy and aborts the run if the draw comes out higher
+        // (G4Exception WSL01). 480 nm leaves LYSO's 420 nm light fully absorbed
+        // — that is the shifter's actual job — while keeping a 0.10 eV gap to
+        // the reddest energy the emission sampler can return.
         std::vector<G4double> aE, aL;
         for (double lam = 800.; lam >= 350.; lam -= 10.) {
             const double alpha = 2.0*std::exp(-0.5*std::pow((lam-450.)/20.,2))
                                + 2.0*std::exp(-0.5*std::pow((lam-345.)/15.,2));   // per mm
-            const double L = (lam > 500. || alpha < 1e-6) ? 1e9 : 1./alpha;        // mm
+            const double L = (lam > 480. || alpha < 1e-6) ? 1e9 : 1./alpha;        // mm
             aE.push_back(hc_eVnm/lam*eV);
             aL.push_back(L*mm);
         }
         lMPT->AddProperty("WLSABSLENGTH", aE, aL);
         lMPT->AddProperty("ABSLENGTH", phE, std::vector<G4double>(6, 1.*m));   // bulk, non-shifting
 
-        // Emission spectrum (shared by the shift and the scintillation): a
-        // Gaussian at 530 nm, 40 nm wide, TABULATED all the way to 800 nm (as
-        // DSB1's is) so that every absorbed photon has re-emission energies at
-        // or below its own — Geant4 samples the emission at or below the
-        // absorbed energy, and needs the table to reach that low.
+        // Emission spectrum (shared by the shift and the self-scintillation): a
+        // Gaussian at 530 nm, 40 nm wide, tabulated from 800 nm down to 500 nm
+        // ONLY. The blue side of the Gaussian is deliberately dropped: it lies
+        // inside the Ce3+ absorption band, so in a real ceramic it is
+        // self-absorbed and re-emitted redder anyway, and leaving it in the
+        // table is exactly what makes Geant4 abort (it would let a 490 nm photon
+        // be absorbed and re-emitted at 450 nm). Truncating costs about 23% of
+        // the Gaussian's area; the yield is set by WLSMEANNUMBERPHOTONS and
+        // SCINTILLATIONYIELD, so only the SHAPE changes, not the light budget.
         std::vector<G4double> eE, eV_;
-        for (double lam = 800.; lam >= 440.; lam -= 10.) {
+        for (double lam = 800.; lam >= 500.; lam -= 10.) {
             eE.push_back(hc_eVnm/lam*eV);
             eV_.push_back(std::max(1e-6, std::exp(-0.5*std::pow((lam-530.)/40.,2))));
         }
