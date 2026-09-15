@@ -174,7 +174,7 @@ struct Emulator {
     for (int c = 0; c < 4; ++c) for (int s = 0; s < NSAMP; ++s) cnt[c][s] = 0;
     for (size_t i = 0; i < phT.size(); ++i) {
       int c = (int)phId[i]; if (c < 0 || c > 3) continue;
-      int s = 22 + (int)std::lround((phT[i] - tOnset) / 0.2);
+      int s = kOnsetSample + (int)std::lround((phT[i] - tOnset) / 0.2);
       if (s >= 0 && s < NSAMP) cnt[c][s] += 1;
     }
     for (int s = 0; s < NSLOT; ++s) for (int i = 0; i < NSAMP; ++i) ch[s][i] = 0;
