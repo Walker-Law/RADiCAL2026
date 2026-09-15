@@ -348,8 +348,19 @@ void tb26_emulate(const char* base = "build/rootfiles", double lightScale = 1.0,
     }
     if (cm.empty()) { printf("gain calibration needs a 5 GeV file for one of dsb1/luag/ej199 under %s — none found.\n"
                              "Pass the gains explicitly instead: tb26_emulate(base, lightScale, kHG, kLG)\n", base); return; }
+    // The gains describe the SIGNAL chain, so they are fitted with the noise
+    // switched off. Left on, the calibration is circular: pulseOf takes the
+    // maximum over 1024 samples, so at unit gain the noise envelope (~300
+    // ADC-eq) dwarfs the unscaled signal, and forcing mean(HG)/mean(LG) to the
+    // measured slope then drives the signal gain DOWN until noise plus signal
+    // reaches the target — collapsing the transfer slope to ~0.6 and leaving
+    // waveforms whose timing is the noise crossing, not the pulse.
     em.kHG = 1; em.kLG = 1; Line dummy; double mLG, mHG, mN;
-    if (!onePoint(cm, cE, fn, em, PLOTS, dummy, true, &mLG, &mHG, &mN)) { printf("no file for calibration\n"); return; }
+    const double nH = em.noiseHG, nL = em.noiseLG;
+    em.noiseHG = 0; em.noiseLG = 0;
+    const bool okCal = onePoint(cm, cE, fn, em, PLOTS, dummy, true, &mLG, &mHG, &mN);
+    em.noiseHG = nH; em.noiseLG = nL;
+    if (!okCal) { printf("no file for calibration\n"); return; }
     // mLG is the MEAN Sum-LG over all events at unit gain; the measured anchor is
     // the PEAK of the on-module distribution. They differ by the miss/leakage
     // tail, taken as 0.85 in this first pass (the printed transfer slope and the
