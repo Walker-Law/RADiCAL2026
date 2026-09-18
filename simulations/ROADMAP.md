@@ -797,3 +797,50 @@ values deliberately, so nothing changes silently and a scan costs no code edit.
 The shift constant cannot be scanned offline — it changes arrival times, which
 are baked into the stored photons — so it needs one short confirming run at two
 or three values, at 3 and 5 GeV only rather than the full ladder.
+
+### 7f. Discovery 23 — the filament was built at the capillary's OUTER radius; DSB1's identity confirmed from the literature (2026-09-18)
+
+**DSB1 is an organic plastic, and the model was right.** The run registry calls
+the runs 31-38 capillary set "DSB:Ce glass", which prompted a scare that the
+simulation's PDMS-like silicone at 1.05 g/cm3 was wrong by a factor of three in
+density. It is not: the RADiCAL papers (arXiv:2203.12806, arXiv:2401.01747)
+describe "organic plastic WLS filaments" of DSB1, absorbing at 425 nm, emitting
+at 495 nm, with a fast fluorescence decay of 3.5 ns — every one of which the
+simulation already has. "DSB:Ce" is an unrelated INORGANIC Ce-doped Ba-Gd
+silicate scintillation glass (3.8 to 5.5 g/cm3, 425 nm emission, 30 ns and
+180 ns decay); the registry label conflates the two. DSB1's material model
+needs no change, and the earlier concern in 7e is withdrawn.
+
+**The geometry was wrong, for both materials.** The same papers give the T-type
+capillary as 1150 micrometre outer and 950 micrometre inner diameter — a
+100 micrometre quartz wall — with the DSB1 filament 900 micrometres across;
+the LuAG:Ce rod fills the 950 micrometre bore (confirmed with the beam-test
+lead). The simulation gave the filament the capillary's full OUTER radius of
+0.575 mm, so it replaced the quartz wall as well as the bore:
+
+| | modelled | real | area error |
+|---|---|---|---|
+| DSB1 filament radius | 0.575 mm | 0.450 mm | 1.63x too large |
+| LuAG:Ce rod radius | 0.575 mm | 0.475 mm | 1.47x too large |
+
+This inflated the shower energy deposited in the filament — which is what feeds
+LuAG:Ce self-scintillation, and it scales with volume — and it also erased a
+genuine 1.11x area difference between the two materials, making the comparison
+unfair in a way no parameter tuning could absorb. Measured effect at 5 GeV:
+<Efil> falls from 11.461 to 6.046 MeV for LuAG:Ce and from 2.335 to 1.375 MeV
+for DSB1. Both are larger than pure area scaling (1.90x and 1.70x against 1.47x
+and 1.63x) because the quartz wall now takes energy that was previously
+deposited in the denser filament. Geometry verified overlap-free.
+
+That alone cuts LuAG:Ce's self-scintillation light by about 1.9x — a real
+correction, but far short of the ~20x the beam test demands, so Discovery 22's
+conclusion stands: the 25000 photons/MeV yield and the 60 ns constant remain
+contradicted.
+
+**Also fixed for fairness:** the shift quantum efficiency, which LuAG:Ce carried
+as 0.7 while DSB1 carried the property NOT AT ALL — and Geant4 treats an absent
+property as exactly one photon per absorption, deterministically, against a
+Poisson draw when it is present. DSB1 was silently running at efficiency 1.0
+with no photon statistics because a line was missing. Both now come from
+RADSIMPLE_WLS_QE, default 1.0 for both: neither is measured, so equal is the
+neutral choice rather than a fitted one.

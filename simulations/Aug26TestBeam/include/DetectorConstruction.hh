@@ -30,7 +30,10 @@ public:
     static constexpr G4double showerMaxDepth = 40.4;  // from front face (120 GeV, paper Fig 7)
     static constexpr G4double wlsLen      = 15.0;     // filament length at shower max
     static constexpr G4double cornerOff   = 3.5;      // fibre centre, in from edge
-    static constexpr G4double fibreR      = 0.575;    // quartz/filament outer radius
+    static constexpr G4double fibreR      = 0.575;    // capillary OUTER radius (1150 um OD, arXiv:2401.01747)
+    static constexpr G4double capInnerR   = 0.475;    // capillary BORE radius (950 um ID) -> 100 um quartz wall
+    static constexpr G4double filR_DSB1   = 0.450;    // DSB1 organic plastic filament, 900 um diameter (ibid.)
+    static constexpr G4double filR_LUAG   = 0.475;    // LuAG:Ce solid rod, fills the bore (confirmed 2026-09-18)
     static constexpr G4double holeR       = 0.65;     // drilled hole radius in tiles
 
 private:

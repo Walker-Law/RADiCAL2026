@@ -532,8 +532,26 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     auto qDnS = new G4Tubs("qDn", 0, fibreR*mm, dnLen/2, 0, 360*deg);
     auto qUpLV = new G4LogicalVolume(qUpS, quartz, "QuartzUp"); qUpLV->SetVisAttributes(qVis);
     auto qDnLV = new G4LogicalVolume(qDnS, quartz, "QuartzDn"); qDnLV->SetVisAttributes(qVis);
-    auto filS  = new G4Tubs("fil", 0, fibreR*mm, wlsLen*mm/2, 0, 360*deg);
+    // THE CAPILLARY WALL (2026-09-18). Until now the filament was given the
+    // capillary's full OUTER radius, 0.575 mm — it replaced the quartz wall as
+    // well as the bore. The real T-type capillary is 1150 um outer / 950 um
+    // inner diameter, a 100 um quartz wall, and the filament sits inside the
+    // bore: 900 um diameter for the DSB1 organic plastic filament
+    // (arXiv:2401.01747), and the full 950 um bore for the LuAG:Ce solid rod.
+    // The modelled filament was therefore 1.63x too large in cross-section for
+    // DSB1 and 1.47x for LuAG:Ce, which inflated BOTH the shower energy
+    // deposited in it (hence LuAG:Ce self-scintillation, which scales with
+    // volume) and the path available to the shift process. It also erased a
+    // genuine 1.11x area difference between the two materials, so the
+    // comparison was unfair in a way no parameter tuning could absorb.
+    // Any clearance between a filament and the bore is taken as quartz: the
+    // rods are fused to the capillary walls (ibid.), so an air gap would be
+    // the less physical choice.
+    const G4double filR = (cap == "LUAG") ? filR_LUAG : filR_DSB1;
+    auto filS  = new G4Tubs("fil", 0, filR*mm, wlsLen*mm/2, 0, 360*deg);
     auto filLV = new G4LogicalVolume(filS, filMat, "FIL");      filLV->SetVisAttributes(filVis);
+    auto wallS  = new G4Tubs("capwall", filR*mm, fibreR*mm, wlsLen*mm/2, 0, 360*deg);
+    auto wallLV = new G4LogicalVolume(wallS, quartz, "CapWall"); wallLV->SetVisAttributes(qVis);
 
     // Upstream silicon photomultiplier only: a thin silicon disc glued to the
     // upstream fibre face. The downstream face is left open to air.
@@ -546,6 +564,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,(front+filLo)/2), qUpLV, "QuartzUp", worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,(filHi+back)/2),  qDnLV, "QuartzDn", worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,filC),            filLV, "FIL",      worldLV, false, k);
+        new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,filC),            wallLV,"CapWall",  worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,front-pdHz),      pdUpLV,"PD_Up",    worldLV, false, k);
     }
 
