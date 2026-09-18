@@ -689,3 +689,111 @@ prompt Cherenkov light into delayed shifted light), the LuAG:Ce
 self-scintillation yield of 25 000 photons per MeV (a bulk-crystal value,
 and it supplies 42% of the detected light in the simulation), and the 60 ns
 decay constant itself. None of these is measured for these filaments.
+
+### 7d. Discovery 21 — DSB1 validates the whole chain; the failure is LuAG:Ce alone, and it corrects Discoveries 19 and 20 (2026-09-17)
+
+Both materials ran to completion at true light on curiosity with the
+Stokes-corrected optical tables (2000 events per energy, six energies each,
+DSB1 2026-09-15/16 and LuAG:Ce 2026-09-16/17), were pulled to the Mac, and were
+put through the beam test's own algorithm with `analysis/tb26_emulate.C`. The
+gains are anchored on ONE number, the DSB1 5 GeV response, so every other
+material, energy and width below is a prediction.
+
+**DSB1 agrees with the measurement.** Response to within 5% at 3 GeV and 8% at
+7 GeV. On the observable the experiment actually publishes — the
+reference-included shower time — the agreement is -7%, +1%, 0% and +9% at 3, 5,
+7 and 9 GeV. The reference-free intrinsic resolution comes out 2 to 3 times
+BETTER in simulation than in data (94 versus 187 ps at 5 GeV), which is the
+expected direction and a believable size for a model with no fibre defects, no
+sensor non-uniformity, perfect alignment and no beam-position jitter.
+
+**LuAG:Ce fails in two independent ways.** Its response is 2.0 to 2.4 times too
+high at every energy above 1 GeV, and its intrinsic timing is 23 to 63 times
+worse than measured (14108 versus 223 ps at 5 GeV). Both trace to one thing:
+the light decomposition (`analysis/lightbudget.C`) shows the filament's OWN
+scintillation supplies 57 to 63% of LuAG's detected photons, all of it at
+60 ns, whereas DSB1's light is 98.6% wavelength-shifted with a 3.5 ns shifter.
+
+**This corrects Discovery 19 and narrows Discovery 20.** Discovery 19 claimed
+"the simulated light is far too slow" for BOTH materials, from a two-component
+fit to mean pulse shapes that put the measured prompt fraction at 25 to 40% and
+the simulated one at 2 to 4%. That argument does not survive: DSB1's simulated
+light is 98.6% wavelength-shifted — so it necessarily carries LYSO's 36 ns decay
+— and yet its timing now matches the measurement and is in fact optimistic. The
+"prompt fraction" was a shape parameter of a chosen two-exponential
+parameterisation, not a count of early photons, and it cannot be read as one.
+Discovery 20's numbers were additionally taken with the pre-Stokes LuAG tables
+and a mis-calibrated emulator (four faults, listed in 7c). The surviving,
+narrower statement is Discovery 21: the light model is sound for DSB1 and wrong
+for LuAG:Ce.
+
+**The next test costs no cluster time.** Because every photon is stored with its
+origin code, randomly discarding a fraction of the origin-3 (filament
+self-scintillation) photons is statistically identical to having generated with
+a proportionally lower `SCINTILLATIONYIELD`. So the 25000 photons/MeV figure — a
+bulk-crystal literature value applied to a thin filament — can be scanned
+offline against both the yield ratio and the timing. Removing it entirely would
+put the simulated DSB1-over-LuAG photon ratio at about 1.75 against a measured
+2.23 to 2.29 at 3 and 5 GeV, so it accounts for most but not all of the yield
+gap; the remainder points at how much of LYSO's 420 nm light each filament
+captures (`WLSABSLENGTH`, asymmetric between the two by inheritance, not by
+measurement). If no single yield value reproduces both the ratio and the timing,
+that is itself the result.
+
+### 7e. Discovery 22 — LuAG:Ce diagnosed: two literature numbers, both contradicted (2026-09-17)
+
+**The chain of cause.** The LuAG:Ce filament is 15 mm of a 6.73 g/cm3 ceramic, so
+it absorbs 11.5 MeV of shower energy at 5 GeV — five times what DSB1's
+1.05 g/cm3 filament absorbs in the same volume (2.3 MeV). At the literature
+yield of 25000 photons/MeV that generates 2.9e5 self-scintillation photons, of
+which 6.7% are collected (measured, and constant to 1% across all six
+energies). The result is that **59% of all detected LuAG light is the filament's
+own scintillation, every photon of it on a 60 ns decay** — against DSB1, whose
+light is 98.6% wavelength-shifted through a 3.5 ns shifter.
+
+**The offline scan** (`analysis/tb26_emulate.C`, new `filScale` argument;
+discarding a fraction of origin-3 photons is statistically identical to
+generating with a proportionally lower `SCINTILLATIONYIELD`). LuAG at 5 GeV,
+measured targets response 2962 and median shower time 227 ps:
+
+| self-scint scale | photons/MeV | response | vs measured | median time | photon-level sigma_t |
+|---|---|---|---|---|---|
+| 1.00 | 25000 | 6724 | 2.27x | 27343 ps | 8778 ps |
+| 0.50 | 12500 | 5323 | 1.80x | 28313 ps | 8592 ps |
+| 0.25 | 6250 | 4628 | 1.56x | 26888 ps | 9650 ps |
+| 0.10 | 2500 | 4187 | 1.41x | 21688 ps | 9063 ps |
+| 0.05 | 1250 | 4053 | 1.37x | **173 ps** | 9787 ps |
+| 0.02 | 500 | 3910 | 1.32x | 167 ps | 5329 ps |
+| 0.00 | 0 | 3825 | 1.29x | 165 ps | **136 ps** |
+
+**Two separate conclusions, not one.**
+
+1. *The self-scintillation yield is far too high.* The response falls from 2.27
+   to 1.29 times the measurement as it goes to zero, and the experiment's own
+   adopted estimator (the median over capillaries) does not function AT ALL
+   until the light is cut to 5% or less — it sits at 22 to 28 ns above that and
+   at 165 to 173 ps below it, against 227 ps measured. The transition is a
+   cliff, not a slope: above 10% the 15%-of-peak threshold lands on the 60 ns
+   body of the pulse rather than its leading edge.
+2. *The 60 ns SHIFT constant is also wrong.* Even with self-scintillation
+   removed entirely, the four-corner mean estimators stay broken (t-MEAN
+   10116 ps, DiagDiff intrinsic 7405 ps) while the median is fine — a minority
+   of corners still time catastrophically, because the remaining shifted light
+   is itself on a 60 ns constant. The measured LuAG timing is within 20% of
+   DSB1's, whose shifter is 3.5 ns; a 60 ns shift cannot produce that. The
+   measured mean pulse shapes say the same thing more directly: LuAG's tail
+   constant over 8 to 45 ns is 12.5 ns against DSB1's 4.9 ns, a factor 2.5, not
+   a factor 17.
+
+A residual 29% response excess survives both fixes, pointing at the third
+inherited asymmetry: how much of LYSO's 420 nm light each filament captures
+(`WLSABSLENGTH`, 0.5 mm at the LuAG:Ce absorption peak against DSB1's flat
+2 mm plateau) together with the shift efficiencies (0.7 against 1.0).
+
+**Both suspect numbers are now run-time parameters** — `RADSIMPLE_LUAG_SELFSCINT`
+(scales the 25000 photons/MeV) and `RADSIMPLE_LUAG_WLSTIME` (the shift and
+self-scintillation time constant, ns). Defaults are left at the literature
+values deliberately, so nothing changes silently and a scan costs no code edit.
+The shift constant cannot be scanned offline — it changes arrival times, which
+are baked into the stored photons — so it needs one short confirming run at two
+or three values, at 3 and 5 GeV only rather than the full ladder.

@@ -230,6 +230,26 @@ void DetectorConstruction::DefineMaterials() {
            << 33200.*lightScale << " ph/MeV LYSO, Cherenkov and LuAG thinned to match"
            << " (RADSIMPLE_LIGHT_SCALE)" << G4endl;
 
+    // SHIFT QUANTUM EFFICIENCY, one number for BOTH filaments (2026-09-18).
+    // Until now LuAG:Ce carried WLSMEANNUMBERPHOTONS = 0.7 while DSB1 carried
+    // the property NOT AT ALL — and Geant4 treats those two cases differently
+    // in both mean AND variance: an absent property emits EXACTLY one photon
+    // per absorption, deterministically, while a present one draws from a
+    // Poisson. So DSB1 was silently running at an efficiency of 1.0 with zero
+    // photon-statistics fluctuation, purely because the line was missing. That
+    // is an inheritance artifact, not physics, and it biases the one number the
+    // beam test measures directly: the DSB1-over-LuAG light ratio.
+    // Both are now set explicitly from the same variable. Neither material's
+    // true value is measured, so the NEUTRAL choice is to make them equal and
+    // say so; RADSIMPLE_WLS_QE overrides. For DSB1 the value is absorbed by the
+    // gain anchor, but for the ratio it is not.
+    G4double wlsQE = 1.0;
+    if (const char* v = std::getenv("RADSIMPLE_WLS_QE")) {
+        const double x = std::atof(v); if (x > 0.) wlsQE = x;
+    }
+    G4cout << "[TB26] wavelength-shift quantum efficiency " << wlsQE
+           << ", applied to BOTH filaments (RADSIMPLE_WLS_QE)" << G4endl;
+
     // --- DSB1: PURE wavelength shifter (no self-scintillation). Absorbs blue
     //     (covering LYSO's 420 nm), re-emits green (495 nm peak), 3.5 ns.
     //     n renormalised to 1.500 at 500 nm with polystyrene-like dispersion.
@@ -266,6 +286,7 @@ void DetectorConstruction::DefineMaterials() {
         {1.55*eV, 2.07*eV, 2.48*eV, 2.58*eV, 3.54*eV},
         {    0.08,    0.45,    1.00,    0.00,    0.00});            // emits green, 495 nm peak, nothing above 480 nm
     dMPT->AddConstProperty("WLSTIMECONSTANT", 3.5*ns);
+    dMPT->AddConstProperty("WLSMEANNUMBERPHOTONS", wlsQE);   // was ABSENT = 1.0 deterministic
     dsb1->SetMaterialPropertiesTable(dMPT);
 
     // --- LuAG:Ce: ceramic wavelength shifter AND scintillator. Literature
@@ -334,11 +355,46 @@ void DetectorConstruction::DefineMaterials() {
         lMPT->AddProperty("WLSCOMPONENT",            eE, eV_);
         lMPT->AddProperty("SCINTILLATIONCOMPONENT1", eE, eV_);
     }
-    lMPT->AddConstProperty("WLSTIMECONSTANT",           60.*ns);
-    lMPT->AddConstProperty("WLSMEANNUMBERPHOTONS",      0.7);
-    lMPT->AddConstProperty("SCINTILLATIONYIELD",        25000./MeV * lightScale);
+    // THE TWO LuAG:Ce NUMBERS THE BEAM TEST CONTRADICTS (2026-09-17).
+    // Both are literature values for BULK Ce:LuAG, never measured for these
+    // filaments, and both are now known to be inconsistent with the data:
+    //
+    //   SCINTILLATIONYIELD 25000/MeV. The filament absorbs 11.5 MeV at 5 GeV
+    //     (5x what DSB1 absorbs, since the density is 6.7 vs 1.05 g/cm3), so
+    //     this generates 2.9e5 photons, 6.7% of which are collected — 59% of
+    //     all detected LuAG light, every one of them on the 60 ns decay. The
+    //     measured response is 2.3x LOWER than simulated, and the experiment's
+    //     own timing estimator does not even function until this light is cut
+    //     to 5% or less of the generated amount (offline scan, ROADMAP 7e).
+    //     Scale it with RADSIMPLE_LUAG_SELFSCINT (default 1.0 = literature).
+    //
+    //   WLSTIMECONSTANT 60 ns. Even with the self-scintillation gone entirely,
+    //     the SHIFTED light is still on a 60 ns constant and the four-corner
+    //     estimators stay broken — yet the measured LuAG timing is within 20%
+    //     of DSB1's, whose shifter is 3.5 ns. A 60 ns shift cannot reproduce
+    //     that. This one cannot be tested offline (it changes arrival times,
+    //     which are baked into the stored photons), so it needs a short
+    //     confirming run: RADSIMPLE_LUAG_WLSTIME, in ns (default 60).
+    //
+    // Defaults are left at the literature values deliberately: nothing changes
+    // silently, and a scan is a matter of setting two variables.
+    G4double luagSelfScale = 1.0, luagWlsTime = 60.;
+    if (const char* v = std::getenv("RADSIMPLE_LUAG_SELFSCINT")) {
+        const double x = std::atof(v); if (x >= 0.) luagSelfScale = x;
+    }
+    if (const char* v = std::getenv("RADSIMPLE_LUAG_WLSTIME")) {
+        const double x = std::atof(v); if (x > 0.) luagWlsTime = x;
+    }
+    G4cout << "[TB26] LuAG:Ce self-scintillation scale " << luagSelfScale
+           << " -> " << 25000.*luagSelfScale << " photons/MeV; shift time constant "
+           << luagWlsTime << " ns"
+           << " (RADSIMPLE_LUAG_SELFSCINT, RADSIMPLE_LUAG_WLSTIME)" << G4endl;
+
+    lMPT->AddConstProperty("WLSTIMECONSTANT",           luagWlsTime*ns);
+    lMPT->AddConstProperty("WLSMEANNUMBERPHOTONS",      wlsQE);   // was 0.7, now shared with DSB1
+    lMPT->AddConstProperty("SCINTILLATIONYIELD",        25000./MeV * lightScale * luagSelfScale);
     lMPT->AddConstProperty("RESOLUTIONSCALE",           1.0);
-    lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", 60.*ns);
+    lMPT->AddConstProperty("SCINTILLATIONTIMECONSTANT1", luagWlsTime*ns);
     lMPT->AddConstProperty("SCINTILLATIONYIELD1",        1.0);
     luag->SetMaterialPropertiesTable(lMPT);
 

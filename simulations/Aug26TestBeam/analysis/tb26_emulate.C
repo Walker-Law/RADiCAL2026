@@ -175,16 +175,37 @@ struct Emulator {
   double tOnset = 0;            // photon time (ns) mapped to sample 22
   int lgShift = -10;            // low-gain chain 2.0 ns earlier than high gain
   double invF = 1.0;            // 1 / light scale of the file
+  // OFFLINE FILAMENT-SCINTILLATION SCALE. Each origin-3 photon (the filament's
+  // own scintillation) is kept with probability filScale. Randomly discarding a
+  // fraction of an independent-photon population is statistically identical to
+  // having GENERATED it with a proportionally lower SCINTILLATIONYIELD, so this
+  // scans LuAG:Ce's 25000 photons/MeV without spending cluster time. Only
+  // downward: photons cannot be invented.
+  double filScale = 1.0;
+  double t05c[4];               // per-corner 5% quantile of the SURVIVING photons
   TRandom3 rnd{20260914};
   float ch[NSLOT][NSAMP]; float tax[2][NSAMP];
   Emulator() { for (int s = 0; s < NSAMP; ++s) tax[0][s] = tax[1][s] = 0.2*s; }
-  void build(const std::vector<double>& phT, const std::vector<double>& phId) {
+  void build(const std::vector<double>& phT, const std::vector<double>& phId,
+             const std::vector<double>* phOrigin = nullptr) {
     static double cnt[4][NSAMP];
-    for (int c = 0; c < 4; ++c) for (int s = 0; s < NSAMP; ++s) cnt[c][s] = 0;
+    static std::vector<double> keep[4];
+    for (int c = 0; c < 4; ++c) { for (int s = 0; s < NSAMP; ++s) cnt[c][s] = 0; keep[c].clear(); }
     for (size_t i = 0; i < phT.size(); ++i) {
       int c = (int)phId[i]; if (c < 0 || c > 3) continue;
+      if (filScale < 1.0 && phOrigin && i < phOrigin->size() &&
+          (int)(*phOrigin)[i] == 3 && rnd.Rndm() >= filScale) continue;   // thin the 60 ns self-scintillation
+      keep[c].push_back(phT[i]);
       int s = kOnsetSample + (int)std::lround((phT[i] - tOnset) / 0.2);
       if (s >= 0 && s < NSAMP) cnt[c][s] += 1;
+    }
+    // the light-level observable, recomputed on exactly the surviving photons
+    // (EventAction::kCfdFrac = 0.05, the same ceil(0.05 N)-th arrival)
+    for (int c = 0; c < 4; ++c) {
+      if (keep[c].empty()) { t05c[c] = -999.; continue; }
+      size_t k = (size_t)std::ceil(0.05 * keep[c].size()); if (k > 0) --k;
+      std::nth_element(keep[c].begin(), keep[c].begin()+k, keep[c].end());
+      t05c[c] = keep[c][k];
     }
     for (int s = 0; s < NSLOT; ++s) for (int i = 0; i < NSAMP; ++i) ch[s][i] = 0;
     const int nk = (int)K.hg.size();
@@ -216,6 +237,8 @@ static bool onePoint(const std::string& mat, double E, const char* fn, Emulator&
   TTree* t = (TTree*)f->Get("ev"); if (!t) return false;
   std::vector<double> *phT = nullptr, *phId = nullptr, *t05 = nullptr; double Npe = 0;
   t->SetBranchAddress("phT", &phT); t->SetBranchAddress("phId", &phId); t->SetBranchAddress("t05Up", &t05); t->SetBranchAddress("Npe", &Npe);
+  std::vector<double>* phOri = nullptr;
+  if (t->GetBranch("phOrigin")) t->SetBranchAddress("phOrigin", &phOri);
   const Long64_t nEnt = t->GetEntries();
   // Light onset for the placement: 1% quantile of the photon times, from the
   // first 200 events only. At true light one event carries 3e4-1e5 photons, so
@@ -231,7 +254,7 @@ static bool onePoint(const std::string& mat, double E, const char* fn, Emulator&
   for (int j = 0; j < 4; ++j) { hA[j] = new TH1F(Form("hA%d",j),"",128,0,3200); hHL[j] = new TH2F(Form("hL%d",j),"",120,0,1200,128,0,3200); }
   double sLG = 0, sHG = 0, sN = 0; long nCal = 0;
   for (Long64_t i = 0; i < nEnt; ++i) {
-    t->GetEntry(i); em.build(*phT, *phId);
+    t->GetEntry(i); em.build(*phT, *phId, phOri);
     double Scal = 0; Pulse lv[4], hv[4];
     for (int j = 0; j < 4; ++j) { lv[j] = pulseOf(em.ch[LGs[j]],+1,BASE_MOD); hv[j] = pulseOf(em.ch[HGs[j]],+1,BASE_MOD); Scal += lv[j].amp; sLG += lv[j].amp; sHG += hv[j].amp; }
     sN += Npe; ++nCal;
@@ -258,7 +281,7 @@ static bool onePoint(const std::string& mat, double E, const char* fn, Emulator&
   long nOnMod = 0;
   TProfile mH("mH","",1000,-20,180), mL("mL","",1000,-20,180);   // mean emulated shapes, HG-peak aligned
   for (Long64_t i = 0; i < nEnt; ++i) {
-    t->GetEntry(i); em.build(*phT, *phId);
+    t->GetEntry(i); em.build(*phT, *phId, phOri);
     double S = 0; for (int j = 0; j < 4; ++j) S += pulseOf(em.ch[LGs[j]],+1,BASE_MOD).amp;
     if (S <= SMIN) continue;
     hS->Fill(S); ++nOnMod;
@@ -280,8 +303,10 @@ static bool onePoint(const std::string& mat, double E, const char* fn, Emulator&
       dMeanP.push_back(0.25*(tc[0]+tc[1]+tc[2]+tc[3]) - t1);
       dMeanR.push_back(0.25*(tc[0]+tc[1]+tc[2]+tc[3]) - t1r);
       dDiag.push_back(0.5*(tc[0]+tc[3]) - 0.5*(tc[1]+tc[2]));
-      if (t05->size() == 4 && (*t05)[0] > -999 && (*t05)[1] > -999 && (*t05)[2] > -999 && (*t05)[3] > -999)
-        phDiag.push_back(0.5*((*t05)[0]+(*t05)[3]) - 0.5*((*t05)[1]+(*t05)[2]));
+      // recomputed on the surviving photons, so it tracks filScale (at
+      // filScale = 1 it reproduces the ntuple's own t05Up exactly)
+      if (em.t05c[0] > -999 && em.t05c[1] > -999 && em.t05c[2] > -999 && em.t05c[3] > -999)
+        phDiag.push_back(0.5*(em.t05c[0]+em.t05c[3]) - 0.5*(em.t05c[1]+em.t05c[2]));
     }
   }
   L.E = E; L.nOn = nOnMod; L.onFrac = nEnt ? double(nOnMod)/nEnt : 0; L.n4 = (long)dDiag.size();
@@ -313,7 +338,15 @@ static bool onePoint(const std::string& mat, double E, const char* fn, Emulator&
   return true;
 }
 
-void tb26_emulate(const char* base = "build/rootfiles", double lightScale = 1.0, double kHG = -1, double kLG = -1)
+// filScale     keep each filament-self-scintillation photon with this probability
+//              (1.0 = as generated). Equivalent to scaling LuAG:Ce's
+//              SCINTILLATIONYIELD by the same factor. The gain anchor is always
+//              taken UNTHINNED.
+// matOnly      "" = both materials, or "luag" / "dsb1" to restrict
+// eOnly        0 = all energies, or one energy in GeV
+void tb26_emulate(const char* base = "build/rootfiles", double lightScale = 1.0,
+                  double kHG = -1, double kLG = -1, double filScale = 1.0,
+                  const char* matOnly = "", double eOnly = 0)
 {
   gStyle->SetOptStat(0);
   const std::vector<std::string> MATS = {"dsb1", "luag", "ej199"};
@@ -388,10 +421,16 @@ void tb26_emulate(const char* base = "build/rootfiles", double lightScale = 1.0,
       printf("  [!] <Npe> = %.0f is far below true light — is this a thinned smoke file? The gains will be wrong by that factor.\n", mN);
   }
   em.kHG = kHG; em.kLG = kLG;
+  em.filScale = filScale;             // anchor above was taken unthinned
+  if (filScale < 1.0)
+    printf("filament self-scintillation thinned to %.3f of generated "
+           "(equivalent to SCINTILLATIONYIELD %.0f photons/MeV)\n", filScale, 25000.*filScale);
 
   for (const auto& mat : MATS) {
+    if (matOnly && *matOnly && mat != matOnly) continue;
     std::vector<Line> lines; bool any = false;
     for (double E : ENERGIES) {
+      if (eOnly > 0 && std::fabs(E - eOnly) > 0.1) continue;
       TString fn = Form("%s/%s/E%.0fGeV.root", base, mat.c_str(), E);
       if (gSystem->AccessPathName(fn)) continue;
       Line L{}; if (!onePoint(mat, E, fn, em, PLOTS, L, false, nullptr, nullptr, nullptr)) continue;
