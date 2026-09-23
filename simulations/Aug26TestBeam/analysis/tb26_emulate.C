@@ -317,7 +317,12 @@ static bool onePoint(const std::string& mat, double E, const char* fn, Emulator&
     for (int bb = pb; bb <= hS->GetNbinsX(); ++bb) if (hS->GetBinContent(bb) > pv) { pv = hS->GetBinContent(bb); pbb = bb; }
     double m = hS->GetBinCenter(pbb), s = 0.35*m;
     TF1* g = new TF1(Form("g_%s_%.0f",mat.c_str(),E), "gaus", m-2*s, m+2*s);
-    g->SetParameters(pv, m, s); g->SetParLimits(1, SMIN + 30, 13400); g->SetParLimits(2, 25, 0.8*m);
+    g->SetParameters(pv, m, s); // The experiment's macro caps the fitted peak at 13400 ADC-eq, just under the
+    // real low-gain chain's ~13.6k headroom. A SIMULATED response may legitimately
+    // exceed that — it would mean the real chain would have saturated — so the cap
+    // is raised here to keep the number meaningful rather than railed. Anything
+    // above 13400 is flagged in the printout as beyond the real chain's range.
+    g->SetParLimits(1, SMIN + 30, 60000); g->SetParLimits(2, 25, 0.8*m);
     for (int it = 0; it < 3; ++it) { hS->Fit(g, "QNR", "", std::max(SMIN, m-1.7*s), m+1.7*s); m = g->GetParameter(1); s = std::fabs(g->GetParameter(2)); }
     hS->Fit(g, "QR", "", std::max(SMIN, m-1.7*s), m+1.7*s);
     L.pk = g->GetParameter(1); L.pke = g->GetParError(1); L.sg = std::fabs(g->GetParameter(2)); L.sge = g->GetParError(2);
@@ -435,8 +440,8 @@ void tb26_emulate(const char* base = "build/rootfiles", double lightScale = 1.0,
       if (gSystem->AccessPathName(fn)) continue;
       Line L{}; if (!onePoint(mat, E, fn, em, PLOTS, L, false, nullptr, nullptr, nullptr)) continue;
       if (!any) { printf("\n=== %s: EnergyScan format (radical-t10-2026 Output/scan*/EnergyScan*_summary.txt) ===\n", mat.c_str()); any = true; }
-      printf("%.0f GeV (sim): N(e,on-module) %ld (%.0f%% of events) | peak %.0f +/- %.0f, sigma %.0f => sigma/E %.1f +/- %.1f %% | t-MEAN %.0f +/- %.0f ps | t-MEDIAN %.0f +/- %.0f ps | diff %+.0f (N=%ld)   [110 ps reference jitter added]\n",
-             E, L.nOn, 100*L.onFrac, L.pk, L.pke, L.sg, L.pk > 0 ? 100*L.sg/L.pk : 0,
+      printf("%.0f GeV (sim)%s: N(e,on-module) %ld (%.0f%% of events) | peak %.0f +/- %.0f, sigma %.0f => sigma/E %.1f +/- %.1f %% | t-MEAN %.0f +/- %.0f ps | t-MEDIAN %.0f +/- %.0f ps | diff %+.0f (N=%ld)   [110 ps reference jitter added]\n",
+             E, L.pk > 13400 ? " [ABOVE the real low-gain headroom]" : "", L.nOn, 100*L.onFrac, L.pk, L.pke, L.sg, L.pk > 0 ? 100*L.sg/L.pk : 0,
              L.pk > 0 ? 100*L.sg/L.pk*std::sqrt(std::pow(L.sge/L.sg,2)+std::pow(L.pke/L.pk,2)) : 0,
              L.tMean, L.tMeanE, L.tMed, L.tMedE, L.tMed-L.tMean, L.nOn);
       lines.push_back(L);

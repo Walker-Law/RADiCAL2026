@@ -844,3 +844,53 @@ Poisson draw when it is present. DSB1 was silently running at efficiency 1.0
 with no photon statistics because a line was missing. Both now come from
 RADSIMPLE_WLS_QE, default 1.0 for both: neither is measured, so equal is the
 neutral choice rather than a fitted one.
+
+### 7g. Discovery 24 — LuAG:Ce's problem is light COLLECTION, not yield and not decay time (2026-09-23)
+
+The three-point scan finished (self-scintillation at 5% of literature, shift
+constant 10, 20 and 40 ns, 1000 events at 3 and 5 GeV each, anchored as always
+on the DSB1 5 GeV response so every LuAG number is a prediction):
+
+| shift constant | response 3 GeV | response 5 GeV | median time 3 GeV | median time 5 GeV |
+|---|---|---|---|---|
+| 10 ns | 7174 | 14400 | 179 ps | 184 ps |
+| 20 ns | 7109 | 14728 | 165 ps | 148 ps |
+| 40 ns | 7063 | 14039 | 131 ps | 127 ps |
+| **measured** | **1686** | **2962** | **277 ps** | **227 ps** |
+
+**Both scanned parameters are exonerated.** The response is 4.2x too high at
+3 GeV and about 4.8x at 5 GeV, and it barely moves across a factor of four in
+the shift constant. The timing, once self-scintillation is cut, is BETTER than
+measured at every one of the three values — so it no longer discriminates
+between them and is not the problem. Cutting the self-scintillation yield by a
+factor of twenty moved the 3 GeV response only from 9649 to 7100, because with
+the corrected capillary geometry the light is dominated by SHIFTED photons
+(57%), not by the filament's own scintillation.
+
+**What is left is light collection, and the geometry fix is what exposed it.**
+Adding the real 100 micrometre quartz wall (Discovery 23) made LuAG:Ce BRIGHTER,
+from 32190 to 54501 detected photons at 5 GeV, the opposite of what shrinking
+the rod should do. The mechanism is refractive: a LuAG:Ce rod (n = 1.85) against
+air has a critical angle of 33 degrees and holds its light, but against quartz
+(n = 1.46) the critical angle opens to 52 degrees, so light pours into the wall
+and the wall then guides it to the sensor by its own quartz-to-air reflection.
+The simulation assumes PERFECT optical contact between rod and wall — Geant4's
+default for touching volumes, never a deliberate choice.
+
+If the real LuAG:Ce rod is dry-fitted into the bore with even a sub-micron air
+gap, that path closes: its light is trapped at 33 degrees and can escape only
+through the rod's 15 mm end faces. And the asymmetry is self-consistent with
+everything else we see — DSB1 at n = 1.50 is nearly index-matched to the quartz
+wall, so the interface barely matters for it, which is exactly why DSB1 agrees
+with the measurement to a few percent while LuAG:Ce does not.
+
+The simulated LuAG response also exceeds 13400 ADC-equivalent, above the real
+low-gain chain's headroom: the model predicts a signal that would have saturated
+the readout, and the data shows no such saturation. That is a falsifiable
+statement, and it fails.
+
+**The question for the hardware group, worth more than any further scan: is the
+LuAG:Ce rod optically bonded to the capillary — fused, or set with
+index-matching cement — or inserted dry?** The test in simulation is one short
+run with an optical surface at the rod-to-wall interface; the two answers differ
+by roughly the factor of four we need to explain.
