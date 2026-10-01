@@ -544,13 +544,35 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // volume) and the path available to the shift process. It also erased a
     // genuine 1.11x area difference between the two materials, so the
     // comparison was unfair in a way no parameter tuning could absorb.
-    // Any clearance between a filament and the bore is taken as quartz: the
-    // rods are fused to the capillary walls (ibid.), so an air gap would be
-    // the less physical choice.
+    // THE DRY-FIT AIR GAP (2026-10-01). The rods are simply inserted into the
+    // bore and nothing seals the outside — confirmed with the beam-test lead.
+    // They are therefore NOT optically bonded to the quartz, and that is a
+    // first-order fact about light collection, not a detail:
+    //
+    //   with optical contact   LuAG:Ce (n 1.85) against quartz (n 1.46) has a
+    //                          critical angle of 52 deg, so light pours into the
+    //                          wall and the wall guides it onward;
+    //   with an air gap        the rod sees n 1.0, critical angle 33 deg, and
+    //                          holds its light — it can escape only through the
+    //                          rod's 15 mm end faces.
+    //
+    // The earlier version placed quartz right against the filament, i.e. assumed
+    // perfect optical contact. That is Geant4's default for touching volumes and
+    // was never a deliberate choice; it made the simulated LuAG:Ce response about
+    // 4.5x the measurement (ROADMAP 7g, Discovery 24). DSB1 (n 1.50) is nearly
+    // index-matched to the quartz, so the same change should barely move it —
+    // which is the prediction this tests.
+    //
+    // DSB1's clearance is physical: a 900 um filament in a 950 um bore leaves
+    // 25 um. LuAG:Ce fills the bore, so a nominal dry-fit clearance of
+    // filGapUm (10 um) is used instead; real surfaces touch only at asperities,
+    // so optically there is a gap either way.
     const G4double filR = (cap == "LUAG") ? filR_LUAG : filR_DSB1;
     auto filS  = new G4Tubs("fil", 0, filR*mm, wlsLen*mm/2, 0, 360*deg);
     auto filLV = new G4LogicalVolume(filS, filMat, "FIL");      filLV->SetVisAttributes(filVis);
-    auto wallS  = new G4Tubs("capwall", filR*mm, fibreR*mm, wlsLen*mm/2, 0, 360*deg);
+    auto gapS   = new G4Tubs("filgap", filR*mm, capInnerR*mm, wlsLen*mm/2, 0, 360*deg);
+    auto gapLV  = new G4LogicalVolume(gapS, G4Material::GetMaterial("G4_AIR"), "FilGap");
+    auto wallS  = new G4Tubs("capwall", capInnerR*mm, fibreR*mm, wlsLen*mm/2, 0, 360*deg);
     auto wallLV = new G4LogicalVolume(wallS, quartz, "CapWall"); wallLV->SetVisAttributes(qVis);
 
     // Upstream silicon photomultiplier only: a thin silicon disc glued to the
@@ -564,6 +586,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,(front+filLo)/2), qUpLV, "QuartzUp", worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,(filHi+back)/2),  qDnLV, "QuartzDn", worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,filC),            filLV, "FIL",      worldLV, false, k);
+        new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,filC),            gapLV, "FilGap",   worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,filC),            wallLV,"CapWall",  worldLV, false, k);
         new G4PVPlacement(nullptr, p + G4ThreeVector(0,0,front-pdHz),      pdUpLV,"PD_Up",    worldLV, false, k);
     }
