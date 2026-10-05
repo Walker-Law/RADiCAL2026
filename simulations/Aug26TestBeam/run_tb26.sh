@@ -24,6 +24,25 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../lib/run_logging.sh"
 start_logging "$HERE"
 
+# Geant4 DATA environment. Without it Geant4 aborts at start-up with
+#   G4Exception PART70000 ... G4ENSDFSTATEDATA environment variable must be set
+# which has now cost two launches: it happens whenever the job is started from a
+# shell that is not in the g4 conda environment (prompt says "(base)" instead of
+# "(g4)"), and it dies seconds in, after the banner, so it reads like a physics
+# crash rather than a missing variable. setup_env.sh keeps an already-valid data
+# environment untouched, so sourcing it here is idempotent and safe.
+if [ -z "${G4ENSDFSTATEDATA:-}" ] || [ ! -f "${G4ENSDFSTATEDATA:-/nonexistent}/ENSDFSTATE.dat" ]; then
+    echo "[TB26] Geant4 data environment not set — sourcing setup_env.sh"
+    # shellcheck disable=SC1091
+    . "$HERE/setup_env.sh" || true
+fi
+if [ -z "${G4ENSDFSTATEDATA:-}" ]; then
+    echo "ERROR: Geant4 data environment is still unset after setup_env.sh." >&2
+    echo "       Run 'conda activate g4' (or source the Geant4 env) and retry;" >&2
+    echo "       launching now would abort seconds in with G4Exception PART70000." >&2
+    exit 1
+fi
+
 MAT="${1:-}"
 NEV="${2:-2000}"
 MATU=$(echo "$MAT" | tr '[:lower:]' '[:upper:]' | tr -d ':')
