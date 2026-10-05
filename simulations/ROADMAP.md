@@ -894,3 +894,53 @@ LuAG:Ce rod optically bonded to the capillary — fused, or set with
 index-matching cement — or inserted dry?** The test in simulation is one short
 run with an optical surface at the rod-to-wall interface; the two answers differ
 by roughly the factor of four we need to explain.
+
+### 7h. Discovery 25 — the dry-fit gap is real, and DSB1's timing now brackets the truth (2026-10-05)
+
+With the rods dry-fitted rather than optically bonded (500 events, 3 and 5 GeV,
+both materials, everything else unchanged and the gains still anchored on the
+DSB1 5 GeV response):
+
+| quantity, 5 GeV | optical contact | dry-fit air gap | measured |
+|---|---|---|---|
+| DSB1 detected photons | 16929 | 12635 | — |
+| LuAG:Ce detected photons | 54501 | 23168 | — |
+| light ratio DSB1 / LuAG | 0.311 | **0.545** | **2.285** |
+| LuAG:Ce response, times measured | 4.8x | **3.3x** | 1.0 |
+| DSB1 response at 3 GeV | 3837 (+2%) | **3759 (-0.1%)** | 3763 |
+| DSB1 intrinsic sigma_t | 116 ps | 411 ps | **187 ps** |
+
+**The prediction held.** LuAG:Ce lost 57% of its light and DSB1 only 25% — the
+asymmetry the refractive-index argument demands, stated before the run. The
+light ratio moved 0.31 to 0.545, within rounding of the 0.55 the smoke test
+forecast, and LuAG:Ce's response excess fell from 4.8x to 3.3x. The interface
+was a real error, not a fudge factor.
+
+**DSB1's response is now essentially exact**: 3759 against a measured 3763 at
+3 GeV, a tenth of a percent, and that point is a free prediction — only the
+5 GeV response is anchored.
+
+**But DSB1's timing overshoots in the other direction, and that is the useful
+result.** Its intrinsic resolution was 116 ps with perfect optical contact and
+is 411 ps with a full air gap, against 187 ps measured. The measurement sits
+BETWEEN the two models, roughly a third of the way. Neither extreme is right,
+and the physical reading is straightforward: a rod resting in a bore touches
+along a line and is separated elsewhere, so the real interface is PARTIALLY
+coupled. That is 20 sigma from statistics (411 +/- 14 against 116 +/- 5), not a
+small-sample artifact.
+
+**This makes DSB1 the calibrator.** The interface can be given a roughness
+(G4OpticalSurface, ground finish, tunable sigmaAlpha) that interpolates
+continuously between the two extremes; DSB1's measured 187 ps fixes it, with its
+response held at the few-percent agreement it already has. LuAG:Ce then inherits
+that interface untouched, and whatever its response and timing come out at is a
+genuine prediction. This is the first parameter in the whole exercise that can
+be calibrated on one material and tested on the other.
+
+**What remains for LuAG:Ce.** Combining this gap with the 5% self-scintillation
+from the Discovery 22 scan would put the light ratio near 1.0, still 2.3x from
+the measured 2.285. Its light is still 48% filament self-scintillation. The
+untouched candidate is its bulk absorption length, still 1 m (perfectly
+transparent) for a Ce-doped CERAMIC that is translucent in reality — the only
+remaining parameter that dims LuAG:Ce without touching DSB1, which is the shape
+the residual has.
