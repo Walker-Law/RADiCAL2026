@@ -944,3 +944,52 @@ untouched candidate is its bulk absorption length, still 1 m (perfectly
 transparent) for a Ce-doped CERAMIC that is translucent in reality — the only
 remaining parameter that dims LuAG:Ce without touching DSB1, which is the shape
 the residual has.
+
+### 7i. Discovery 26 — DSB1's agreement is REAL in response and NARROW in timing; the pulse tail still disagrees (2026-10-31)
+
+Direct test of whether the DSB1 agreement is physics or benchmarking artifact.
+The response kernels were fitted to 7 GeV mean pulses only, so the measured
+3 and 5 GeV pulses are genuinely out of sample:
+
+| energy | kernel fitted here? | rms residual, high gain | measured late light (>8 ns) | simulated |
+|---|---|---|---|---|
+| 3 GeV | no | 0.161 | 21.4% | 41.9% |
+| 5 GeV | no | 0.162 | 18.9% | 41.9% |
+| 7 GeV | yes | 0.171 | 15.9% | 42.3% |
+
+**The electronics model generalises.** Residuals are flat in and out of sample —
+the kernel is not over-fitted to 7 GeV, so using it at other energies is sound.
+
+**But the simulated DSB1 pulse carries twice the late light the data does**, at
+every energy: 42% after 8 ns against 16 to 21% measured. And the attribution is
+clean, because the same kernel reproduces the measured pulse to rms 0.074 when
+paired with its own FITTED light model, against 0.16 with the simulated light.
+The kernel is fine; the simulated light's time structure is not.
+
+**So the honest ledger on DSB1:**
+- REAL and unforced: energy linearity (3 GeV response predicted from a 5 GeV
+  anchor, -0.1%, statistical error about 2%); the direction AND size of the
+  light-ratio shift under the interface fix (0.31 to 0.545 against a 0.55
+  forecast stated beforehand); the kernel generalising across energy.
+- PARTLY ARTIFACT: the reference-included shower-time agreement, which is
+  dominated by the 110 ps reference jitter inserted by hand from the measurement
+  — at 5 to 11 GeV the measured total is 137 to 190 ps on a 110 ps floor, so
+  almost any simulation with decent intrinsic timing would "agree". The absolute
+  light yield is absorbed by the gain anchor by construction, and the transfer
+  slope is partly forced by it too.
+- DISAGREES: the pulse tail (above); the reference-free intrinsic resolution,
+  which brackets rather than matches (116 ps with optical contact, 411 ps with
+  an air gap, 187 ps measured); and sigma_E/E, which is not comparable at all
+  while the beam spot is an H2 placeholder and the measurement is
+  position-smearing dominated by the experiment's own account.
+
+**This partly reinstates Discovery 19, which 7d withdrew.** The original claim —
+that the simulated light is too slow — was argued from a two-component fit whose
+"prompt fraction" I over-read, and the withdrawal was right about that argument.
+But the underlying observation now survives a cleaner test: the measured DSB1
+pulse needs far more early light than the simulation makes (its light is 97%
+wavelength-shifted, hence LYSO's 36 ns, with only about 3% prompt from Cherenkov
+and unshifted scintillation). What the withdrawal got right is that the
+saturation-recovered timing estimator does not care: it fires at 15% of peak on
+the LEADING edge, which can match while the tail does not. The agreement is
+real, but narrower than it looked.
